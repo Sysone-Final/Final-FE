@@ -1,6 +1,6 @@
 function DataCenter() {
   return (
-    <div>DataCenter</div>
+    <div>DataCenter 배포테스트</div>
   )
 }
 
