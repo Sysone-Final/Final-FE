@@ -85,7 +85,7 @@ sudo certbot certonly \
 
 # 7. HTTPS용 Docker Compose 파일 생성
 echo "📄 HTTPS용 Docker Compose 설정 생성 중..."
-cd /home/ubuntu
+cd ~
 sudo tee docker-compose.https.yml > /dev/null <<EOL
 version: '3.8'
 
@@ -232,7 +232,7 @@ echo "현재 GitHub Secrets의 DOCKER_USERNAME과 동일해야 합니다."
 
 # 11. SSL 자동 갱신 설정
 echo "🔄 SSL 자동 갱신 설정 중..."
-(sudo crontab -l 2>/dev/null; echo "0 12 * * * /usr/bin/certbot renew --quiet && cd /home/ubuntu && docker-compose -f docker-compose.https.yml restart nginx-proxy") | sudo crontab -
+(sudo crontab -l 2>/dev/null; echo "0 12 * * * /usr/bin/certbot renew --quiet && cd ~ && docker-compose -f docker-compose.https.yml restart nginx-proxy") | sudo crontab -
 
 echo ""
 echo "🎉 HTTPS 설정 완료!"
