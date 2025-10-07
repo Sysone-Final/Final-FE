@@ -63,17 +63,32 @@ jobs:
         username: ${{ secrets.GCP_VM_USERNAME }}
         key: ${{ secrets.GCP_VM_SSH_KEY }}
         script: |
-          cd ~
+          # HTTPS 설정 파일 찾기
+          HTTPS_DIR=""
+          for dir in ~ /home/zkzkasd /home/ubuntu /root; do
+            if [ -f "$dir/docker-compose.https.yml" ]; then
+              HTTPS_DIR="$dir"
+              echo "✅ HTTPS 설정을 찾았습니다: $HTTPS_DIR"
+              break
+            fi
+          done
+          
+          # HTTPS Docker Compose 파일이 있는지 확인
+          if [ -z "$HTTPS_DIR" ]; then
+            echo "❌ HTTPS 설정이 되어있지 않습니다!"
+            echo "먼저 서버에서 add-https-to-existing.sh 스크립트를 실행해주세요."
+            echo "확인된 디렉토리들:"
+            ls -la ~/docker-compose* 2>/dev/null || echo "  ~/docker-compose* 없음"
+            ls -la /home/zkzkasd/docker-compose* 2>/dev/null || echo "  /home/zkzkasd/docker-compose* 없음"
+            ls -la /home/ubuntu/docker-compose* 2>/dev/null || echo "  /home/ubuntu/docker-compose* 없음"
+            exit 1
+          fi
+          
+          # 올바른 디렉토리로 이동
+          cd "$HTTPS_DIR"
           
           # 환경 변수 파일 생성/업데이트
           echo "DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}" > .env
-          
-          # HTTPS Docker Compose 파일이 있는지 확인
-          if [ ! -f "docker-compose.https.yml" ]; then
-            echo "❌ HTTPS 설정이 되어있지 않습니다!"
-            echo "먼저 서버에서 add-https-to-existing.sh 스크립트를 실행해주세요."
-            exit 1
-          fi
           
           # 기존 컨테이너 중지 및 제거
           sudo docker-compose -f docker-compose.https.yml down || true
