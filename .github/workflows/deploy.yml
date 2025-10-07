@@ -65,79 +65,31 @@ jobs:
         script: |
           cd ~
           
-          # 서버 초기 설정 확인 및 설치
-          if ! command -v docker &> /dev/null || ! command -v docker-compose &> /dev/null; then
-            echo "🚀 서버 초기 설정을 시작합니다..."
-            
-            # 시스템 업데이트
-            sudo apt update && sudo apt upgrade -y
-            
-            # Docker 설치
-            echo "Docker 설치 중..."
-            sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
-            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-            echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-            sudo apt update
-            sudo apt install -y docker-ce docker-ce-cli containerd.io
-            
-            # Docker 서비스 시작
-            sudo systemctl start docker
-            sudo systemctl enable docker
-            sudo usermod -aG docker $USER
-            
-            # Docker Compose 설치
-            echo "Docker Compose 설치 중..."
-            sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-            sudo chmod +x /usr/local/bin/docker-compose
-            
-            # 방화벽 설정
-            echo "방화벽 설정 중..."
-            sudo ufw allow OpenSSH
-            sudo ufw allow 80/tcp  
-            sudo ufw allow 443/tcp
-            sudo ufw --force enable
-            
-            # 유틸리티 설치
-            sudo apt install -y htop curl wget git vim net-tools
-            
-            echo "✅ 서버 초기 설정 완료!"
-          else
-            echo "✅ Docker와 Docker Compose가 이미 설치되어 있습니다."
+          # 환경 변수 파일 생성/업데이트
+          echo "DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}" > .env
+          
+          # HTTPS Docker Compose 파일이 있는지 확인
+          if [ ! -f "docker-compose.https.yml" ]; then
+            echo "❌ HTTPS 설정이 되어있지 않습니다!"
+            echo "먼저 서버에서 add-https-to-existing.sh 스크립트를 실행해주세요."
+            exit 1
           fi
           
-          # Docker Compose 파일 생성
-          cat > docker-compose.yml << EOF
-          version: '3.8'
-          
-          services:
-            web:
-              image: ${{ secrets.DOCKER_USERNAME }}/final-fe:latest
-              ports:
-                - "80:80"
-              restart: unless-stopped
-              healthcheck:
-                test: ["CMD", "curl", "-f", "http://localhost/health"]
-                interval: 30s
-                timeout: 10s
-                retries: 3
-                start_period: 40s
-          EOF
-          
           # 기존 컨테이너 중지 및 제거
-          sudo docker-compose down || true
+          sudo docker-compose -f docker-compose.https.yml down || true
           
           # 오래된 이미지 제거
           sudo docker rmi ${{ secrets.DOCKER_USERNAME }}/final-fe:latest || true
           
           # 최신 이미지 풀 및 실행
-          sudo docker-compose pull
-          sudo docker-compose up -d
+          sudo docker-compose -f docker-compose.https.yml pull
+          sudo docker-compose -f docker-compose.https.yml up -d
           
           # 사용하지 않는 이미지 정리
           sudo docker image prune -f
           
           # 배포 상태 확인
           sleep 10
-          sudo docker-compose ps
+          sudo docker-compose -f docker-compose.https.yml ps
           
-          echo "✅ GCP VM 배포 완료: http://serverway.shop"
+          echo "✅ GCP VM HTTPS 배포 완료: https://serverway.shop"
