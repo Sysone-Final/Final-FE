@@ -6,6 +6,7 @@ function DataCenter() {
       <h1>데이터센터 관리</h1>
       <IsometricDatacenterView />
     </div>
+
   )
 }
 
