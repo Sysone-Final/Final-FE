@@ -12,8 +12,11 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.1.14",
     "@types/react": "^18.3.25",
+    "axios": "^1.12.2",
+    "konva": "^10.0.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-konva": "^18.2.14",
     "react-router-dom": "^7.9.3",
     "tailwindcss": "^4.1.14"
   },
