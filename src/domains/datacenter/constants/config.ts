@@ -1,13 +1,12 @@
 //기본 설정
 export const DATACENTER_CONFIG = {
-  // 캔버스 크기
-  STAGE_WIDTH: 1200,
-  STAGE_HEIGHT: 700,
+  // 캔버스 크기 (실제 화면에 표시되는 뷰포트 크기)
+  STAGE_HEIGHT: 800,
   
-  // 격자 설정
-  GRID_SIZE: 30,
-  ROOM_WIDTH: 600,
-  ROOM_HEIGHT: 480,
+  // 격자 설정 (실제 바닥 타일 영역 크기)
+  GRID_SIZE: 40,        // 타일 하나의 크기
+  ROOM_WIDTH: 1200,     // 가로 30개 타일
+  ROOM_HEIGHT: 1200,    // 세로 30개 타일
   
   // 큐브 크기
   CUBE_SIZE: 25,

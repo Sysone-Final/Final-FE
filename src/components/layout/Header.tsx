@@ -2,13 +2,13 @@
 function Header() {
 
   return (
-    <header className="py-3 px-4">
+    <header className="py-3 px-4 ml-10">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className="text-md font-semibold text-white">
+          {/* <div className="text-md font-semibold text-white">
             테스트
-            {/* {user.name } | {user.email} */}
-          </div>
+            {user.name } | {user.email}
+          </div> */}
         </div>
         
         <div className="flex items-center gap-4">
