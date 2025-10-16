@@ -1,5 +1,6 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
+import Rack from "./domains/rack/components/Rack";
 import DataCenter from "./domains/datacenter/DataCenter";
 
 const router = createBrowserRouter([
@@ -9,11 +10,14 @@ const router = createBrowserRouter([
     children: [
       {
         path: "",
-        element: <DataCenter />
-      }
-    ]
-  }
+        element: <DataCenter />,
+      },
+      {
+        path: "/rack",
+        element: <Rack />,
+      },
+    ],
+  },
 ]);
-
 
 export default router;
