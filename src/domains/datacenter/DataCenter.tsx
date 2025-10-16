@@ -5,6 +5,7 @@ function DataCenter() {
     <div>
       <DatacenterView />
     </div>
+
   )
 }
 
