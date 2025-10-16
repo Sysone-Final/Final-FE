@@ -40,7 +40,7 @@ function DatacenterView() {
 
   try {
     return (
-      <div className="flex h-screen w-screen overflow-hidden bg-gray-900">
+      <div className="flex overflow-hidden bg-gray-900">
         {/* 왼쪽 4/5: 격자 맵 영역 */}
         <div 
           className="flex-1 bg-gradient-to-br from-gray-800 to-gray-900 relative"
@@ -99,7 +99,7 @@ function DatacenterView() {
           </div>
 
           {/* 컨트롤 안내 */}
-          <div className="absolute bottom-4 left-4 bg-black bg-opacity-70 backdrop-blur-sm rounded-lg p-3 text-white text-xs">
+          {/* <div className="absolute bottom-4 left-4 bg-black bg-opacity-70 backdrop-blur-sm rounded-lg p-3 text-white text-xs">
             <div className="font-semibold mb-2">⌨️ 컨트롤</div>
             <ul className="space-y-1">
               <li>• 🖱️ 드래그: 장비 이동</li>
@@ -107,7 +107,7 @@ function DatacenterView() {
               <li>• 🔴 빨강 테두리: 충돌 또는 범위 밖</li>
               <li>• 🟡 금색 테두리: 드래그 중</li>
             </ul>
-          </div>
+          </div> */}
         </div>
 
         {/* 오른쪽 1/5: 장비 팔레트 사이드바 */}

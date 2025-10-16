@@ -1,11 +1,13 @@
 import { Group, Line, Image as KonvaImage } from 'react-konva';
 import { useEffect, useRef, useState } from 'react';
+import type { KonvaEventObject } from 'konva/lib/Node';
+import type { Group as KonvaGroup } from 'konva/lib/Group';
 import type { ServerRackProps } from '../types';
 import { getCubeVertices } from '../utils/isometric';
 import { getEquipmentColors } from '../constants/colors';
 import { DATACENTER_CONFIG } from '../constants/config';
 import { useDatacenterStore } from '../stores/useDatacenterStore';
-import serverRackImage from '../assets/rack_front_left.png';
+import serverRackImage from '../assets/ServerCabinet.svg';
 
 interface DraggableServerRackProps extends ServerRackProps {
   id: string;
@@ -29,7 +31,7 @@ function ServerRack({
 }: DraggableServerRackProps) {
   const [image, setImage] = useState<HTMLImageElement | null>(null);
   const imageRef = useRef<HTMLImageElement>();
-  const groupRef = useRef<any>(null);
+  const groupRef = useRef<KonvaGroup>(null);
   const [originalPosition, setOriginalPosition] = useState({ x, y });
   
   const { 
@@ -66,7 +68,7 @@ function ServerRack({
     setEquipmentDragging(id, true);
   };
 
-  const handleDragEnd = (e: any) => {
+  const handleDragEnd = (e: KonvaEventObject<DragEvent>) => {
     const newX = e.target.x();
     const newY = e.target.y();
     

@@ -35,7 +35,7 @@ export const DATACENTER_CONFIG = {
   
   // 서버랙 이미지 설정
   SERVER_RACK: {
-    ASPECT_RATIO: 0.46,     // 가로/세로 비율 (이미지 왜곡 방지)
-    HEIGHT_MULTIPLIER: 2.8  // 격자 대비 세로 크기 배율 (1.4 * 2 = 2.8로 통합)
+    ASPECT_RATIO: 0.6,     // 가로/세로 비율 
+    HEIGHT_MULTIPLIER: 2.8  
   }
 } as const;
