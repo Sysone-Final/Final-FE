@@ -1,10 +1,9 @@
-import IsometricDatacenterView from './components/IsometricDatacenterView';
+import DatacenterView from './components/DatacenterView';
 
 function DataCenter() {
   return (
-    <div style={{ padding: '20px' }}>
-      <h1>데이터센터 관리</h1>
-      <IsometricDatacenterView />
+    <div>
+      <DatacenterView />
     </div>
 
   )
