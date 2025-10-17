@@ -32,7 +32,7 @@ function Sidebar() {
     <aside
       className={`
         text-white transition-all duration-300 ease-in h-full flex-shrink-0
-        ${sidebarCollapsed ? "w-20" : "w-52"}
+        ${sidebarCollapsed ? "w-20" : "w-40"}
         flex flex-col
       `}
     >

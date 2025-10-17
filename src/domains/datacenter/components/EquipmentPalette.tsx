@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import type { EquipmentType } from '../types';
-import { getEquipmentColors } from '../constants/colors';
 
 interface EquipmentPaletteProps {
   onAddEquipment: (type: EquipmentType) => void;
@@ -72,7 +71,6 @@ function EquipmentPalette({ onAddEquipment }: EquipmentPaletteProps) {
       {/* 장비 리스트 */}
       <div className="p-4 space-y-3">
         {PALETTE_ITEMS.map((item) => {
-          const colors = getEquipmentColors(item.type);
           const isSelected = selectedType === item.type;
 
           return (
@@ -81,7 +79,7 @@ function EquipmentPalette({ onAddEquipment }: EquipmentPaletteProps) {
               onClick={() => handleItemClick(item.type)}
               className={`
                 w-full p-4 rounded-lg border-2 transition-all duration-200
-                hover:scale-105 hover:shadow-md active:scale-95
+                hover:shadow-md
                 ${
                   isSelected
                     ? 'border-blue-500 bg-blue-50 shadow-md'
@@ -96,25 +94,6 @@ function EquipmentPalette({ onAddEquipment }: EquipmentPaletteProps) {
                   <div className="font-semibold text-gray-800">{item.name}</div>
                   <div className="text-xs text-gray-500">{item.description}</div>
                 </div>
-              </div>
-
-              {/* 색상 미리보기 */}
-              <div className="flex gap-1 mt-2">
-                <div
-                  className="h-6 flex-1 rounded border border-gray-300"
-                  style={{ backgroundColor: colors.front }}
-                  title="앞면"
-                />
-                <div
-                  className="h-6 flex-1 rounded border border-gray-300"
-                  style={{ backgroundColor: colors.left }}
-                  title="왼쪽"
-                />
-                <div
-                  className="h-6 flex-1 rounded border border-gray-300"
-                  style={{ backgroundColor: colors.top }}
-                  title="위"
-                />
               </div>
             </button>
           );
@@ -132,7 +111,7 @@ function EquipmentPalette({ onAddEquipment }: EquipmentPaletteProps) {
         </ul>
       </div>
 
-      {/* 통계 정보 (추가 예정) */}
+      {/* 통계 정보 */}
       <div className="p-4 m-4 bg-gray-50 border border-gray-200 rounded-lg">
         <h3 className="font-semibold text-gray-700 text-sm mb-2">📊 배치 통계</h3>
         <div className="text-xs text-gray-600">
