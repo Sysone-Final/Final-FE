@@ -3,7 +3,7 @@ import App from "./App";
 import DataCenter from "./domains/datacenter/DataCenter";
 import Babylonmap from "./domains/babylon/Babylonmap";
 import ServerRoomDashboard from './domains/serverRoom/pages/ServerRoomDashboard';
-
+import FloorPlanPage from './domains/floorPlan/pages/FloorPlanPage';
 const router = createBrowserRouter([
   {
     path: "/",
@@ -24,6 +24,10 @@ const router = createBrowserRouter([
         path: "server-room-dashboard",
         element: <ServerRoomDashboard />
       },
+      {
+    path: "/floor-plan", // 이 주소로 접속하면
+    element: <FloorPlanPage />, // FloorPlanPage를 보여준다
+  },
     ],
   },
 ]);
