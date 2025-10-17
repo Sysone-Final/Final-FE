@@ -37,7 +37,7 @@ export const BabylonDatacenterView = () => {
 
     // 씬 생성
     const scene = new Scene(engine);
-    scene.clearColor = new Color4(0, 0, 0, 0.5);
+    scene.clearColor = new Color4(0.3, 0.1, 0.8, 0.5);
     sceneRef.current = scene;
 
     // 카메라 생성 (아이소메트릭 뷰)
