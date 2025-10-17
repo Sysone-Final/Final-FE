@@ -1,4 +1,6 @@
 # 함께 수정되는 코드 파일끼리 하나의 디렉토리를 이루도록 구조를 개선
+
+```
 src/
 ├── components/          # 전체 프로젝트에서 사용되는 컴포넌트
 │   ├──layout/         # 공용 레이아웃 
@@ -15,5 +17,6 @@ src/
 └── domains/
     ├── datacenter/     # 데이터센터 전용
     └── login/          # 로그인 전용
+```
 
 아직 개선해야할 부분이 남음 (참고 Frontend Fundamentals)

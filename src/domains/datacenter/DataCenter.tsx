@@ -5,6 +5,7 @@ function DataCenter() {
     <div className="h-full w-full overflow-hidden">
       <DatacenterView />
     </div>
+
   )
 }
 
