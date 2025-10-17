@@ -1,5 +1,4 @@
 import type { EquipmentPaletteItem } from "../types";
-import serverRackModel from "../assets/serverRack/scene.gltf?url";
 
 // 격자 설정
 export const DEFAULT_GRID_CONFIG = {
@@ -34,31 +33,31 @@ export const EQUIPMENT_PALETTE: EquipmentPaletteItem[] = [
     type: "server",
     name: "서버 랙",
     icon: "",
-    modelPath: serverRackModel,
+    modelPath: "/serverRack/scene.gltf",
   },
   {
     type: "storage",
     name: "스토리지",
     icon: "",
-    modelPath: serverRackModel, // 임시로 같은 모델 사용
+    modelPath: "/serverRack/scene.gltf", // 임시로 같은 모델 사용
   },
   {
     type: "network",
     name: "네트워크",
     icon: "",
-    modelPath: serverRackModel, // 임시로 같은 모델 사용
+    modelPath: "/serverRack/scene.gltf", // 임시로 같은 모델 사용
   },
   {
     type: "ups",
     name: "UPS",
     icon: "",
-    modelPath: serverRackModel, // 임시로 같은 모델 사용
+    modelPath: "/serverRack/scene.gltf", // 임시로 같은 모델 사용
   },
   {
     type: "ac",
     name: "에어컨",
     icon: "",
-    modelPath: serverRackModel, // 임시로 같은 모델 사용
+    modelPath: "/serverRack/scene.gltf", // 임시로 같은 모델 사용
   },
 ];
 

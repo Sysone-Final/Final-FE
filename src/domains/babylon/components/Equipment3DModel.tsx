@@ -52,12 +52,14 @@ export const Equipment3DModel = ({
     let rootMesh: AbstractMesh | null = null;
 
     // 3D 모델 로드
+    console.log('Loading model from:', modelPath);
     SceneLoader.ImportMesh(
       '',
-      modelPath.substring(0, modelPath.lastIndexOf('/') + 1),
-      modelPath.substring(modelPath.lastIndexOf('/') + 1),
+      '',  // rootUrl을 비워두고
+      modelPath,  // 전체 경로를 fileName으로 사용
       scene,
       (meshes) => {
+        console.log('Model loaded successfully:', meshes.length, 'meshes');
         if (meshes.length === 0) return;
 
         // 루트 메시 생성
@@ -179,7 +181,7 @@ export const Equipment3DModel = ({
       },
       undefined,
       (_scene, message, exception) => {
-        console.error('Error loading model:', message, exception);
+        console.error('Error loading model:', modelPath, message, exception);
       }
     );
 
