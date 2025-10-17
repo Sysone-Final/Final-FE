@@ -46,8 +46,8 @@ function DatacenterView() {
     
     // 맵 중앙을 화면 중앙에 배치
     const initialScale = 0.8;
-    const centerX = (stageWidth - isometricWidth * initialScale) / 2;
-    const centerY = (stageHeight - isometricHeight * initialScale) / 2 + 50;
+    const centerX = (stageWidth - isometricWidth * initialScale) / 2 + 150;
+    const centerY = (stageHeight - isometricHeight * initialScale) / 2 -100;
     
     setStagePos({
       x: centerX,
@@ -136,10 +136,6 @@ function DatacenterView() {
           {/* 맵 헤더 */}
           <div className="absolute top-0 left-0 right-0 z-10 bg-black bg-opacity-50 backdrop-blur-sm">
             <div className="p-4">
-              <h1 className="text-white text-xl font-bold flex items-center gap-2">
-                <span className="text-2xl">🏢</span>
-                데이터센터 레이아웃
-              </h1>
               <p className="text-gray-300 text-sm mt-1">
                 배치된 장비: {equipment.length}개
               </p>
@@ -197,8 +193,8 @@ function DatacenterView() {
             <div className="font-semibold mb-2">⌨️ 컨트롤</div>
             <ul className="space-y-1">
               <li>• 🖱️ 드래그 (배경): 맵 이동</li>
-              <li>• �️ 드래그 (장비): 장비 이동</li>
-              <li>• � 마우스 휠: 줌 인/아웃</li>
+              <li>• 드래그 (장비): 장비 이동</li>
+              <li>• 마우스 휠: 줌 인/아웃</li>
               <li>• 배율: {stageScale.toFixed(1)}x</li>
             </ul>
           </div>

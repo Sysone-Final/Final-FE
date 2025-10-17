@@ -5,8 +5,8 @@ export const DATACENTER_CONFIG = {
   
   // 격자 설정 (실제 바닥 타일 영역 크기)
   GRID_SIZE: 40,        // 타일 하나의 크기
-  ROOM_WIDTH: 1200,     // 가로 30개 타일
-  ROOM_HEIGHT: 1200,    // 세로 30개 타일
+  ROOM_WIDTH: 400,     // 가로 30개 타일
+  ROOM_HEIGHT: 400,    // 세로 30개 타일
   
   // 큐브 크기
   CUBE_SIZE: 25,
