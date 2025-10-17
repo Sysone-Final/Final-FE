@@ -1,0 +1,44 @@
+
+
+import React from 'react';
+import type { ServerRoom } from '../types';
+import { FaMapMarkerAlt, FaServer, FaPencilAlt, FaTrash } from 'react-icons/fa';
+import './ServerRoomCard.css'; // 카드 스타일을 위한 CSS 파일
+
+interface Props {
+  room: ServerRoom;
+}
+
+const ServerRoomCard: React.FC<Props> = ({ room }) => {
+  // status 값에 따라 클래스 이름을 동적으로 반환하는 함수
+  const getStatusClassName = (status: ServerRoom['status']) => {
+    return `status-dot ${status.toLowerCase()}`;
+  };
+
+  return (
+    <div className="server-room-card">
+      <div className="card-header">
+        <h3>{room.name}</h3>
+        <div className="card-actions">
+          <button className="icon-button"><FaPencilAlt /></button>
+          <button className="icon-button"><FaTrash /></button>
+        </div>
+      </div>
+      <div className="card-body">
+        <p><FaMapMarkerAlt className="info-icon" /> {room.location}</p>
+        <p><FaServer className="info-icon" /> {room.rackCount} 개 랙</p>
+        <p className="status-info">
+          <span className={getStatusClassName(room.status)}></span>
+          {room.status}
+        </p>
+      </div>
+      <div className="card-footer">
+        <a href="#" className="manage-layout-link">
+          레이아웃 관리 →
+        </a>
+      </div>
+    </div>
+  );
+};
+
+export default ServerRoomCard;

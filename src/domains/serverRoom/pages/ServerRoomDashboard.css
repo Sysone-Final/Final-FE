@@ -1,0 +1,83 @@
+
+
+.dashboard-container {
+  padding: 32px;
+  background-color: #121212; /* Dark background */
+  color: #E0E0E0;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.dashboard-header h1 {
+  margin: 0;
+  font-size: 2rem;
+  color: #FFFFFF;
+}
+
+.dashboard-header p {
+  margin: 4px 0 0;
+  color: #A0A0A0;
+}
+
+.add-room-button {
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.add-room-button:hover {
+  background-color: #0056b3;
+}
+
+.overview-statistics {
+  margin-top: 48px;
+}
+
+.overview-statistics h2 {
+  font-size: 1.5rem;
+  color: #FFFFFF;
+  margin-bottom: 24px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.stat-item {
+  /* Glassmorphism for stats */
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(5px);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  
+  padding: 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.stat-label {
+  margin-top: 8px;
+  color: #A0A0A0;
+}
