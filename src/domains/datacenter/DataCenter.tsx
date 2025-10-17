@@ -2,7 +2,7 @@ import DatacenterView from './components/DatacenterView';
 
 function DataCenter() {
   return (
-    <div>
+    <div className="h-full w-full overflow-hidden">
       <DatacenterView />
     </div>
 
