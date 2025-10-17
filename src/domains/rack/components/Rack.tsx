@@ -1,11 +1,12 @@
 import { Stage, Layer, Rect, Text, Group, Line } from "react-konva";
 import type { RackDevice } from "../types";
+import Device from "./Device";
 
 const Rack = () => {
   const devices: RackDevice[] = [
-    { id: 1, name: "Server_1", temp: 24, position: 1, height: 1 },
-    { id: 2, name: "Firewall_1", temp: 27, position: 3, height: 1 },
-    { id: 3, name: "UPS_5F", temp: 25, position: 4, height: 3 },
+    { id: 1, name: "Server_1", position: 1, height: 1 },
+    { id: 2, name: "Firewall_1", position: 3, height: 1 },
+    { id: 3, name: "UPS_5F", position: 4, height: 3 },
   ];
 
   const rackHeight = 700;
@@ -13,6 +14,7 @@ const Rack = () => {
   const unitHeight = rackHeight / 42;
   const frameThickness = 20;
   const panelWidth = 25;
+  ``;
 
   // 기준 좌표
   const baseY = 40;
@@ -138,31 +140,23 @@ const Rack = () => {
         ))}
 
         {/* ✅ 장비 슬롯 */}
-        {devices.map((d) => (
-          <Group
-            key={d.id}
-            y={
-              rackHeight -
-              (d.position - 1) * unitHeight -
-              d.height * unitHeight +
-              baseY
-            }
-          >
-            <Rect
-              x={100}
-              width={rackWidth}
-              height={unitHeight * d.height}
-              fill={d.temp > 25 ? "#f87171" : "#60a5fa"}
+        {devices.map((device) => {
+          const y =
+            rackHeight -
+            (device.position - 1) * unitHeight -
+            device.height * unitHeight +
+            baseY;
+          const height = unitHeight * device.height;
+          return (
+            <Device
+              key={device.id}
+              device={device}
+              y={y}
+              height={height}
+              rackWidth={rackWidth}
             />
-            <Text
-              x={110}
-              y={(unitHeight * d.height) / 2 - 6}
-              text={d.name}
-              fontSize={12}
-              fill="white"
-            />
-          </Group>
-        ))}
+          );
+        })}
       </Layer>
     </Stage>
   );
