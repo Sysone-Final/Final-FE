@@ -19,6 +19,11 @@ function Sidebar() {
       label: "바빌론",
       path: "/babylonmap",
     },
+        {
+      id: "serverRoo,",
+      label: "서버실",
+      path: "/server-room-dashboard",
+    },
     // MASTER 권한자에게만 인사관리 메뉴 표시
     // ...(user?.role === 'MASTER' ? [{
     //   id: "hr",

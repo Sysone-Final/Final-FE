@@ -3,7 +3,7 @@
 import React from 'react';
 import type { ServerRoom } from '../types';
 import { FaMapMarkerAlt, FaServer, FaPencilAlt, FaTrash } from 'react-icons/fa';
-import './ServerRoomCard.css'; // 카드 스타일을 위한 CSS 파일
+import '../css/serverRoomCard.css';
 
 interface Props {
   room: ServerRoom;
@@ -18,16 +18,20 @@ const ServerRoomCard: React.FC<Props> = ({ room }) => {
   return (
     <div className="server-room-card">
       <div className="card-header">
-        <h3>{room.name}</h3>
+        <h3 className="card-title">{room.name}</h3>
         <div className="card-actions">
           <button className="icon-button"><FaPencilAlt /></button>
           <button className="icon-button"><FaTrash /></button>
         </div>
       </div>
       <div className="card-body">
-        <p><FaMapMarkerAlt className="info-icon" /> {room.location}</p>
-        <p><FaServer className="info-icon" /> {room.rackCount} 개 랙</p>
-        <p className="status-info">
+        <p className="card-info">
+          <FaMapMarkerAlt className="info-icon" /> {room.location}
+        </p>
+        <p className="card-info">
+          <FaServer className="info-icon" /> {room.rackCount} 개 랙
+        </p>
+        <p className="card-info status-info">
           <span className={getStatusClassName(room.status)}></span>
           {room.status}
         </p>
