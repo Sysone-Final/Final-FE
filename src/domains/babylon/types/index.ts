@@ -1,5 +1,11 @@
 // Babylon.js 데이터센터 장비 타입
-export type EquipmentType = "server" | "storage" | "network" | "ups" | "ac";
+export type EquipmentType =
+  | "server"
+  | "door"
+  | "climatic_chamber"
+  | "fire_extinguisher"
+  | "thermometer"
+  | "aircon";
 
 // 3D 장비 정보
 export interface Equipment3D {

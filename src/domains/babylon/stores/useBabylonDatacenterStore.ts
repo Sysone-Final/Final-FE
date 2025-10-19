@@ -1,6 +1,9 @@
 import { create } from "zustand";
 import type { Equipment3D, EquipmentType, GridConfig } from "../types";
-import { DEFAULT_GRID_CONFIG } from "../constants/config";
+import {
+  DEFAULT_GRID_CONFIG,
+  EQUIPMENT_DEFAULT_ROTATION,
+} from "../constants/config";
 
 interface BabylonDatacenterStore {
   // 격자 설정
@@ -57,13 +60,16 @@ export const useBabylonDatacenterStore = create<BabylonDatacenterStore>(
         return;
       }
 
+      // 장비별 기본 회전 각도 가져오기
+      const defaultRotation = EQUIPMENT_DEFAULT_ROTATION[type] || 0;
+
       const newEquipment: Equipment3D = {
         id: `${type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         type,
         gridX,
         gridY,
         gridZ: 0,
-        rotation: 0,
+        rotation: defaultRotation, // 기본 회전 각도 적용
       };
 
       set((state) => ({

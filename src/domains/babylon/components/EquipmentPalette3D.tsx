@@ -5,9 +5,9 @@ interface EquipmentPalette3DProps {
   onAddEquipment: (type: EquipmentType) => void;
 }
 
-export const EquipmentPalette3D = ({ onAddEquipment }: EquipmentPalette3DProps) => {
+function EquipmentPalette3D({ onAddEquipment }: EquipmentPalette3DProps) {
   return (
-    <div className="h-full bg-gray-400 p-6 overflow-y-auto">
+    <div className="h-full rounded-2xl p-6 overflow-y-auto">
       <h2 className="text-white text-xl font-bold mb-6 flex items-center gap-2">
         장비 목록
       </h2>
@@ -38,7 +38,7 @@ export const EquipmentPalette3D = ({ onAddEquipment }: EquipmentPalette3DProps) 
         ))}
       </div>
 
-      <div className="mt-8 p-4 bg-gray-700 bg-opacity-50 rounded-lg border border-gray-600">
+      <div className="mt-8 p-4 bg-gray-700/50 rounded-lg border border-gray-600">
         <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
           <span>ℹ️</span>
           사용법
@@ -52,4 +52,6 @@ export const EquipmentPalette3D = ({ onAddEquipment }: EquipmentPalette3DProps) 
       </div>
     </div>
   );
-};
+}
+
+export default EquipmentPalette3D
