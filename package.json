@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "preview": "vite preview",
     "lint": "eslint .",
     "prepare": "husky"
   },
@@ -16,6 +17,8 @@
     ]
   },
   "dependencies": {
+    "@babylonjs/core": "^8.32.0",
+    "@babylonjs/loaders": "^8.32.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.4",
@@ -25,7 +28,9 @@
     "@types/react": "^18.3.25",
     "axios": "^1.12.2",
     "konva": "^10.0.2",
+    "prettier": "^3.6.2",
     "react": "^18.3.1",
+    "react-babylonjs": "^3.2.5-beta.2",
     "react-dom": "^18.3.1",
     "react-konva": "^18.2.14",
     "react-router-dom": "^7.9.3",
