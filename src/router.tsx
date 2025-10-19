@@ -1,6 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
-import Rack from "./domains/rack/components/Rack";
+import RackPage from "./domains/rack/RackPage";
 import DataCenter from "./domains/datacenter/DataCenter";
 import Babylonmap from "./domains/babylon/Babylonmap";
 
@@ -23,7 +23,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/rack",
-        element: <Rack />,
+        element: <RackPage />,
       },
     ],
   },
