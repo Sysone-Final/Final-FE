@@ -1,145 +1,154 @@
 import { Stage, Layer, Rect, Text, Group, Line } from "react-konva";
 import type { RackDevice } from "../types";
 import Device from "./Device";
+import {
+  RACK_CONFIG,
+  RACK_COLORS,
+  UNIT_COUNT,
+} from "../constants/rackConstants";
 
-const Rack = () => {
-  const devices: RackDevice[] = [
-    { id: 1, name: "Server_1", position: 1, height: 1 },
-    { id: 2, name: "Firewall_1", position: 3, height: 1 },
-    { id: 3, name: "UPS_5F", position: 4, height: 3 },
-  ];
+interface RackProps {
+  devices: RackDevice[];
+}
 
-  const rackHeight = 700;
-  const rackWidth = 200;
-  const unitHeight = rackHeight / 42;
-  const frameThickness = 20;
-  const panelWidth = 25;
-  ``;
+function Rack({ devices }: RackProps) {
+  const {
+    height: rackHeight,
+    width: rackWidth,
+    stageWidth,
+    frameThickness,
+    panelWidth,
+    baseY,
+  } = RACK_CONFIG;
 
-  // 기준 좌표
-  const baseY = 40;
+  const unitHeight = rackHeight / UNIT_COUNT;
+  const centerX = stageWidth / 2;
+  const rackX = centerX - rackWidth / 2;
+
   const fullY = baseY - frameThickness;
   const fullHeight = rackHeight + frameThickness * 2;
-  const leftPanelX = 100 - frameThickness - panelWidth;
-  const leftPillarX = leftPanelX + panelWidth;
-  const rightPillarX = 100 + rackWidth;
+  const leftPanelX = rackX - frameThickness - panelWidth;
+  const leftPillarX = rackX - frameThickness;
+  const rightPillarX = rackX + rackWidth;
   const rightPanelX = rightPillarX + frameThickness;
   const coverWidth = rackWidth + frameThickness * 2;
-
-  // 눈금 위치 중앙 정렬용 offset
   const textOffsetY = unitHeight / 2 - 5;
 
   return (
-    <Stage width={600} height={fullHeight + 100}>
+    <Stage width={stageWidth} height={fullHeight}>
       <Layer>
-        {/* ✅ 상단 덮개 */}
+        {/* 상단 덮개 */}
         <Rect
           x={leftPillarX}
           y={fullY}
           width={coverWidth}
           height={frameThickness}
-          fill="#1f2937"
+          fill={RACK_COLORS.background}
         />
 
-        {/* ✅ 하단 덮개 */}
+        {/* 하단 덮개 */}
         <Rect
           x={leftPillarX}
           y={baseY + rackHeight}
           width={coverWidth}
           height={frameThickness}
-          fill="#1f2937"
+          fill={RACK_COLORS.background}
         />
 
-        {/* ✅ 왼쪽 눈금 패널 */}
+        {/* 왼쪽 눈금 패널 */}
         <Group>
           <Rect
             x={leftPanelX}
             y={fullY}
             width={panelWidth}
             height={fullHeight}
-            fill="#0f172a"
+            fill={RACK_COLORS.scalePanel}
           />
-          {/* 눈금: 1U~42U (본체와 정확히 정렬됨) */}
-          {Array.from({ length: 42 }).map((_, i) => (
+          {Array.from({ length: UNIT_COUNT }).map((_, i) => (
             <Text
               key={`left-${i}`}
               x={leftPanelX + 5}
               y={baseY + i * unitHeight + textOffsetY}
-              text={`${42 - i}U`}
+              text={`${UNIT_COUNT - i}U`}
               fontSize={9}
-              fill="#fff"
+              fill={RACK_COLORS.text}
             />
           ))}
         </Group>
 
-        {/* ✅ 왼쪽 기둥 */}
+        {/* 왼쪽 기둥 */}
         <Rect
           x={leftPillarX}
           y={baseY}
           width={frameThickness}
           height={rackHeight}
-          fill="#1f2937"
+          fill={RACK_COLORS.background}
         />
 
-        {/* ✅ 본체 */}
+        {/* 본체 */}
         <Rect
-          x={100}
+          x={rackX}
           y={baseY}
           width={rackWidth}
           height={rackHeight}
           fillLinearGradientStartPoint={{ x: 0, y: 0 }}
           fillLinearGradientEndPoint={{ x: 0, y: rackHeight }}
-          fillLinearGradientColorStops={[0, "#374151", 1, "#1f2937"]}
-          stroke="#374151"
+          fillLinearGradientColorStops={[
+            0,
+            RACK_COLORS.gradientTop,
+            1,
+            RACK_COLORS.gradientBottom,
+          ]}
+          stroke={RACK_COLORS.gradientTop}
           strokeWidth={2}
         />
 
-        {/* ✅ 오른쪽 기둥 */}
+        {/* 오른쪽 기둥 */}
         <Rect
           x={rightPillarX}
           y={baseY}
           width={frameThickness}
           height={rackHeight}
-          fill="#1f2937"
+          fill={RACK_COLORS.background}
         />
 
-        {/* ✅ 오른쪽 눈금 패널 */}
+        {/* 오른쪽 눈금 패널 */}
         <Group>
           <Rect
             x={rightPanelX}
             y={fullY}
             width={panelWidth}
             height={fullHeight}
-            fill="#0f172a"
+            fill={RACK_COLORS.scalePanel}
           />
-          {Array.from({ length: 42 }).map((_, i) => (
+          {Array.from({ length: UNIT_COUNT }).map((_, i) => (
             <Text
               key={`right-${i}`}
               x={rightPanelX + 5}
               y={baseY + i * unitHeight + textOffsetY}
-              text={`${42 - i}U`}
+              text={`${UNIT_COUNT - i}U`}
               fontSize={9}
-              fill="#fff"
+              fill={RACK_COLORS.text}
             />
           ))}
         </Group>
 
-        {/* ✅ 1U~42U 구분선 (옵션: 실제 랙처럼 보여줌) */}
-        {Array.from({ length: 43 }).map((_, i) => (
+        {/* 1U~42U 구분선 */}
+        {Array.from({ length: UNIT_COUNT + 1 }).map((_, i) => (
           <Line
             key={`line-${i}`}
             points={[
-              100,
+              rackX,
               baseY + i * unitHeight,
-              100 + rackWidth,
+              rackX + rackWidth,
               baseY + i * unitHeight,
             ]}
-            stroke="#1f2937"
+            stroke={RACK_COLORS.line}
             strokeWidth={0.6}
           />
         ))}
 
-        {/* ✅ 장비 슬롯 */}
+        {/* 장비 슬롯 */}
         {devices.map((device) => {
           const y =
             rackHeight -
@@ -154,12 +163,13 @@ const Rack = () => {
               y={y}
               height={height}
               rackWidth={rackWidth}
+              x={rackX}
             />
           );
         })}
       </Layer>
     </Stage>
   );
-};
+}
 
 export default Rack;
