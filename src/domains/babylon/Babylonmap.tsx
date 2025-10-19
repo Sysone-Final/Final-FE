@@ -1,6 +1,6 @@
-import { BabylonDatacenterView } from './components/BabylonDatacenterView';
+import BabylonDatacenterView from './components/BabylonDatacenterView';
 
-function Babylonmap() {
+export default function Babylonmap() {
   return (
     <div className="h-full w-full overflow-hidden">
       <BabylonDatacenterView />
@@ -8,4 +8,3 @@ function Babylonmap() {
   );
 }
 
-export default Babylonmap;

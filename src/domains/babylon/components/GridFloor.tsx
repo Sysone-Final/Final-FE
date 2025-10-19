@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Color3, StandardMaterial, MeshBuilder, Scene, Mesh, LinesMesh, Vector3 } from '@babylonjs/core';
 import { COLORS } from '../constants/config';
-import { rgbStringToColor3 } from '../utils/colorHelper';
 import type { GridConfig } from '../types';
 
 interface GridFloorProps {
@@ -9,7 +8,7 @@ interface GridFloorProps {
   gridConfig: GridConfig;
 }
 
-export const GridFloor = ({ scene, gridConfig }: GridFloorProps) => {
+function GridFloor({ scene, gridConfig }: GridFloorProps) {
   const floorRef = useRef<Mesh | null>(null);
   const gridLinesRef = useRef<LinesMesh[]>([]);
 
@@ -35,7 +34,7 @@ export const GridFloor = ({ scene, gridConfig }: GridFloorProps) => {
     );
     
     const groundMaterial = new StandardMaterial('groundMat', scene);
-    groundMaterial.diffuseColor = rgbStringToColor3(COLORS.gridFloor);
+    groundMaterial.diffuseColor = Color3.FromHexString(COLORS.gridFloor);
     groundMaterial.specularColor = new Color3(0.1, 0.1, 0.1);
     ground.material = groundMaterial;
     // 바닥을 격자 선과 같은 좌표계로 맞춤
@@ -45,8 +44,8 @@ export const GridFloor = ({ scene, gridConfig }: GridFloorProps) => {
 
     // 격자 선 생성
     const gridMaterial = new StandardMaterial('gridMat', scene);
-    gridMaterial.diffuseColor = rgbStringToColor3(COLORS.grid);
-    gridMaterial.emissiveColor = rgbStringToColor3(COLORS.grid);
+    gridMaterial.diffuseColor = Color3.FromHexString(COLORS.grid);
+    gridMaterial.emissiveColor = Color3.FromHexString(COLORS.grid);
     gridMaterial.alpha = 0.3;
 
     // 세로 선 (X축 방향)
@@ -62,7 +61,7 @@ export const GridFloor = ({ scene, gridConfig }: GridFloorProps) => {
         },
         scene
       );
-      line.color = rgbStringToColor3(COLORS.grid);
+      line.color = Color3.FromHexString(COLORS.grid);
       line.alpha = 0.5;
       gridLinesRef.current.push(line);
     }
@@ -80,7 +79,7 @@ export const GridFloor = ({ scene, gridConfig }: GridFloorProps) => {
         },
         scene
       );
-      line.color = rgbStringToColor3(COLORS.grid);
+      line.color = Color3.FromHexString(COLORS.grid);
       line.alpha = 0.5;
       gridLinesRef.current.push(line);
     }
@@ -94,4 +93,6 @@ export const GridFloor = ({ scene, gridConfig }: GridFloorProps) => {
   }, [scene, gridConfig]);
 
   return null;
-};
+}
+
+export default GridFloor

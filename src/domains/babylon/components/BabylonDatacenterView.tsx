@@ -1,19 +1,19 @@
 import { useRef, useEffect, useState } from 'react';
 import { Engine, Scene, ArcRotateCamera, HemisphericLight, Vector3, Color4 } from '@babylonjs/core';
-import { GridFloor } from './GridFloor';
-import { Equipment3DModel } from './Equipment3DModel';
-import { EquipmentPalette3D } from './EquipmentPalette3D';
+import GridFloor from './GridFloor';
+import Equipment3DModel from './Equipment3DModel';
+import EquipmentPalette3D from './EquipmentPalette3D';
 import { useBabylonDatacenterStore } from '../stores/useBabylonDatacenterStore';
 import { CAMERA_CONFIG, EQUIPMENT_PALETTE } from '../constants/config';
 import type { EquipmentType } from '../types';
 
-export const BabylonDatacenterView = () => {
+function BabylonDatacenterView() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<Engine | null>(null);
   const sceneRef = useRef<Scene | null>(null);
   const [isSceneReady, setIsSceneReady] = useState(false);
 
-  // Zustand 스토어
+  // Zustand
   const {
     gridConfig,
     equipment,
@@ -23,6 +23,19 @@ export const BabylonDatacenterView = () => {
     setGridConfig,
     updateEquipmentPosition,
   } = useBabylonDatacenterStore();
+
+  // 장비 추가 핸들러
+  const handleAddEquipment = (type: EquipmentType) => {
+    // 맵 중앙에 추가
+    const centerX = Math.floor(gridConfig.columns / 2);
+    const centerY = Math.floor(gridConfig.rows / 2);
+    addEquipment(type, centerX, centerY);
+  };
+
+  // 격자 설정 변경
+  const handleGridChange = (key: 'rows' | 'columns', value: number) => {
+    setGridConfig({ [key]: Math.max(5, Math.min(30, value)) });
+  };
 
   // Babylon.js 씬 초기화
   useEffect(() => {
@@ -37,7 +50,8 @@ export const BabylonDatacenterView = () => {
 
     // 씬 생성
     const scene = new Scene(engine);
-    scene.clearColor = new Color4(0.3, 0.1, 0.8, 0.5);
+    // 데이터센터 배경색
+    scene.clearColor = new Color4(0, 0, 0, 0); // 완전 투명
     sceneRef.current = scene;
 
     // 카메라 생성 (아이소메트릭 뷰)
@@ -66,9 +80,17 @@ export const BabylonDatacenterView = () => {
     const light = new HemisphericLight('light', new Vector3(0, 1, 0), scene);
     light.intensity = 0.8;
 
-    // 추가 조명 (더 나은 시각화)
+    // 추가 조명
     const light2 = new HemisphericLight('light2', new Vector3(0, -1, 0), scene);
     light2.intensity = 0.3;
+
+    // 배경 클릭 시 선택 해제
+    scene.onPointerDown = (_evt, pickResult) => {
+      // 아무것도 선택되지 않았거나 바닥을 클릭한 경우
+      if (!pickResult.hit || pickResult.pickedMesh?.name === 'ground') {
+        setSelectedEquipment(null);
+      }
+    };
 
     setIsSceneReady(true);
 
@@ -90,25 +112,12 @@ export const BabylonDatacenterView = () => {
     };
   }, [gridConfig.columns, gridConfig.rows, gridConfig.cellSize]);
 
-  // 장비 추가 핸들러
-  const handleAddEquipment = (type: EquipmentType) => {
-    // 맵 중앙에 추가
-    const centerX = Math.floor(gridConfig.columns / 2);
-    const centerY = Math.floor(gridConfig.rows / 2);
-    addEquipment(type, centerX, centerY);
-  };
-
-  // 격자 설정 변경
-  const handleGridChange = (key: 'rows' | 'columns', value: number) => {
-    setGridConfig({ [key]: Math.max(5, Math.min(30, value)) });
-  };
-
   return (
-    <div className="flex h-full w-full overflow-hidden bg-gray-900">
+    <div className="flex h-full w-full overflow-hidden">
       {/* 메인 3D 뷰 영역 */}
       <div className="flex-1 relative">
         {/* 헤더 */}
-        <div className="absolute top-0 left-0 right-0 bg-black bg-opacity-70 backdrop-blur-sm p-4 z-10">
+        <div className="absolute top-0 left-0 right-0 backdrop-blur-sm p-4 z-10">
 
           
           {/* 격자 설정 */}
@@ -147,7 +156,7 @@ export const BabylonDatacenterView = () => {
               </button>
             </div>
 
-            <div className="ml-auto text-gray-300">
+            <div className="ml-auto text-white">
               배치된 장비: {equipment.length}개
             </div>
           </div>
@@ -161,7 +170,7 @@ export const BabylonDatacenterView = () => {
         />
 
         {/* 컨트롤 */}
-        <div className="absolute bottom-4 left-4 bg-black bg-opacity-70 backdrop-blur-sm rounded-lg p-3 text-white text-xs max-w-xs">
+        <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-md rounded-lg p-3 text-white text-xs max-w-xs">
           <div className="font-semibold mb-2">⌨️ 컨트롤</div>
           <ul className="space-y-1">
             <li>• 좌클릭 드래그 (배경): 카메라 회전</li>
@@ -200,9 +209,11 @@ export const BabylonDatacenterView = () => {
       </div>
 
       {/* 오른쪽 팔레트 */}
-      <div className="w-80 h-full flex-shrink-0 border-l border-gray-700">
+      <div className="w-70 h-full flex-shrink-0">
         <EquipmentPalette3D onAddEquipment={handleAddEquipment} />
       </div>
     </div>
   );
-};
+}
+
+export default BabylonDatacenterView
