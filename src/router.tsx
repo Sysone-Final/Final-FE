@@ -23,7 +23,7 @@ const router = createBrowserRouter([
         element: <Babylonmap />,
       },
       {
-        path: "/rack",
+        path: "rack",
         element: <RackPage />,
       },
        {
