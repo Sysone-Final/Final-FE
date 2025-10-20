@@ -32,13 +32,20 @@ export interface FloorPlanState {
   displayOptions: DisplayOptions;
   assets: Asset[];
   selectedAssetIds: string[];
-  // [신규] 그리드 크기 상태 추가
   gridCols: number;
   gridRows: number;
+  // [신규] 캔버스 상태 추가
+  stage: {
+    scale: number;
+    x: number;
+    y: number;
+  };
   toggleMode: () => void;
   selectAsset: (id: string) => void;
   setDisplayOptions: (options: Partial<DisplayOptions>) => void;
   setDisplayMode: (mode: DisplayMode) => void;
-  // [신규] 그리드 크기 변경 액션 타입 추가 (미래를 위해)
   setGridSize: (cols: number, rows: number) => void;
+  // [신규] 새 액션 타입 추가
+  addAsset: (asset: Omit<Asset, "id">) => void;
+  setStage: (stage: FloorPlanState["stage"]) => void;
 }

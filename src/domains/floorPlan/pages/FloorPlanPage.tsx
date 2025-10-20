@@ -1,33 +1,63 @@
 import React from 'react';
+import { DndContext, type DragEndEvent } from '@dnd-kit/core';
+import { useFloorPlanStore } from '../store/floorPlanStore';
+import type { Asset } from '../types'; // Asset 타입을 가져옵니다.
 import TopToolbar from '../components/TopToolbar';
 import LeftSidebar from '../components/LeftSidebar';
 import Canvas from '../components/Canvas';
 import RightSidebar from '../components/RightSidebar';
 
-/**
- * FloorPlanPage: 2D 평면도 화면의 전체 레이아웃을 구성하는 메인 페이지 컴포넌트입니다.
- * Tailwind CSS의 Grid를 사용하여 상단 툴바와 3단 컨텐츠 영역(좌측, 중앙, 우측)으로 나눕니다.
- */
+// 캔버스 관련 상수
+const CELL_SIZE = 40;
+const HEADER_PADDING = 40;
+
 const FloorPlanPage: React.FC = () => {
+  const addAsset = useFloorPlanStore((state) => state.addAsset);
+  const stage = useFloorPlanStore((state) => state.stage);
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { over, active } = event;
+
+    if (!over || over.id !== 'canvas-drop-area' || !stage) {
+      return;
+    }
+
+    const template = active.data.current as Omit<Asset, 'id' | 'gridX' | 'gridY'>;
+    if (!template) return;
+
+    // 드롭된 최종 스크린 좌표
+    // active.rect.current.translated는 드래그가 끝난 시점의 최종 위치를 담고 있습니다.
+    const dropX = active.rect.current.translated?.left ?? 0;
+    const dropY = active.rect.current.translated?.top ?? 0;
+    
+    // 캔버스의 현재 위치(pan)와 배율(zoom)을 고려하여 실제 그리드 좌표 계산
+    const stageX = (dropX - stage.x) / stage.scale;
+    const stageY = (dropY - stage.y) / stage.scale;
+    
+    // 헤더 여백을 제외하고 셀 크기로 나누어 그리드 좌표를 구합니다.
+    const gridX = Math.floor((stageX - HEADER_PADDING) / CELL_SIZE);
+    const gridY = Math.floor((stageY - HEADER_PADDING) / CELL_SIZE);
+
+    const newAsset: Omit<Asset, 'id'> = {
+      ...template,
+      gridX,
+      gridY,
+    };
+    
+    addAsset(newAsset);
+  };
+
   return (
-    <div className="flex flex-col h-full w-full bg-gray-100 font-sans text-gray-800 overflow-hidden">
-    {/* <div className="""h-screen w-full flex overflow-hidden"> */}
-      {/* flex flex-col h-screen w-screen bg-gray-100 font-sans text-gray-800 */}
-      {/* 상단 툴바 영역 */}
-      <TopToolbar />
-
-      {/* 메인 컨텐츠 영역 (좌측 사이드바, 캔버스, 우측 사이드바) */}
-      <div className="grid grid-cols-[280px_1fr_320px] flex-grow gap-4 p-4 overflow-hidden">
-        {/* 좌측 사이드바 */}
-        <LeftSidebar />
-
-        {/* 중앙 캔버스 */}
-        <Canvas />
-
-        {/* 우측 사이드바 */}
-        <RightSidebar />
+    <DndContext onDragEnd={handleDragEnd}>
+      <div className="flex flex-col h-full w-full bg-gray-100 font-sans text-gray-800 overflow-hidden">
+        <TopToolbar />
+        <div className="grid grid-cols-[280px_1fr_320px] flex-grow gap-4 p-4 overflow-hidden">
+          <LeftSidebar />
+          <Canvas />
+          <RightSidebar />
+        </div>
       </div>
-    </div>
+    </DndContext>
   );
 };
 

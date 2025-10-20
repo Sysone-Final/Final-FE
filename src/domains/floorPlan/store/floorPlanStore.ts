@@ -17,9 +17,10 @@ export const useFloorPlanStore = create<FloorPlanState>((set) => ({
     showStatusIndicator: true,
     showTemperature: true,
   },
-  // [신규] 그리드 크기를 스토어에서 관리
   gridCols: 40,
   gridRows: 14,
+  // [확인] 캔버스의 위치/배율 상태를 여기서 초기화합니다.
+  stage: { scale: 1, x: 0, y: 0 },
 
   assets: [
     {
@@ -64,20 +65,22 @@ export const useFloorPlanStore = create<FloorPlanState>((set) => ({
 
   // --- 액션(Actions) ---
   toggleMode: () =>
-    set((state) => ({
-      mode: state.mode === "view" ? "edit" : "view",
-    })),
-
+    set((state) => ({ mode: state.mode === "view" ? "edit" : "view" })),
   selectAsset: (id: string) => set({ selectedAssetIds: [id] }),
-
   setDisplayOptions: (newOptions: Partial<DisplayOptions>) =>
     set((state) => ({
       displayOptions: { ...state.displayOptions, ...newOptions },
     })),
-
   setDisplayMode: (newMode: DisplayMode) => set({ displayMode: newMode }),
-
-  // [신규] 그리드 크기 변경 액션 구현
   setGridSize: (cols: number, rows: number) =>
     set({ gridCols: cols, gridRows: rows }),
+  // [확인] 캔버스 상태 변경 액션
+  setStage: (newStage) => set({ stage: newStage }),
+  addAsset: (newAsset) =>
+    set((state) => ({
+      assets: [
+        ...state.assets,
+        { ...newAsset, id: `asset_${crypto.randomUUID()}` },
+      ],
+    })),
 }));

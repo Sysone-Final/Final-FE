@@ -6,3 +6,29 @@
   @apply bg-gray-50 rounded-lg shadow-inner border border-gray-200 w-full h-full overflow-hidden;
 }
 
+/* AssetLibrary.tsx에서 사용할 스타일 */
+.sidebar-subtitle {
+  @apply text-lg font-semibold mb-4 text-gray-800;
+}
+
+.asset-category {
+  @apply mt-4;
+}
+
+.category-title {
+  @apply text-sm font-bold text-gray-500 mb-2 uppercase;
+}
+
+.draggable-asset-item {
+  @apply bg-gray-100 border border-gray-300 rounded-md p-3 flex items-center gap-3 transition-colors duration-200 hover:bg-gray-200 hover:border-gray-400 mb-2;
+  touch-action: none; /* 모바일 드래그를 위해 추가 */
+}
+
+.asset-icon {
+  @apply text-lg text-gray-600;
+}
+
+.asset-name {
+  @apply font-medium text-gray-800;
+}
+
