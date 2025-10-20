@@ -3,6 +3,7 @@ export interface RackDevice {
   name: string;
   position: number;
   height: number;
+  color?: string;
 }
 
 export interface DeviceCard {
