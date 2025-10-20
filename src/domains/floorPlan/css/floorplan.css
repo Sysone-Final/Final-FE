@@ -1,0 +1,8 @@
+/* FloorPlan 기능 관련 스타일을 중앙에서 관리합니다.
+  Tailwind CSS의 @apply 지시어를 사용하여 스타일을 정의합니다.
+*/
+
+.canvas-container {
+  @apply bg-gray-50 rounded-lg shadow-inner border border-gray-200 w-full h-full overflow-hidden;
+}
+
