@@ -6,12 +6,21 @@ import {
   RACK_COLORS,
   UNIT_COUNT,
 } from "../constants/rackConstants";
+import type { FloatingDevice } from "../types";
 
 interface RackProps {
   devices: RackDevice[];
+  floatingDevice: FloatingDevice | null;
+  onMouseMove: (mouseY: number) => void;
+  onRackClick: (position: number) => void;
 }
 
-function Rack({ devices }: RackProps) {
+function Rack({
+  devices,
+  floatingDevice,
+  onMouseMove,
+  onRackClick,
+}: RackProps) {
   const {
     height: rackHeight,
     width: rackWidth,
@@ -34,8 +43,48 @@ function Rack({ devices }: RackProps) {
   const coverWidth = rackWidth + frameThickness * 2;
   const textOffsetY = unitHeight / 2 - 5;
 
+  const calculationPosition = (mouseY: number): number => {
+    const relativeY = mouseY - baseY;
+    const unit = Math.floor(relativeY / unitHeight);
+    const position = UNIT_COUNT - unit;
+    return Math.max(1, Math.min(UNIT_COUNT, position));
+  };
+
+  const getFloatingDeviceInfo = () => {
+    if (!floatingDevice) return null;
+
+    const position = calculationPosition(floatingDevice.mouseY);
+    const y =
+      rackHeight -
+      (position - 1) * unitHeight -
+      floatingDevice.card.height * unitHeight +
+      baseY;
+    const height = unitHeight * floatingDevice.card.height;
+
+    return { position, y, height };
+  };
+
+  const floatingInfo = getFloatingDeviceInfo();
+
   return (
-    <Stage width={stageWidth} height={fullHeight}>
+    <Stage
+      width={stageWidth}
+      height={fullHeight}
+      onMouseMove={(e) => {
+        const stage = e.target.getStage();
+        if (stage) {
+          const pos = stage.getPointerPosition();
+          if (pos) {
+            onMouseMove(pos.y);
+          }
+        }
+      }}
+      onClick={() => {
+        if (floatingDevice && floatingInfo) {
+          onRackClick(floatingInfo.position);
+        }
+      }}
+    >
       <Layer>
         {/* 상단 덮개 */}
         <Rect
@@ -167,6 +216,23 @@ function Rack({ devices }: RackProps) {
             />
           );
         })}
+
+        {floatingDevice && floatingInfo && (
+          <Device
+            device={{
+              id: -1,
+              name: floatingDevice.card.label,
+              position: floatingInfo.position,
+              height: floatingDevice.card.height,
+            }}
+            y={floatingInfo.y}
+            height={floatingInfo.height}
+            rackWidth={rackWidth}
+            x={rackX}
+            opacity={0.6}
+            isFloating={true}
+          />
+        )}
       </Layer>
     </Stage>
   );

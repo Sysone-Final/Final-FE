@@ -11,4 +11,10 @@ export interface DeviceCard {
   size: string;
   img: string;
   borderColor: string;
+  height: number;
+}
+
+export interface FloatingDevice {
+  card: DeviceCard;
+  mouseY: number;
 }

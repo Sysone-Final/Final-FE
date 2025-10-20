@@ -7,23 +7,40 @@ interface RackSlotProps {
   x: number;
   height: number;
   rackWidth: number;
+  opacity?: number;
+  isFloating?: boolean;
 }
 
-function Device({ device, y, x, height, rackWidth }: RackSlotProps) {
+function Device({
+  device,
+  y,
+  x,
+  height,
+  rackWidth,
+  opacity = 1,
+  isFloating = false,
+}: RackSlotProps) {
   return (
-    <Group y={y}>
-      <Rect x={x} width={rackWidth} height={height} fill="#334155"></Rect>
+    <Group y={y} opacity={opacity}>
+      <Rect
+        x={x}
+        width={rackWidth}
+        height={height}
+        fill="#334155"
+        stroke={isFloating ? "#60a5fa" : "#3f4e63"}
+        strokeWidth={isFloating ? 2 : 1}
+      />
       {/* 슬롯 상단 테두리 */}
       <Line
         points={[x, 0, x + rackWidth, 0]}
-        stroke="#3f4e63"
+        stroke={isFloating ? "#60a5fa" : "#3f4e63"}
         strokeWidth={1}
       />
 
       {/* 슬롯 하단 테두리 */}
       <Line
         points={[x, height, x + rackWidth, height]}
-        stroke="#3f4e63"
+        stroke={isFloating ? "#60a5fa" : "#3f4e63"}
         strokeWidth={2}
       />
       <Text

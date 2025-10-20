@@ -1,66 +1,96 @@
-import serverImg from "./assets/server.svg";
-import storageImg from "./assets/storage.svg";
-import switchImg from "./assets/switch.svg";
-import routerImg from "./assets/router.svg";
 import Tools from "./components/Tools";
 import Rack from "./components/Rack";
+import type { RackDevice, FloatingDevice, DeviceCard } from "./types";
+import { useState } from "react";
 
 function RackPage() {
-  const devices = [
+  const [installedDevices, setInstalledDevices] = useState<RackDevice[]>([
     { id: 1, name: "Server_1", position: 1, height: 1 },
     { id: 2, name: "Firewall_1", position: 3, height: 1 },
     { id: 3, name: "UPS_5F", position: 4, height: 3 },
-  ];
-  const deviceCards = [
-    {
-      key: "server",
-      label: "서버",
-      size: "2U",
-      img: serverImg,
-      borderColor: "border-l-sky-400",
-    },
-    {
-      key: "storage",
-      label: "스토리지",
-      size: "2U",
-      img: storageImg,
-      borderColor: "border-l-emerald-400",
-    },
-    {
-      key: "switch",
-      label: "스위치",
-      size: "1U",
-      img: switchImg,
-      borderColor: "border-l-[#E80054]",
-    },
-    {
-      key: "router",
-      label: "라우터",
-      size: "1U",
-      img: routerImg,
-      borderColor: "border-l-amber-400",
-    },
-  ];
+  ]);
+
+  const [floatingDevice, setFloatingDevice] = useState<FloatingDevice | null>(
+    null
+  );
+
+  //카드 클릭 핸들러
+  const handleCardClick = (card: DeviceCard) => {
+    setFloatingDevice({
+      card,
+      mouseY: 0,
+    });
+  };
+
+  //마우스 이동
+  const handleMouseMove = (mouseY: number) => {
+    if (floatingDevice) {
+      setFloatingDevice({
+        ...floatingDevice,
+        mouseY,
+      });
+    }
+  };
+
+  //랙 클릭 핸들러
+  const handleRackClick = (position: number) => {
+    if (!floatingDevice) return;
+
+    //충돌 검사 (장비가 있을 경우)
+    const hasCollision = installedDevices.some((device) => {
+      const deviceBottom = device.position;
+      const deviceTop = device.position + device.height - 1;
+      const newBottom = position;
+      const newTop = position + floatingDevice.card.height - 1;
+      const collision = !(newTop < deviceBottom || newBottom > deviceTop);
+      return collision;
+    });
+
+    if (hasCollision) {
+      console.log("이미 장비가 있습니다.");
+      return;
+    }
+
+    //새 장비 추가
+    const newDevice: RackDevice = {
+      id: Date.now(),
+      name: floatingDevice.card.label,
+      position,
+      height: floatingDevice.card.height,
+    };
+    setInstalledDevices([...installedDevices, newDevice]);
+    setFloatingDevice(null);
+  };
 
   return (
-    <div className="flex flex-col h-screen rounded-tl-[25px] bg-[#20233e] text-white">
-      <div className="flex items-center px-8 py-6 rounded-tl-[25px] bg-[#111] text-[1.2rem] font-medium">
+    <div className="flex flex-col min-h-screen bg-[#20233e] text-white overflow-y-auto">
+      {/* 헤더 */}
+      <header className="sticky top-0 z-10 bg-[#111] px-8 py-3 text-[1.2rem] font-medium rounded-tl-[10px]">
         렉 상세보기
-      </div>
+      </header>
 
-      <div className="flex-1 grid grid-cols-3 gap-6 px-4 py-6 box-border overflow-hidden">
-        <div className="flex flex-col justify-center items-start rounded-[20px] bg-white/20 p-8 h-full box-border">
-          {/* 왼쪽 상세 */}
-        </div>
+      {/* 메인 콘텐츠 */}
+      <main className="grid grid-cols-3 gap-5 px-4 pt-4 pb-4 box-border">
+        {/* 왼쪽 상세 */}
+        <section className="flex flex-col justify-start items-start rounded-[16px] bg-white/20 p-6 box-border min-h-[80vh]">
+          {/* 왼쪽 패널 내용 */}
+        </section>
 
-        <div className="flex flex-col justify-center items-start rounded-[20px] bg-white/20 px-4 py-8 h-full box-border">
-          <Rack devices={devices} />
-        </div>
+        {/* 중앙 렉 뷰 */}
+        <section className="flex flex-col justify-center items-center rounded-[16px] bg-white/20 px-4 py-6 box-border min-h-[80vh]">
+          <Rack
+            devices={installedDevices}
+            floatingDevice={floatingDevice}
+            onMouseMove={handleMouseMove}
+            onRackClick={handleRackClick}
+          />
+        </section>
 
-        <div className="flex flex-col justify-center items-start rounded-[20px] bg-white/20 p-8 h-full box-border">
-          <Tools deviceCards={deviceCards} />
-        </div>
-      </div>
+        {/* 오른쪽 툴 영역 */}
+        <section className="flex flex-col justify-center items-center rounded-[16px] bg-white/20 p-6 box-border min-h-[80vh] ">
+          <Tools onCardClick={handleCardClick} />
+        </section>
+      </main>
     </div>
   );
 }
