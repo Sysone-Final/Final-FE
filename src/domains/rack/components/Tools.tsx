@@ -3,6 +3,7 @@ import storageImg from "../assets/storage.svg";
 import switchImg from "../assets/switch.svg";
 import routerImg from "../assets/router.svg";
 import type { DeviceCard } from "../types";
+import { colorMap } from "../utils/colorMap";
 
 interface ToolsProps {
   onCardClick: (card: DeviceCard) => void;
@@ -51,19 +52,28 @@ function Tools({ onCardClick }: ToolsProps) {
         <span className="text-[14px] mt-1">장비를 드래그하여 클릭하세요.</span>
       </div>
 
-      {deviceCards.map((card) => (
-        <div
-          key={card.key}
-          onClick={() => onCardClick(card)}
-          className={`flex flex-row items-center justify-start p-6 w-[300px] h-[120px] rounded-2xl bg-white text-black border border-white shadow-md m-6 border-l-[8px] ${card.borderColor} gap-3 cursor-pointer hover:scale-105 transition-transform active:scale-95`}
-        >
-          <img src={card.img} alt={`${card.label} icon`} className="w-7 h-7" />
-          <div className="flex flex-col items-start">
-            <span className="text-[15px] font-medium">{card.label}</span>
-            <span className="text-[14px]">{card.size}</span>
+      {deviceCards.map((card) => {
+        const borderLeftColor = colorMap[card.borderColor] || "#ffffff";
+
+        return (
+          <div
+            key={card.key}
+            onClick={() => onCardClick(card)}
+            className="flex flex-row items-center justify-start p-6 w-[300px] h-[120px] rounded-2xl bg-white text-black border border-white shadow-md m-6 gap-3 cursor-pointer hover:scale-105 transition-transform active:scale-95"
+            style={{ borderLeft: `8px solid ${borderLeftColor}` }}
+          >
+            <img
+              src={card.img}
+              alt={`${card.label} icon`}
+              className="w-7 h-7"
+            />
+            <div className="flex flex-col items-start">
+              <span className="text-[15px] font-medium">{card.label}</span>
+              <span className="text-[14px]">{card.size}</span>
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

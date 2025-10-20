@@ -20,27 +20,35 @@ function Device({
   opacity = 1,
   isFloating = false,
 }: RackSlotProps) {
+  const fillColor = isFloating
+    ? device.color || "#3b82f6"
+    : device.color || "#334155";
+
+  const strokeColor = isFloating
+    ? device.color || "#60a5fa"
+    : device.color || "#3f4e63";
+
   return (
     <Group y={y} opacity={opacity}>
       <Rect
         x={x}
         width={rackWidth}
         height={height}
-        fill="#334155"
-        stroke={isFloating ? "#60a5fa" : "#3f4e63"}
+        fill={fillColor}
+        stroke={strokeColor}
         strokeWidth={isFloating ? 2 : 1}
       />
       {/* 슬롯 상단 테두리 */}
       <Line
         points={[x, 0, x + rackWidth, 0]}
-        stroke={isFloating ? "#60a5fa" : "#3f4e63"}
+        stroke={strokeColor}
         strokeWidth={1}
       />
 
       {/* 슬롯 하단 테두리 */}
       <Line
         points={[x, height, x + rackWidth, height]}
-        stroke={isFloating ? "#60a5fa" : "#3f4e63"}
+        stroke={strokeColor}
         strokeWidth={2}
       />
       <Text
