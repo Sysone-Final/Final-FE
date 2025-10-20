@@ -1,13 +1,19 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
+import RackPage from "./domains/rack/RackPage";
 import DataCenter from "./domains/datacenter/DataCenter";
 import Babylonmap from "./domains/babylon/Babylonmap";
+import ServerRoomDashboard from './domains/serverRoom/pages/ServerRoomDashboard';
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
     children: [
+      {
+        path: "",
+        element: <DataCenter />,
+      },
       {
         path: "datacenterview",
         element: <DataCenter />,
@@ -17,11 +23,16 @@ const router = createBrowserRouter([
         element: <Babylonmap />,
       },
       {
-        path: "",
-        element: <DataCenter />,
+        path: "/rack",
+        element: <RackPage />,
       },
-    ],
-  },
+       {
+        path: "server-room-dashboard",
+        element: <ServerRoomDashboard />
+      }
+    ]
+  }
+
 ]);
 
 export default router;
