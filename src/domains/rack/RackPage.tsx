@@ -1,7 +1,7 @@
-import serverImg from "/src/assets/server.svg";
-import storageImg from "/src/assets/storage.svg";
-import switchImg from "/src/assets/switch.svg";
-import routerImg from "/src/assets/router.svg";
+import serverImg from "./assets/server.svg";
+import storageImg from "./assets/storage.svg";
+import switchImg from "./assets/switch.svg";
+import routerImg from "./assets/router.svg";
 import Tools from "./components/Tools";
 import Rack from "./components/Rack";
 
