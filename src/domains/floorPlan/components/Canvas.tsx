@@ -5,15 +5,16 @@ import { useFloorPlanStore } from '../store/floorPlanStore';
 import AssetRenderer from './AssetRenderer';
 import CanvasGrid from './CanvasGrid';
 
-const GRID_CONFIG = {
-  COLS: 40,
-  ROWS: 14,
+// 셀 크기나 헤더 여백 등, 뷰에만 관련된 설정은 상수로 남겨둡니다.
+const CANVAS_VIEW_CONFIG = {
   CELL_SIZE: 40,
   HEADER_PADDING: 40,
 };
 
 const Canvas: React.FC = () => {
-  const { assets, selectedAssetIds, selectAsset, displayMode, displayOptions } = useFloorPlanStore();
+  // [수정] 스토어에서 gridCols와 gridRows를 가져옵니다.
+  const { assets, selectedAssetIds, selectAsset, displayMode, displayOptions, gridCols, gridRows } = useFloorPlanStore();
+  
   const containerRef = useRef<HTMLDivElement>(null);
   const [stageSize, setStageSize] = useState({ width: 0, height: 0 });
   const [stage, setStage] = useState({
@@ -67,7 +68,7 @@ const Canvas: React.FC = () => {
           width={stageSize.width}
           height={stageSize.height}
           onWheel={handleWheel}
-          draggable // 드래그(이동) 기능 활성화
+          draggable
           scaleX={stage.scale}
           scaleY={stage.scale}
           x={stage.x}
@@ -75,16 +76,17 @@ const Canvas: React.FC = () => {
         >
           <Layer>
             <CanvasGrid
-              gridSize={GRID_CONFIG.CELL_SIZE}
-              cols={GRID_CONFIG.COLS}
-              rows={GRID_CONFIG.ROWS}
+              gridSize={CANVAS_VIEW_CONFIG.CELL_SIZE}
+              // [수정] 스토어에서 가져온 값으로 그리드를 그립니다.
+              cols={gridCols}
+              rows={gridRows}
             />
             {assets.map((asset) => (
               <AssetRenderer
                 key={asset.id}
                 asset={asset}
-                gridSize={GRID_CONFIG.CELL_SIZE}
-                headerPadding={GRID_CONFIG.HEADER_PADDING}
+                gridSize={CANVAS_VIEW_CONFIG.CELL_SIZE}
+                headerPadding={CANVAS_VIEW_CONFIG.HEADER_PADDING}
                 isSelected={selectedAssetIds.includes(asset.id)}
                 onSelect={() => selectAsset(asset.id)}
                 displayMode={displayMode}

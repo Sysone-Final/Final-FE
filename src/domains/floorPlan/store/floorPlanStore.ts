@@ -17,8 +17,10 @@ export const useFloorPlanStore = create<FloorPlanState>((set) => ({
     showStatusIndicator: true,
     showTemperature: true,
   },
+  // [신규] 그리드 크기를 스토어에서 관리
+  gridCols: 40,
+  gridRows: 14,
 
-  // [수정] 랙의 크기를 더 작게 조정합니다 (width: 2 -> 1, height: 4 -> 2)
   assets: [
     {
       id: "A-01",
@@ -52,8 +54,8 @@ export const useFloorPlanStore = create<FloorPlanState>((set) => ({
       data: { temperature: 25 },
       gridX: 3,
       gridY: 8,
-      widthInCells: 1,
-      heightInCells: 1,
+      widthInCells: 2,
+      heightInCells: 2,
       customColor: "#f3e9a9",
     },
   ] as Asset[],
@@ -74,4 +76,8 @@ export const useFloorPlanStore = create<FloorPlanState>((set) => ({
     })),
 
   setDisplayMode: (newMode: DisplayMode) => set({ displayMode: newMode }),
+
+  // [신규] 그리드 크기 변경 액션 구현
+  setGridSize: (cols: number, rows: number) =>
+    set({ gridCols: cols, gridRows: rows }),
 }));
