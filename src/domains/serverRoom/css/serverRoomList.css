@@ -1,0 +1,5 @@
+@import "tailwindcss";
+
+.server-room-list {
+  @apply grid grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-6 py-6;
+}

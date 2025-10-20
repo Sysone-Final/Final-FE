@@ -134,7 +134,7 @@ function DatacenterView() {
         {/* 왼쪽: 격자 맵 영역 (flex-1로 남은 공간 모두 차지) */}
         <div ref={containerRef} className="flex-1 bg-gradient-to-br from-gray-800 to-gray-900 relative overflow-hidden">
           {/* 맵 헤더 */}
-          <div className="absolute top-0 left-0 right-0 z-10 bg-black bg-opacity-50 backdrop-blur-sm">
+          <div className="absolute top-0 left-0 right-0 z-10 bg-black/50 backdrop-blur-sm">
             <div className="p-4">
               <p className="text-gray-300 text-sm mt-1">
                 배치된 장비: {equipment.length}개

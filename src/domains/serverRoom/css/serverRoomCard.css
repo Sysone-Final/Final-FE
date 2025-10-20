@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+.server-room-card {
+  @apply bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-6 text-[#E0E0E0] flex flex-col justify-between transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(0,0,0,0.2)];
+}
+
+.card-header {
+  @apply flex justify-between items-start mb-4;
+}
+
+.card-title {
+  @apply m-0 text-xl text-white;
+}
+
+.card-actions {
+  @apply flex gap-2;
+}
+
+.icon-button {
+  @apply bg-transparent border-none text-[#A0A0A0] cursor-pointer text-base transition-colors hover:text-white;
+}
+
+.card-body {
+  @apply flex-grow;
+}
+
+.card-info {
+  @apply my-2 flex items-center gap-2;
+}
+
+.info-icon {
+  @apply text-[#888];
+}
+
+.status-info {
+  @apply font-medium;
+}
+
+.status-dot {
+  @apply w-2.5 h-2.5 rounded-full inline-block mr-2;
+}
+
+.status-dot.normal {
+  @apply bg-green-500;
+}
+
+.status-dot.warning {
+  @apply bg-yellow-500;
+}
+
+.status-dot.critical {
+  @apply bg-red-500;
+}
+
+.status-dot.maintenance {
+  @apply bg-cyan-500;
+}
+
+.card-footer {
+  @apply mt-6;
+}
+
+.manage-layout-link {
+  @apply text-blue-500 no-underline font-semibold transition-colors hover:text-blue-400;
+}
