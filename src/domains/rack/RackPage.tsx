@@ -2,6 +2,7 @@ import Tools from "./components/Tools";
 import Rack from "./components/Rack";
 import type { RackDevice, FloatingDevice, DeviceCard } from "./types";
 import { useState } from "react";
+import { colorMap } from "./utils/colorMap";
 
 function RackPage() {
   const [installedDevices, setInstalledDevices] = useState<RackDevice[]>([
@@ -36,6 +37,8 @@ function RackPage() {
   const handleRackClick = (position: number) => {
     if (!floatingDevice) return;
 
+    const color = colorMap[floatingDevice.card.borderColor] || "#334155";
+
     //충돌 검사 (장비가 있을 경우)
     const hasCollision = installedDevices.some((device) => {
       const deviceBottom = device.position;
@@ -57,7 +60,9 @@ function RackPage() {
       name: floatingDevice.card.label,
       position,
       height: floatingDevice.card.height,
+      color,
     };
+    console.log("생성된 newDevice:", newDevice);
     setInstalledDevices([...installedDevices, newDevice]);
     setFloatingDevice(null);
   };
