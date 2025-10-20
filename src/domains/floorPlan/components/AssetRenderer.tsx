@@ -1,5 +1,8 @@
 import React from 'react';
 import { Group, Rect, Text, Circle } from 'react-konva';
+import type { KonvaEventObject } from 'konva/lib/Node';
+// [수정] 빌드 도구가 모듈을 명확하게 찾을 수 있도록 파일 확장자(.ts)를 추가합니다.
+import { useFloorPlanStore } from '../store/floorPlanStore.ts';
 import type { Asset, DisplayMode, DisplayOptions } from '../types';
 
 interface AssetRendererProps {
@@ -12,12 +15,11 @@ interface AssetRendererProps {
   displayOptions: DisplayOptions;
 }
 
-// 상태에 따른 색상 정의
 const STATUS_COLORS = {
-  normal: '#27ae60', // Green
-  warning: '#f39c12', // Yellow
-  danger: '#c0392b',  // Red
-  selected: '#2980b9', // Blue
+  normal: '#27ae60',
+  warning: '#f39c12',
+  danger: '#c0392b',
+  selected: '#2980b9',
 };
 
 const AssetRenderer: React.FC<AssetRendererProps> = ({
@@ -29,23 +31,36 @@ const AssetRenderer: React.FC<AssetRendererProps> = ({
   displayMode,
   displayOptions,
 }) => {
-  // 그리드 좌표를 실제 픽셀 좌표로 변환
+  const { mode, updateAsset } = useFloorPlanStore();
+
   const pixelX = headerPadding + asset.gridX * gridSize;
   const pixelY = headerPadding + asset.gridY * gridSize;
   const pixelWidth = asset.widthInCells * gridSize;
   const pixelHeight = asset.heightInCells * gridSize;
 
-  // 표시 모드에 따라 랙의 배경색 결정
   const rackFillColor = displayMode === 'status' && asset.status
       ? STATUS_COLORS[asset.status]
       : asset.customColor || '#ecf0f1';
 
-  // 테두리 색상 결정
   const strokeColor = isSelected ? STATUS_COLORS.selected : (asset.status ? STATUS_COLORS[asset.status] : '#bdc3c7');
 
+  const handleDragEnd = (e: KonvaEventObject<DragEvent>) => {
+    const endX = e.target.x();
+    const endY = e.target.y();
+    const newGridX = Math.round((endX - headerPadding) / gridSize);
+    const newGridY = Math.round((endY - headerPadding) / gridSize);
+    updateAsset(asset.id, { gridX: newGridX, gridY: newGridY });
+  };
+
   return (
-    <Group x={pixelX} y={pixelY} onClick={onSelect} onTap={onSelect}>
-      {/* 랙 몸체 */}
+    <Group
+      x={pixelX}
+      y={pixelY}
+      onClick={onSelect}
+      onTap={onSelect}
+      draggable={mode === 'edit' && !asset.isLocked}
+      onDragEnd={handleDragEnd}
+    >
       <Rect
         width={pixelWidth}
         height={pixelHeight}
@@ -53,41 +68,28 @@ const AssetRenderer: React.FC<AssetRendererProps> = ({
         stroke={strokeColor}
         strokeWidth={isSelected ? 3 : 1.5}
         cornerRadius={4}
-        opacity={0.7}
+        opacity={0.8}
       />
       
-      {/* 랙 이름 */}
       {displayOptions.showName && (
-        <Text
-          text={asset.name}
-          x={5}
-          y={5}
-          fontSize={12}
-          fill="#34495e"
-          fontStyle="bold"
-        />
+        <Text text={asset.name} x={5} y={5} fontSize={12} fill="#34495e" fontStyle="bold" />
       )}
 
-      {/* 상태 표시등 */}
       {displayOptions.showStatusIndicator && asset.status && (
-         <Circle
-            x={pixelWidth - 10}
-            y={10}
-            radius={5}
-            fill={STATUS_COLORS[asset.status]}
-            stroke="#ffffff"
-            strokeWidth={1}
-         />
+         <Circle x={pixelWidth - 10} y={10} radius={5} fill={STATUS_COLORS[asset.status]} stroke="#ffffff" strokeWidth={1} />
       )}
       
-      {/* 온도 정보 */}
       {displayOptions.showTemperature && asset.data?.temperature !== undefined && (
+        <Text text={`T: ${asset.data.temperature}°C`} x={5} y={20} fontSize={10} fill="#34495e" />
+      )}
+
+      {asset.isLocked && (
         <Text
-          text={`T: ${asset.data.temperature}°C`}
-          x={5}
-          y={20}
-          fontSize={10}
-          fill="#34495e"
+          text="🔒"
+          x={pixelWidth - 18}
+          y={pixelHeight - 18}
+          fontSize={14}
+          opacity={0.7}
         />
       )}
     </Group>

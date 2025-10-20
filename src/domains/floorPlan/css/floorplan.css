@@ -32,3 +32,49 @@
   @apply font-medium text-gray-800;
 }
 
+/* PropertiesEditor.tsx에서 사용할 스타일 */
+.properties-editor-container {
+  @apply flex flex-col h-full;
+}
+
+.editor-header {
+  @apply pb-2 mb-4 border-b border-gray-200;
+}
+
+.editor-title {
+  @apply text-base font-bold text-gray-800;
+}
+
+.editor-section {
+  @apply flex flex-col gap-4;
+}
+
+.input-group {
+  @apply flex flex-col;
+}
+
+.input-label {
+  @apply text-xs font-semibold text-gray-600 mb-1;
+}
+
+.input-field {
+  @apply w-full px-3 py-2 text-sm bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow;
+}
+
+
+
+/* PropertiesEditor.tsx의 잠금 버튼 스타일 */
+.lock-toggle-button {
+  @apply text-xs font-semibold py-1 px-3 rounded-full transition-colors duration-200;
+  @apply bg-gray-200 text-gray-700 hover:bg-gray-300;
+}
+
+/* PropertiesEditor.tsx의 헤더를 flexbox로 변경하여 버튼을 오른쪽에 배치 */
+.editor-header {
+  @apply pb-2 mb-4 border-b border-gray-200 flex justify-between items-center;
+}
+
+/* 비활성화된 입력 필드 스타일 */
+.input-field:disabled {
+  @apply bg-gray-100 text-gray-500 cursor-not-allowed;
+}

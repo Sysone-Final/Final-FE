@@ -34,7 +34,6 @@ export interface FloorPlanState {
   selectedAssetIds: string[];
   gridCols: number;
   gridRows: number;
-  // [신규] 캔버스 상태 추가
   stage: {
     scale: number;
     x: number;
@@ -45,7 +44,8 @@ export interface FloorPlanState {
   setDisplayOptions: (options: Partial<DisplayOptions>) => void;
   setDisplayMode: (mode: DisplayMode) => void;
   setGridSize: (cols: number, rows: number) => void;
-  // [신규] 새 액션 타입 추가
   addAsset: (asset: Omit<Asset, "id">) => void;
   setStage: (stage: FloorPlanState["stage"]) => void;
+  // [신규] 자산 업데이트 액션 타입 추가
+  updateAsset: (id: string, newProps: Partial<Omit<Asset, "id">>) => void;
 }

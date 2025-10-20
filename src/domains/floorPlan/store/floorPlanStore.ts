@@ -9,7 +9,7 @@ import type {
 export type Mode = "view" | "edit";
 
 export const useFloorPlanStore = create<FloorPlanState>((set) => ({
-  // --- 초기 상태 ---
+  // --- 기존 상태는 그대로 유지 ---
   mode: "view",
   displayMode: "status",
   displayOptions: {
@@ -19,9 +19,7 @@ export const useFloorPlanStore = create<FloorPlanState>((set) => ({
   },
   gridCols: 40,
   gridRows: 14,
-  // [확인] 캔버스의 위치/배율 상태를 여기서 초기화합니다.
   stage: { scale: 1, x: 0, y: 0 },
-
   assets: [
     {
       id: "A-01",
@@ -60,10 +58,9 @@ export const useFloorPlanStore = create<FloorPlanState>((set) => ({
       customColor: "#f3e9a9",
     },
   ] as Asset[],
-
   selectedAssetIds: [],
 
-  // --- 액션(Actions) ---
+  // --- 기존 액션은 그대로 유지 ---
   toggleMode: () =>
     set((state) => ({ mode: state.mode === "view" ? "edit" : "view" })),
   selectAsset: (id: string) => set({ selectedAssetIds: [id] }),
@@ -74,7 +71,6 @@ export const useFloorPlanStore = create<FloorPlanState>((set) => ({
   setDisplayMode: (newMode: DisplayMode) => set({ displayMode: newMode }),
   setGridSize: (cols: number, rows: number) =>
     set({ gridCols: cols, gridRows: rows }),
-  // [확인] 캔버스 상태 변경 액션
   setStage: (newStage) => set({ stage: newStage }),
   addAsset: (newAsset) =>
     set((state) => ({
@@ -82,5 +78,13 @@ export const useFloorPlanStore = create<FloorPlanState>((set) => ({
         ...state.assets,
         { ...newAsset, id: `asset_${crypto.randomUUID()}` },
       ],
+    })),
+
+  // [신규] 자산 업데이트 액션 구현
+  updateAsset: (id, newProps) =>
+    set((state) => ({
+      assets: state.assets.map((asset) =>
+        asset.id === id ? { ...asset, ...newProps } : asset,
+      ),
     })),
 }));
