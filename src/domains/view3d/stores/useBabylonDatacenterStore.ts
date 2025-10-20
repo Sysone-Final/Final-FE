@@ -25,6 +25,7 @@ interface BabylonDatacenterStore {
   updateEquipmentRotation: (id: string, rotation: number) => void;
   removeEquipment: (id: string) => void;
   setSelectedEquipment: (id: string | null) => void;
+  loadEquipment: (equipmentList: Equipment3D[]) => void; // 장비 목록 일괄 로드
 
   // 유틸리티
   isPositionOccupied: (
@@ -117,6 +118,11 @@ export const useBabylonDatacenterStore = create<BabylonDatacenterStore>(
     // 선택된 장비 설정
     setSelectedEquipment: (id) => {
       set({ selectedEquipmentId: id });
+    },
+
+    // 장비 목록 일괄 로드 (뷰어 모드에서 사용)
+    loadEquipment: (equipmentList) => {
+      set({ equipment: equipmentList, selectedEquipmentId: null });
     },
 
     // 위치가 점유되었는지 확인

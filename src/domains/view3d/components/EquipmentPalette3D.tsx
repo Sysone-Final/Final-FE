@@ -40,7 +40,6 @@ function EquipmentPalette3D({ onAddEquipment }: EquipmentPalette3DProps) {
 
       <div className="mt-8 p-4 bg-gray-700/50 rounded-lg border border-gray-600">
         <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-          <span>ℹ️</span>
           사용법
         </h3>
         <ul className="text-gray-300 text-sm space-y-2">

@@ -103,7 +103,7 @@ export const EQUIPMENT_POSITION_OFFSET: Record<
   { x: number; z: number }
 > = {
   server: { x: 0, z: 0 }, // 서버 랙 - 중앙
-  door: { x: -0.4, z: 0 }, // 문 - 왼쪽으로 이동
+  door: { x: -0.4, z: 0.5 }, // 문 - 왼쪽으로 이동
   climatic_chamber: { x: 0, z: 0 }, // 항온항습기 - 중앙
   fire_extinguisher: { x: 0, z: 0 }, // 소화기 - 중앙
   thermometer: { x: 0, z: 0 }, // 온도계 - 중앙

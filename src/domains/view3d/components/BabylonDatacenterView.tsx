@@ -5,9 +5,15 @@ import Equipment3DModel from './Equipment3DModel';
 import EquipmentPalette3D from './EquipmentPalette3D';
 import { useBabylonDatacenterStore } from '../stores/useBabylonDatacenterStore';
 import { CAMERA_CONFIG, EQUIPMENT_PALETTE } from '../constants/config';
+import { getServerRoomEquipment } from '../data/mockServerRoomEquipment';
 import type { EquipmentType } from '../types';
 
-function BabylonDatacenterView() {
+interface BabylonDatacenterViewProps {
+  mode?: 'edit' | 'view'; // 편집 모드 or 뷰어 모드
+  serverRoomId?: string; // 뷰어 모드일 때 서버실 ID
+}
+
+function BabylonDatacenterView({ mode = 'edit', serverRoomId }: BabylonDatacenterViewProps = {}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<Engine | null>(null);
   const sceneRef = useRef<Scene | null>(null);
@@ -20,9 +26,20 @@ function BabylonDatacenterView() {
     selectedEquipmentId,
     addEquipment,
     setSelectedEquipment,
-    setGridConfig,
+    // setGridConfig,
     updateEquipmentPosition,
+    loadEquipment, // 장비 목록 로드 함수 추가
   } = useBabylonDatacenterStore();
+
+  // 뷰어 모드일 때 서버실 데이터 로드
+  useEffect(() => {
+    if (mode === 'view' && serverRoomId) {
+      // 목 데이터에서 서버실 장비 로드
+      const equipmentData = getServerRoomEquipment(serverRoomId);
+      loadEquipment(equipmentData);
+      console.log(`✅ Loaded ${equipmentData.length} equipment for server room: ${serverRoomId}`);
+    }
+  }, [mode, serverRoomId, loadEquipment]);
 
   // 장비 추가 핸들러
   const handleAddEquipment = (type: EquipmentType) => {
@@ -33,9 +50,9 @@ function BabylonDatacenterView() {
   };
 
   // 격자 설정 변경
-  const handleGridChange = (key: 'rows' | 'columns', value: number) => {
-    setGridConfig({ [key]: Math.max(5, Math.min(30, value)) });
-  };
+  // const handleGridChange = (key: 'rows' | 'columns', value: number) => {
+  //   setGridConfig({ [key]: Math.max(5, Math.min(30, value)) });
+  // };
 
   // Babylon.js 씬 초기화
   useEffect(() => {
@@ -110,17 +127,23 @@ function BabylonDatacenterView() {
       scene.dispose();
       engine.dispose();
     };
-  }, [gridConfig.columns, gridConfig.rows, gridConfig.cellSize]);
+  }, [gridConfig.columns, gridConfig.rows, gridConfig.cellSize, setSelectedEquipment]);
+
+  // 뷰어 모드일 때 서버실 데이터 로드 (추후 API 연동)
+  useEffect(() => {
+    if (mode === 'view' && serverRoomId) {
+      // TODO: API에서 서버실 데이터 로드
+      console.log('Loading server room:', serverRoomId);
+      // 예시: fetch(`/api/server-rooms/${serverRoomId}`).then(...)
+    }
+  }, [mode, serverRoomId]);
 
   return (
     <div className="flex h-full w-full overflow-hidden">
       {/* 메인 3D 뷰 영역 */}
       <div className="flex-1 relative">
         {/* 헤더 */}
-        <div className="absolute top-0 left-0 right-0 backdrop-blur-sm p-4 z-10">
-
-          
-          {/* 격자 설정 */}
+        {/* <div className="absolute top-0 left-0 right-0 backdrop-blur-sm p-4 z-10">
           <div className="flex gap-4 items-center text-white text-sm">
             <div className="flex items-center gap-2">
               <label>행:</label>
@@ -160,7 +183,7 @@ function BabylonDatacenterView() {
               배치된 장비: {equipment.length}개
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Canvas */}
         <canvas
@@ -169,16 +192,23 @@ function BabylonDatacenterView() {
           style={{ touchAction: 'none' }}
         />
 
-        {/* 컨트롤 */}
+        {/* 컨트롤 가이드 */}
         <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-md rounded-lg p-3 text-white text-xs max-w-xs">
           <div className="font-semibold mb-2">⌨️ 컨트롤</div>
           <ul className="space-y-1">
             <li>• 좌클릭 드래그 (배경): 카메라 회전</li>
-            <li>• 좌클릭 드래그 (장비): 장비 이동</li>
+            {mode === 'edit' && <li>• 좌클릭 드래그 (장비): 장비 이동</li>}
             <li>• 우클릭 드래그: 카메라 이동</li>
             <li>• 마우스 휠: 줌 인/아웃</li>
           </ul>
         </div>
+
+        {/* 뷰어 모드 */}
+        {/* {mode === 'view' && (
+          <div className="absolute top-4 left-4 bg-blue-500/30 backdrop-blur-md rounded-lg px-4 py-2 text-white text-sm">
+            <span className="font-semibold">뷰어 모드</span>
+          </div>
+        )} */}
 
         {/* 3D 객체들 렌더링 */}
         {isSceneReady && sceneRef.current && (
@@ -201,6 +231,7 @@ function BabylonDatacenterView() {
                   isSelected={eq.id === selectedEquipmentId}
                   onSelect={setSelectedEquipment}
                   onPositionChange={updateEquipmentPosition}
+                  isDraggable={mode === 'edit'} // 편집 모드에서만 드래그 가능
                 />
               );
             })}
@@ -208,10 +239,12 @@ function BabylonDatacenterView() {
         )}
       </div>
 
-      {/* 오른쪽 팔레트 */}
-      <div className="w-70 h-full flex-shrink-0">
-        <EquipmentPalette3D onAddEquipment={handleAddEquipment} />
-      </div>
+      {/* 편집 모드에서만 표시 */}
+      {mode === 'edit' && (
+        <div className="w-70 h-full flex-shrink-0">
+          <EquipmentPalette3D onAddEquipment={handleAddEquipment} />
+        </div>
+      )}
     </div>
   );
 }

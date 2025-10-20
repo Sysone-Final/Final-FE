@@ -1,4 +1,4 @@
-import { Color3 } from '@babylonjs/core';
+import { Color3 } from "@babylonjs/core";
 
 /**
  * RGB 문자열을 Babylon.js Color3로 변환
@@ -8,7 +8,7 @@ import { Color3 } from '@babylonjs/core';
 export const rgbStringToColor3 = (rgbString: string): Color3 => {
   // "rgb(37 99 235)" -> [37, 99, 235]
   const match = rgbString.match(/rgb\((\d+)\s+(\d+)\s+(\d+)\)/);
-  
+
   if (!match) {
     console.warn(`Invalid RGB string: ${rgbString}, using default color`);
     return new Color3(1, 1, 1);

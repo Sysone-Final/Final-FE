@@ -12,6 +12,7 @@ interface Equipment3DModelProps {
   isSelected: boolean;
   onSelect: (id: string) => void;
   onPositionChange: (id: string, gridX: number, gridY: number) => void;
+  isDraggable?: boolean; // 드래그 가능 여부 (기본값: true)
 }
 
 function Equipment3DModel({
@@ -22,6 +23,7 @@ function Equipment3DModel({
   isSelected,
   onSelect,
   onPositionChange,
+  isDraggable = true, // 기본값: 드래그 가능
 }: Equipment3DModelProps) {
   const meshRef = useRef<AbstractMesh | null>(null);
   const dragBehaviorRef = useRef<PointerDragBehavior | null>(null);
@@ -30,7 +32,7 @@ function Equipment3DModel({
   const originalEmissiveColors = useRef<Map<string, Color3>>(new Map());
 
   // 격자 좌표를 월드 좌표로 변환
-  const gridToWorld = useCallback((gridX: number, gridY: number, _gridZ: number = 0) => {
+  const gridToWorld = useCallback((gridX: number, gridY: number) => {
     const yOffset = EQUIPMENT_Y_OFFSET[equipment.type] || 0; // 장비별 Y축 오프셋
     const posOffset = EQUIPMENT_POSITION_OFFSET[equipment.type] || { x: 0, z: 0 }; // 장비별 위치 오프셋
     
@@ -84,7 +86,7 @@ function Equipment3DModel({
         rootMesh.scaling = new Vector3(scaleFactor, scaleFactor, scaleFactor);
 
         // 위치 설정
-        const worldPos = gridToWorld(equipment.gridX, equipment.gridY, equipment.gridZ);
+        const worldPos = gridToWorld(equipment.gridX, equipment.gridY);
         rootMesh.position = worldPos;
 
         // 회전 설정 (store의 rotation 값 사용, 이미 기본 회전 포함)
@@ -97,7 +99,7 @@ function Equipment3DModel({
           
           // 🔥 각 메시의 원래 emissive 색상 저장
           if (mesh.material && 'emissiveColor' in mesh.material) {
-            const material = mesh.material as any;
+            const material = mesh.material as { emissiveColor?: Color3 };
             if (material.emissiveColor) {
               // 원래 색상 복사해서 저장
               originalEmissiveColors.current.set(
@@ -112,41 +114,44 @@ function Equipment3DModel({
         meshRef.current = rootMesh;
         setIsLoaded(true);
 
-        // PointerDragBehavior 추가 (XZ 평면에서만 드래그)
-        const dragBehavior = new PointerDragBehavior({ dragPlaneNormal: new Vector3(0, 1, 0) });
-        dragBehavior.moveAttached = false; // 자동 이동 비활성화 (수동으로 제어)
-        dragBehaviorRef.current = dragBehavior;
-        
-        // 드래그 시작 시
-        dragBehavior.onDragStartObservable.add(() => {
-          // 드래그 시작 시 장비 선택
-          onSelect(equipment.id);
-        });
+        // PointerDragBehavior 추가 (편집 모드에서만)
+        if (isDraggable) {
+          // PointerDragBehavior 추가 (XZ 평면에서만 드래그)
+          const dragBehavior = new PointerDragBehavior({ dragPlaneNormal: new Vector3(0, 1, 0) });
+          dragBehavior.moveAttached = false; // 자동 이동 비활성화 (수동으로 제어)
+          dragBehaviorRef.current = dragBehavior;
+          
+          // 드래그 시작 시
+          dragBehavior.onDragStartObservable.add(() => {
+            // 드래그 시작 시 장비 선택
+            onSelect(equipment.id);
+          });
 
-        // 드래그 중
-        dragBehavior.onDragObservable.add((event) => {
-          if (rootMesh) {
-            // 실제 메시를 드래그 위치로 이동
-            rootMesh.position.copyFrom(event.dragPlanePoint);
-          }
-        });
+          // 드래그 중
+          dragBehavior.onDragObservable.add((event) => {
+            if (rootMesh) {
+              // 실제 메시를 드래그 위치로 이동
+              rootMesh.position.copyFrom(event.dragPlanePoint);
+            }
+          });
 
-        // 드래그 종료 시
-        dragBehavior.onDragEndObservable.add(() => {
-          if (rootMesh) {
-            // 현재 월드 좌표를 격자 좌표로 변환 (스냅)
-            const { gridX, gridY } = worldToGrid(rootMesh.position.x, rootMesh.position.z);
-            
-            // 격자 좌표로 위치 업데이트
-            onPositionChange(equipment.id, gridX, gridY);
+          // 드래그 종료 시
+          dragBehavior.onDragEndObservable.add(() => {
+            if (rootMesh) {
+              // 현재 월드 좌표를 격자 좌표로 변환 (스냅)
+              const { gridX, gridY } = worldToGrid(rootMesh.position.x, rootMesh.position.z);
+              
+              // 격자 좌표로 위치 업데이트
+              onPositionChange(equipment.id, gridX, gridY);
 
-            // 스냅된 위치로 메시 위치 업데이트
-            const snappedPos = gridToWorld(gridX, gridY, equipment.gridZ);
-            rootMesh.position = snappedPos;
-          }
-        });
+              // 스냅된 위치로 메시 위치 업데이트
+              const snappedPos = gridToWorld(gridX, gridY);
+              rootMesh.position = snappedPos;
+            }
+          });
 
-        rootMesh.addBehavior(dragBehavior);
+          rootMesh.addBehavior(dragBehavior);
+        }
       },
       undefined,
       (_scene, message, exception) => {
@@ -166,15 +171,15 @@ function Equipment3DModel({
         meshRef.current = null;
       }
     };
-  }, [scene, equipment.id, modelPath, cellSize, onSelect, onPositionChange, gridToWorld, worldToGrid]);
+  }, [scene, equipment.id, equipment.type, equipment.gridX, equipment.gridY, equipment.gridZ, equipment.rotation, modelPath, cellSize, onSelect, onPositionChange, gridToWorld, worldToGrid, isDraggable]);
 
   // 위치 업데이트
   useEffect(() => {
     if (!meshRef.current || !isLoaded) return;
 
-    const worldPos = gridToWorld(equipment.gridX, equipment.gridY, equipment.gridZ);
+    const worldPos = gridToWorld(equipment.gridX, equipment.gridY);
     meshRef.current.position = worldPos;
-  }, [equipment.gridX, equipment.gridY, equipment.gridZ, isLoaded, gridToWorld]);
+  }, [equipment.gridX, equipment.gridY, isLoaded, gridToWorld]);
 
   // 회전 업데이트
   useEffect(() => {
@@ -188,7 +193,7 @@ function Equipment3DModel({
 
     const updateHighlight = (mesh: AbstractMesh) => {
       if (mesh.material && 'emissiveColor' in mesh.material) {
-        const material = mesh.material as any;
+        const material = mesh.material as { emissiveColor: Color3 };
         
         // 🔥 원래 emissive 색상 가져오기
         const originalColor = originalEmissiveColors.current.get(mesh.uniqueId.toString());

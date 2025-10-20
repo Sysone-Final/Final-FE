@@ -102,7 +102,7 @@ function EquipmentPalette({ onAddEquipment }: EquipmentPaletteProps) {
 
       {/* 사용법 안내 */}
       <div className="p-4 m-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <h3 className="font-semibold text-blue-900 text-sm mb-2">💡 사용법</h3>
+        <h3 className="font-semibold text-blue-900 text-sm mb-2">사용법</h3>
         <ul className="text-xs text-blue-800 space-y-1">
           <li>• 장비를 클릭하여 맵 중앙에 배치</li>
           <li>• 드래그하여 원하는 위치로 이동</li>

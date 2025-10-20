@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import type { ServerRoom } from '../types';
 import ServerRoomCard from './ServerRoomCard';
