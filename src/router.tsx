@@ -23,6 +23,7 @@ const router = createBrowserRouter([
       },{
         path: "server-room-dashboard",
         element: <ServerRoomDashboard />
+<<<<<<< HEAD
       },
       {
     path: "/floor-plan", // 이 주소로 접속하면
@@ -30,6 +31,14 @@ const router = createBrowserRouter([
   },
     ],
   },
+=======
+      },  {
+    path: "/floor-plan", // 이 주소로 접속하면
+    element: <FloorPlanPage />, // FloorPlanPage를 보여준다
+  },
+    ]
+  }
+>>>>>>> aa21152 (레이아웃 구성 및 모드전환)
 ]);
 
 export default router;

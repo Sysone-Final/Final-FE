@@ -10,7 +10,9 @@ import RightSidebar from '../components/RightSidebar';
  */
 const FloorPlanPage: React.FC = () => {
   return (
-    <div className="flex flex-col h-screen w-screen bg-gray-100 font-sans text-gray-800">
+    <div className="flex flex-col h-full w-full bg-gray-100 font-sans text-gray-800 overflow-hidden">
+    {/* <div className="""h-screen w-full flex overflow-hidden"> */}
+      {/* flex flex-col h-screen w-screen bg-gray-100 font-sans text-gray-800 */}
       {/* 상단 툴바 영역 */}
       <TopToolbar />
 

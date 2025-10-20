@@ -1,5 +1,6 @@
 import { create } from "zustand";
-import { FloorPlanState } from "../types";
+// [수정] TypeScript의 verbatimModuleSyntax 규칙에 따라 'type' 키워드를 추가합니다.
+import type { FloorPlanState } from "../types";
 
 // useFloorPlanStore 훅을 생성합니다. 이 훅을 통해 컴포넌트에서 상태와 액션을 가져올 수 있습니다.
 export const useFloorPlanStore = create<FloorPlanState>((set) => ({
