@@ -1,9 +1,7 @@
-
-
 import React from 'react';
 import type { ServerRoom } from '../types';
 import ServerRoomCard from './ServerRoomCard';
-import './ServerRoomList.css'; // 리스트 스타일을 위한 CSS 파일
+import '../css/serverRoomList.css';
 
 interface Props {
   rooms: ServerRoom[];
