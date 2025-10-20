@@ -1,4 +1,3 @@
-// Babylon.js 데이터센터 장비 타입
 export type EquipmentType =
   | "server"
   | "door"
@@ -7,7 +6,6 @@ export type EquipmentType =
   | "thermometer"
   | "aircon";
 
-// 3D 장비 정보
 export interface Equipment3D {
   id: string;
   type: EquipmentType;
