@@ -1,62 +1,57 @@
 import React, { useRef, useState, useLayoutEffect } from 'react';
 import { Stage, Layer } from 'react-konva';
-import { useFloorPlanStore } from '../store/floorPlanStore';
-import AssetRenderer from './AssetRenderer';
+// [수정] 빌드 도구가 모듈을 더 명확하게 찾을 수 있도록 경로에 파일 확장자를 추가합니다.
+import { useFloorPlanStore } from '../store/floorPlanStore.ts';
+import AssetRenderer from './AssetRenderer.tsx';
+import CanvasGrid from './CanvasGrid.tsx';
 
-/**
- * Canvas: 2D 평면도가 렌더링될 핵심 작업 공간입니다.
- * 부모 요소의 크기에 맞춰 동적으로 크기를 조절하고, 스토어의 자산 데이터를 렌더링합니다.
- */
+// 그리드 설정값을 상수로 관리합니다.
+const GRID_CONFIG = {
+  COLS: 40,
+  ROWS: 14,
+  CELL_SIZE: 30, // 각 셀의 크기 (픽셀)
+  HEADER_PADDING: 30, // 헤더를 위한 여백
+};
+
 const Canvas: React.FC = () => {
-  // 스토어에서 상태와 액션을 가져옵니다.
-  const assets = useFloorPlanStore((state) => state.assets);
-  const selectedAssetIds = useFloorPlanStore((state) => state.selectedAssetIds);
-  const selectAsset = useFloorPlanStore((state) => state.selectAsset);
-
-  // 캔버스를 감싸는 div 요소에 대한 참조를 생성합니다.
+  const { assets, selectedAssetIds, selectAsset, displayMode, displayOptions } = useFloorPlanStore();
   const containerRef = useRef<HTMLDivElement>(null);
+  const [stageSize, setStageSize] = useState({ width: 0, height: 0 });
 
-  // 캔버스의 크기를 저장할 상태를 생성합니다.
-  const [canvasSize, setCanvasSize] = useState<{ width: number; height: number }>({
-    width: 0,
-    height: 0,
-  });
-
-  // [수정] useEffect 대신 useLayoutEffect를 사용하여 렌더링 직전에 동기적으로 크기를 측정합니다.
-  // 이렇게 하면 깜빡임이나 0x0 크기 문제를 방지할 수 있습니다.
   useLayoutEffect(() => {
     const checkSize = () => {
       if (containerRef.current) {
-        const { clientWidth, clientHeight } = containerRef.current;
-        setCanvasSize({ width: clientWidth, height: clientHeight });
+        setStageSize({
+          width: containerRef.current.clientWidth,
+          height: containerRef.current.clientHeight,
+        });
       }
     };
-
-    // 초기 크기 측정
     checkSize();
-
-    // 창 크기가 변경될 때마다 크기를 다시 측정하도록 이벤트 리스너를 추가합니다.
     window.addEventListener('resize', checkSize);
-
-    // 컴포넌트가 언마운트될 때 이벤트 리스너를 제거합니다.
     return () => window.removeEventListener('resize', checkSize);
-  }, []); // 의존성 배열이 비어있으므로 마운트 시 한 번만 실행됩니다.
+  }, []);
 
   return (
-    <main
-      className="canvas-container" // CSS 클래스를 사용합니다.
-      ref={containerRef}
-    >
-      {/* [수정] 캔버스 크기가 유효할 때(0보다 클 때)만 Stage를 렌더링합니다. */}
-      {canvasSize.width > 0 && canvasSize.height > 0 && (
-        <Stage width={canvasSize.width} height={canvasSize.height}>
+    <main className="canvas-container" ref={containerRef}>
+      {stageSize.width > 0 && (
+        <Stage width={stageSize.width} height={stageSize.height}>
           <Layer>
+            <CanvasGrid
+              gridSize={GRID_CONFIG.CELL_SIZE}
+              cols={GRID_CONFIG.COLS}
+              rows={GRID_CONFIG.ROWS}
+            />
             {assets.map((asset) => (
               <AssetRenderer
                 key={asset.id}
                 asset={asset}
+                gridSize={GRID_CONFIG.CELL_SIZE}
+                headerPadding={GRID_CONFIG.HEADER_PADDING}
                 isSelected={selectedAssetIds.includes(asset.id)}
                 onSelect={() => selectAsset(asset.id)}
+                displayMode={displayMode}
+                displayOptions={displayOptions}
               />
             ))}
           </Layer>

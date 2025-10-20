@@ -1,31 +1,49 @@
-// [수정] 현재 파일(types)의 부모 폴더(floorPlan)로 올라간 뒤 store 폴더로 내려가도록 경로를 수정합니다.
+// [수정] import 목록에 Mode 추가
 import type { Mode } from "../store/floorPlanStore";
 
-// 자산의 상태를 나타내는 타입을 정의합니다. (정상, 경고, 위험)
 export type AssetStatus = "normal" | "warning" | "danger";
+export type DisplayMode = "status" | "customColor"; // '상태 임계값' 또는 '사용자 지정 색상'
 
-// 캔버스에 렌더링될 개별 자산(Asset)의 데이터 구조를 정의합니다.
+// [신규] 어떤 정보를 표시할지에 대한 옵션 타입
+export interface DisplayOptions {
+  showName: boolean;
+  showStatusIndicator: boolean;
+  showTemperature: boolean;
+  // uUsage 등 추후 확장 가능
+}
+
 export interface Asset {
   id: string;
-  type: "rack"; // 향후 'wall', 'door' 등 확장 가능
+  type: "rack" | "wall" | "door";
   name: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+  // [수정] 픽셀 좌표(x, y) 대신 그리드 좌표(gridX, gridY)를 사용합니다.
+  gridX: number;
+  gridY: number;
+  widthInCells: number; // 너비 (셀 단위)
+  heightInCells: number; // 높이 (셀 단위)
 
-  // 'rack' 타입일 경우 가질 수 있는 선택적 데이터
+  rotation?: number;
+  isLocked?: boolean;
+
+  // [수정] 사용자 지정 색상 필드 추가
+  customColor?: string;
+
   status?: AssetStatus;
   data?: {
     temperature?: number;
   };
 }
 
-// Zustand 스토어의 전체 상태 타입을 정의합니다.
 export interface FloorPlanState {
   mode: Mode;
-  assets: Asset[]; // 캔버스에 표시될 모든 자산 데이터
-  selectedAssetIds: string[]; // 현재 선택된 자산의 ID 목록
+  // [신규] 표시 모드와 옵션 상태 추가
+  displayMode: DisplayMode;
+  displayOptions: DisplayOptions;
+  assets: Asset[];
+  selectedAssetIds: string[];
   toggleMode: () => void;
-  selectAsset: (id: string) => void; // 자산을 선택하는 액션
+  selectAsset: (id: string) => void;
+  // [신규] 표시 옵션을 변경하는 액션 추가
+  setDisplayOptions: (options: Partial<DisplayOptions>) => void;
+  setDisplayMode: (mode: DisplayMode) => void;
 }
