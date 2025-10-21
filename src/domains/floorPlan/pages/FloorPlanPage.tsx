@@ -1,19 +1,41 @@
 import React from 'react';
 import { DndContext, type DragEndEvent } from '@dnd-kit/core';
 import { useFloorPlanStore } from '../store/floorPlanStore';
-import type { Asset } from '../types'; // Asset 타입을 가져옵니다.
+import type { Asset } from '../types'; 
 import TopToolbar from '../components/TopToolbar';
 import LeftSidebar from '../components/LeftSidebar';
 import Canvas from '../components/Canvas';
 import RightSidebar from '../components/RightSidebar';
 
-// 캔버스 관련 상수
 const CELL_SIZE = 40;
 const HEADER_PADDING = 40;
+
+// [추가] 충돌 감지 헬퍼 함수
+const checkCollision = (targetAsset: Omit<Asset, 'id'>, allAssets: Asset[]): boolean => {
+  for (const asset of allAssets) {
+    // 다른 레이어의 자산과는 충돌하지 않음
+    if (asset.layer !== targetAsset.layer) {
+      continue;
+    }
+
+    // AABB 충돌 감지 (Axis-Aligned Bounding Box)
+    if (
+      targetAsset.gridX < asset.gridX + asset.widthInCells &&
+      targetAsset.gridX + targetAsset.widthInCells > asset.gridX &&
+      targetAsset.gridY < asset.gridY + asset.heightInCells &&
+      targetAsset.gridY + targetAsset.heightInCells > asset.gridY
+    ) {
+      return true; // Collision detected
+    }
+  }
+  return false; // No collision
+};
 
 const FloorPlanPage: React.FC = () => {
   const addAsset = useFloorPlanStore((state) => state.addAsset);
   const stage = useFloorPlanStore((state) => state.stage);
+  // [추가] 충돌 감지를 위해 현재 모든 자산 목록을 가져옴
+  const assets = useFloorPlanStore((state) => state.assets);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { over, active } = event;
@@ -25,16 +47,12 @@ const FloorPlanPage: React.FC = () => {
     const template = active.data.current as Omit<Asset, 'id' | 'gridX' | 'gridY'>;
     if (!template) return;
 
-    // 드롭된 최종 스크린 좌표
-    // active.rect.current.translated는 드래그가 끝난 시점의 최종 위치를 담고 있습니다.
     const dropX = active.rect.current.translated?.left ?? 0;
     const dropY = active.rect.current.translated?.top ?? 0;
     
-    // 캔버스의 현재 위치(pan)와 배율(zoom)을 고려하여 실제 그리드 좌표 계산
     const stageX = (dropX - stage.x) / stage.scale;
     const stageY = (dropY - stage.y) / stage.scale;
     
-    // 헤더 여백을 제외하고 셀 크기로 나누어 그리드 좌표를 구합니다.
     const gridX = Math.floor((stageX - HEADER_PADDING) / CELL_SIZE);
     const gridY = Math.floor((stageY - HEADER_PADDING) / CELL_SIZE);
 
@@ -43,6 +61,12 @@ const FloorPlanPage: React.FC = () => {
       gridX,
       gridY,
     };
+    
+    // [추가] 자산을 추가하기 전에 충돌 검사 실행
+    if (checkCollision(newAsset, assets)) {
+      alert(`"${newAsset.name}"을(를) 해당 위치에 배치할 수 없습니다.\n동일한 레이어의 다른 자산과 겹칩니다.`);
+      return; // 충돌 시 자산 추가 중단
+    }
     
     addAsset(newAsset);
   };

@@ -1,35 +1,38 @@
-// [수정] 데이터 홀 중심의 모든 자산 유형을 포함하는 새로운 타입을 정의합니다.
-export type AssetType =
-  // 구조물
-  | "wall"
-  | "door_single"
-  | "door_double"
-  | "door_sliding"
-  | "pillar"
-  | "ramp"
-  // 핵심 장비
-  | "rack"
-  | "storage"
-  | "mainframe"
-  | "crash_cart"
-  // 전력 및 공조
-  | "crac"
-  | "in_row_cooling"
-  | "ups_battery"
-  | "power_panel"
-  | "aisle_containment"
-  // 안전 및 접근 (아이콘 기반)
-  | "speed_gate"
-  | "fire_suppression"
-  | "cctv"
-  | "access_control"
-  | "epo"
-  | "leak_sensor";
-export type UHeight = 42 | 45 | 48 | 52;
 export type Mode = "view" | "edit";
 export type DoorDirection = "north" | "south" | "east" | "west";
 export type AssetStatus = "normal" | "warning" | "danger";
 export type DisplayMode = "status" | "customColor";
+export type UHeight = 42 | 45 | 48 | 52;
+
+// [추가] 자산의 물리적 위치(레이어)를 정의하는 타입
+export type AssetLayer = "floor" | "wall" | "overhead";
+
+// [수정] 새로운 레이어 기반 분류에 맞춰 자산 타입을 재정의
+export type AssetType =
+  // Floor Layer
+  | "wall"
+  | "pillar"
+  | "ramp"
+  | "rack"
+  | "storage"
+  | "mainframe"
+  | "crash_cart"
+  | "crac"
+  | "in_row_cooling"
+  | "ups_battery"
+  | "power_panel"
+  | "speed_gate"
+  | "fire_suppression"
+  // Wall-Mounted Layer
+  | "door_single"
+  | "door_double"
+  | "door_sliding"
+  | "access_control"
+  | "epo"
+  // Overhead Layer
+  | "aisle_containment"
+  | "cctv"
+  | "leak_sensor";
 
 export interface DisplayOptionsType {
   showName: boolean;
@@ -52,10 +55,10 @@ export interface Asset {
   gridY: number;
   widthInCells: number;
   heightInCells: number;
-  // [수정] 기존 type을 assetType으로 변경하고, 새로운 AssetType을 사용합니다.
   assetType: AssetType;
-  // [추가] 랙의 U 높이를 저장하기 위한 속성
-  uHeight?: 42 | 45 | 48 | 52;
+  // [추가] 모든 자산은 어떤 레이어에 속하는지 명시해야 함
+  layer: AssetLayer;
+  uHeight?: UHeight;
   status?: AssetStatus;
   customColor?: string;
   isLocked?: boolean;
@@ -70,8 +73,6 @@ export interface Asset {
     uUsage?: number;
     temperature?: number;
   };
-  // [삭제] 기존 type 속성은 assetType으로 대체되었습니다.
-  // type: "rack" | "wall" | "door";
 }
 
 export interface FloorPlanState {

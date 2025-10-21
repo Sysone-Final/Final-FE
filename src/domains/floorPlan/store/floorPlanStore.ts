@@ -29,8 +29,8 @@ const storeCreator: StateCreator<FloorPlanState> = (set, get) => ({
   assets: [
     {
       id: "A-01",
-      // [수정] type -> assetType
       assetType: "rack",
+      layer: "floor", // [추가] 누락된 layer 속성
       name: "A-01",
       status: "normal",
       data: { temperature: 22, uUsage: 60 },
@@ -45,8 +45,8 @@ const storeCreator: StateCreator<FloorPlanState> = (set, get) => ({
     },
     {
       id: "A-02",
-      // [수정] type -> assetType
       assetType: "rack",
+      layer: "floor", // [추가] 누락된 layer 속성
       name: "A-02",
       status: "danger",
       data: { temperature: 28, uUsage: 85 },
@@ -61,8 +61,8 @@ const storeCreator: StateCreator<FloorPlanState> = (set, get) => ({
     },
     {
       id: "B-01",
-      // [수정] type -> assetType
       assetType: "rack",
+      layer: "floor", // [추가] 누락된 layer 속성
       name: "B-01",
       status: "warning",
       data: { temperature: 25, uUsage: 70 },
