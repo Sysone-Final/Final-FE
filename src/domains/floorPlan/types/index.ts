@@ -1,6 +1,8 @@
-import type { Mode } from "../store/floorPlanStore";
+// [수정] 자기 자신을 import하는 순환 참조 코드를 제거합니다.
+// import type { Mode } from "./index";
 
-// [신규] 랙의 문 방향을 위한 타입
+// [추가] Mode 타입을 여기서 정의하고 다른 파일에서 사용할 수 있도록 export 합니다.
+export type Mode = "view" | "edit";
 export type DoorDirection = "north" | "south" | "east" | "west";
 export type AssetStatus = "normal" | "warning" | "danger";
 export type DisplayMode = "status" | "customColor";
@@ -30,12 +32,13 @@ export interface Asset {
   status?: AssetStatus;
   customColor?: string;
   isLocked?: boolean;
-  rotation?: number; // 0-360 도
-  opacity?: number; // 0-1 (0%~100%)
-  doorDirection?: DoorDirection; // 랙 문 방향
-  description?: string; // 메모
-  createdAt?: string; // ISO 날짜
-  updatedAt?: string; // ISO 날짜
+  rotation?: number;
+  opacity?: number;
+  doorDirection?: DoorDirection;
+  description?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  groupId?: string;
   data?: {
     uUsage?: number;
     temperature?: number;
@@ -50,11 +53,7 @@ export interface FloorPlanState {
   selectedAssetIds: string[];
   gridCols: number;
   gridRows: number;
-  stage: {
-    scale: number;
-    x: number;
-    y: number;
-  };
+  stage: { scale: number; x: number; y: number };
   toggleMode: () => void;
   setDisplayOptions: (options: Partial<DisplayOptionsType>) => void;
   setDisplayMode: (mode: DisplayMode) => void;
@@ -62,10 +61,11 @@ export interface FloorPlanState {
   addAsset: (asset: Omit<Asset, "id">) => void;
   setStage: (stage: FloorPlanState["stage"]) => void;
   updateAsset: (id: string, newProps: Partial<Omit<Asset, "id">>) => void;
-  // ✨ 다중 선택/해제를 지원하도록 수정
   selectAsset: (id: string, isMultiSelect?: boolean) => void;
   deselectAll: () => void;
-  // ✨ 고급 기능 액션 추가
   deleteAsset: (id: string) => void;
   duplicateAsset: (id: string) => void;
+  groupSelectedAssets: () => void;
+  ungroupSelectedAssets: () => void;
+  zoom: (direction: "in" | "out") => void;
 }

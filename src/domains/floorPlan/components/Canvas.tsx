@@ -2,7 +2,6 @@ import React, { useRef, useState, useLayoutEffect } from 'react';
 import { Stage, Layer } from 'react-konva';
 import { useDroppable } from '@dnd-kit/core';
 import type { KonvaEventObject } from 'konva/lib/Node';
-// [수정] 올바른 상대 경로로 수정합니다.
 import { useFloorPlanStore } from '../store/floorPlanStore';
 import AssetRenderer from './AssetRenderer';
 import CanvasGrid from './CanvasGrid';

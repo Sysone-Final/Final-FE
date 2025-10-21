@@ -1,4 +1,6 @@
-import { create } from "zustand";
+import { create, type StateCreator } from "zustand";
+import { temporal } from "zundo";
+// [수정] types 파일에서 Mode 타입을 다시 import 합니다.
 import type {
   FloorPlanState,
   Asset,
@@ -6,13 +8,9 @@ import type {
   DisplayMode,
 } from "../types";
 
-export type Mode = "view" | "edit";
-
-export const useFloorPlanStore = create<FloorPlanState>((set) => ({
-  // --- 상태 ---
+const storeCreator: StateCreator<FloorPlanState> = (set, get) => ({
   mode: "view",
   displayMode: "status",
-  // [수정] types/index.ts에 정의된 DisplayOptionsType의 모든 속성에 대한 초기값을 설정합니다.
   displayOptions: {
     showName: true,
     showStatusIndicator: true,
@@ -75,7 +73,6 @@ export const useFloorPlanStore = create<FloorPlanState>((set) => ({
   ] as Asset[],
   selectedAssetIds: [],
 
-  // --- 액션 ---
   toggleMode: () =>
     set((state) => ({ mode: state.mode === "view" ? "edit" : "view" })),
   setDisplayOptions: (newOptions: Partial<DisplayOptionsType>) =>
@@ -83,8 +80,7 @@ export const useFloorPlanStore = create<FloorPlanState>((set) => ({
       displayOptions: { ...state.displayOptions, ...newOptions },
     })),
   setDisplayMode: (newMode: DisplayMode) => set({ displayMode: newMode }),
-  setGridSize: (cols: number, rows: number) =>
-    set({ gridCols: cols, gridRows: rows }),
+  setGridSize: (cols, rows) => set({ gridCols: cols, gridRows: rows }),
   setStage: (newStage) => set({ stage: newStage }),
   addAsset: (newAsset) =>
     set((state) => ({
@@ -105,29 +101,12 @@ export const useFloorPlanStore = create<FloorPlanState>((set) => ({
           : asset,
       ),
     })),
-  selectAsset: (id, isMultiSelect = false) =>
-    set((state) => {
-      const { selectedAssetIds } = state;
-      if (isMultiSelect) {
-        const newSelection = selectedAssetIds.includes(id)
-          ? selectedAssetIds.filter((sid) => sid !== id)
-          : [...selectedAssetIds, id];
-        return { selectedAssetIds: newSelection };
-      }
-      if (selectedAssetIds.length === 1 && selectedAssetIds[0] === id) {
-        return { selectedAssetIds: [] };
-      }
-      return { selectedAssetIds: [id] };
-    }),
-  deselectAll: () => set({ selectedAssetIds: [] }),
-  deleteAsset: (id: string) =>
+  deleteAsset: (id) =>
     set((state) => ({
       assets: state.assets.filter((asset) => asset.id !== id),
-      selectedAssetIds: state.selectedAssetIds.filter(
-        (selectedId) => selectedId !== id,
-      ),
+      selectedAssetIds: state.selectedAssetIds.filter((sid) => sid !== id),
     })),
-  duplicateAsset: (id: string) =>
+  duplicateAsset: (id) =>
     set((state) => {
       const original = state.assets.find((a) => a.id === id);
       if (!original) return state;
@@ -142,4 +121,64 @@ export const useFloorPlanStore = create<FloorPlanState>((set) => ({
       };
       return { assets: [...state.assets, duplicate] };
     }),
-}));
+  selectAsset: (id, isMultiSelect = false) =>
+    set((state) => {
+      const { selectedAssetIds } = state;
+      if (isMultiSelect) {
+        const newSelection = selectedAssetIds.includes(id)
+          ? selectedAssetIds.filter((sid) => sid !== id)
+          : [...selectedAssetIds, id];
+        return { selectedAssetIds: newSelection };
+      }
+      if (selectedAssetIds.length === 1 && selectedAssetIds[0] === id)
+        return { selectedAssetIds: [] };
+      return { selectedAssetIds: [id] };
+    }),
+  deselectAll: () => set({ selectedAssetIds: [] }),
+
+  groupSelectedAssets: () => {
+    const { selectedAssetIds } = get();
+    if (selectedAssetIds.length < 2) return;
+    const groupId = `group_${crypto.randomUUID()}`;
+    set((state) => ({
+      assets: state.assets.map((asset) =>
+        selectedAssetIds.includes(asset.id) ? { ...asset, groupId } : asset,
+      ),
+    }));
+  },
+  ungroupSelectedAssets: () => {
+    const { selectedAssetIds, assets } = get();
+    const groupIds = new Set(
+      assets
+        .filter((a) => selectedAssetIds.includes(a.id))
+        .map((a) => a.groupId)
+        .filter(Boolean),
+    );
+    if (groupIds.size === 0) return;
+    set((state) => ({
+      assets: state.assets.map((asset) =>
+        groupIds.has(asset.groupId) ? { ...asset, groupId: undefined } : asset,
+      ),
+    }));
+  },
+
+  zoom: (direction) => {
+    const { stage } = get();
+    const zoomFactor = 0.25;
+    const newScale =
+      direction === "in"
+        ? stage.scale + zoomFactor
+        : Math.max(0.1, stage.scale - zoomFactor);
+
+    set({ stage: { ...stage, scale: newScale } });
+  },
+});
+
+export const useFloorPlanStore = create<FloorPlanState>()(
+  temporal(storeCreator, {
+    partialize: (state: FloorPlanState) => ({
+      assets: state.assets,
+      selectedAssetIds: state.selectedAssetIds,
+    }),
+  }),
+);

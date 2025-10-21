@@ -5,27 +5,31 @@ import type { Asset } from '../../types';
 const COLOR_PRESETS = [ '#f1c40f', '#e67e22', '#e74c3c', '#9b59b6', '#3498db', '#2ecc71', '#1abc9c', '#34495e', '#95a5a6', '#ecf0f1' ];
 
 const PropertiesEditor: React.FC = () => {
-  const { assets, selectedAssetIds, updateAsset, deleteAsset, duplicateAsset } = useFloorPlanStore();
+  const { assets, selectedAssetIds, updateAsset, deleteAsset, duplicateAsset, groupSelectedAssets, ungroupSelectedAssets } = useFloorPlanStore();
   
   const selectedAssets = assets.filter(asset => selectedAssetIds.includes(asset.id));
   const isSingleSelection = selectedAssets.length === 1;
   const selectedAsset = isSingleSelection ? selectedAssets[0] : null;
   
   const [editableAsset, setEditableAsset] = useState<Partial<Asset> | null>(null);
-  const [openSections, setOpenSections] = useState({ basic: true, visual: false, metadata: false, advanced: false });
+  const [openSections, setOpenSections] = useState({ basic: true, visual: true, metadata: false, advanced: true });
 
-  useEffect(() => {
-    setEditableAsset(selectedAsset);
-  }, [selectedAsset]);
+  useEffect(() => { setEditableAsset(selectedAsset); }, [selectedAsset]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     if (!selectedAsset) return;
     const { name, value } = e.target;
     const numericFields = ['gridX', 'gridY', 'rotation', 'widthInCells', 'heightInCells', 'opacity'];
     const updatedValue = numericFields.includes(name) ? parseFloat(value) || 0 : value;
-    
     setEditableAsset(prev => prev ? { ...prev, [name]: updatedValue } : null);
     updateAsset(selectedAsset.id, { [name]: updatedValue });
+  };
+
+  const handleRotate = (direction: 'cw' | 'ccw') => {
+    if (!selectedAsset) return;
+    const currentRotation = selectedAsset.rotation || 0;
+    const newRotation = direction === 'cw' ? (currentRotation + 45) % 360 : (currentRotation - 45 + 360) % 360;
+    updateAsset(selectedAsset.id, { rotation: newRotation });
   };
 
   const toggleSection = (section: keyof typeof openSections) => {
@@ -46,8 +50,10 @@ const PropertiesEditor: React.FC = () => {
     return (
       <div className="properties-editor-container">
         <div className="editor-header"><h3 className="editor-title">{selectedAssetIds.length}개 자산 선택됨</h3></div>
-        <div className="accordion-section p-2">
-          <button onClick={handleDeleteSelected} className="action-button delete-btn">🗑️ 선택한 자산 모두 삭제</button>
+        <div className="accordion-section p-2 flex flex-col gap-2">
+            <button onClick={groupSelectedAssets} className="action-button group-btn">🔗 그룹 만들기</button>
+            <button onClick={ungroupSelectedAssets} className="action-button group-btn">✂️ 그룹 해제</button>
+            <button onClick={handleDeleteSelected} className="action-button delete-btn">🗑️ 선택 자산 모두 삭제</button>
         </div>
       </div>
     );
@@ -64,7 +70,6 @@ const PropertiesEditor: React.FC = () => {
         </button>
       </div>
 
-      {/* 1. 기본 속성 */}
       <div className="accordion-section">
         <button onClick={() => toggleSection('basic')} className="accordion-header"><span>{openSections.basic ? '▼' : '▶'} 기본</span></button>
         {openSections.basic && <div className="accordion-content">
@@ -77,12 +82,16 @@ const PropertiesEditor: React.FC = () => {
              <div className="input-group"><label className="input-label">너비</label><input type="number" name="widthInCells" className="input-field" min="1" value={editableAsset.widthInCells ?? 1} onChange={handleChange} disabled={selectedAsset.isLocked} /></div>
              <div className="input-group"><label className="input-label">높이</label><input type="number" name="heightInCells" className="input-field" min="1" value={editableAsset.heightInCells ?? 1} onChange={handleChange} disabled={selectedAsset.isLocked} /></div>
           </div>
-          <div className="input-group"><label className="input-label">회전: {editableAsset.rotation || 0}°</label><input type="range" name="rotation" className="range-slider" min="0" max="360" step="45" value={editableAsset.rotation || 0} onChange={handleChange} disabled={selectedAsset.isLocked} /></div>
+          <div className="input-group"><label className="input-label">회전: {editableAsset.rotation || 0}°</label>
+            <div className="rotation-buttons">
+              <button onClick={() => handleRotate('ccw')} className="rotation-btn" disabled={selectedAsset.isLocked}>↺ -45°</button>
+              <button onClick={() => handleRotate('cw')} className="rotation-btn" disabled={selectedAsset.isLocked}>↻ +45°</button>
+            </div>
+          </div>
           {selectedAsset.type === 'rack' && <div className="input-group"><label className="input-label">문 방향</label><select name="doorDirection" className="input-field" value={editableAsset.doorDirection || 'north'} onChange={handleChange} disabled={selectedAsset.isLocked}><option value="north">북</option><option value="south">남</option><option value="east">동</option><option value="west">서</option></select></div>}
         </div>}
       </div>
 
-      {/* 2. 시각 설정 */}
       <div className="accordion-section">
          <button onClick={() => toggleSection('visual')} className="accordion-header"><span>{openSections.visual ? '▼' : '▶'} 시각</span></button>
          {openSections.visual && <div className="accordion-content">
@@ -96,12 +105,20 @@ const PropertiesEditor: React.FC = () => {
          </div>}
       </div>
       
-      {/* 3. 고급 기능 */}
+      {/* ✨ 메타데이터 섹션 추가 */}
+      <div className="accordion-section">
+        <button onClick={() => toggleSection('metadata')} className="accordion-header"><span>{openSections.metadata ? '▼' : '▶'} 메타데이터</span></button>
+        {openSections.metadata && <div className="accordion-content">
+            <div className="input-group"><label className="input-label">설명</label><textarea name="description" className="textarea-field" rows={3} value={editableAsset.description || ''} onChange={handleChange} disabled={selectedAsset.isLocked} /></div>
+            {selectedAsset.createdAt && <div className="meta-info"><p className="meta-text">생성: {new Date(selectedAsset.createdAt).toLocaleString('ko-KR')}</p>{selectedAsset.updatedAt && <p className="meta-text">수정: {new Date(selectedAsset.updatedAt).toLocaleString('ko-KR')}</p>}</div>}
+        </div>}
+      </div>
+
       <div className="accordion-section">
         <button onClick={() => toggleSection('advanced')} className="accordion-header"><span>{openSections.advanced ? '▼' : '▶'} 고급</span></button>
         {openSections.advanced && <div className="accordion-content">
             <button className="action-button duplicate-btn" onClick={() => duplicateAsset(selectedAsset.id)}>📋 복제</button>
-            <button className="action-button delete-btn" onClick={() => { if(window.confirm("정말로 삭제하시겠습니까?")) deleteAsset(selectedAsset.id)}}>🗑️ 삭제</button>
+            <button className="action-button delete-btn" onClick={() => { if(window.confirm(`"${selectedAsset.name}" 자산을 삭제하시겠습니까?`)) deleteAsset(selectedAsset.id)}}>🗑️ 삭제</button>
         </div>}
       </div>
     </div>

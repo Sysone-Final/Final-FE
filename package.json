@@ -29,6 +29,7 @@
     "@types/react": "^18.3.25",
     "axios": "^1.12.2",
     "konva": "^10.0.2",
+    "lucide-react": "^0.546.0",
     "prettier": "^3.6.2",
     "react": "^18.3.1",
     "react-babylonjs": "^3.2.4",
@@ -37,6 +38,7 @@
     "react-konva": "^18.2.14",
     "react-router-dom": "^7.9.3",
     "tailwindcss": "^4.1.14",
+    "zundo": "^2.3.0",
     "zustand": "^5.0.8"
   },
   "devDependencies": {
