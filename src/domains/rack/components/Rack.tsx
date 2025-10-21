@@ -69,10 +69,17 @@ function Rack({
   const floatingInfo = getFloatingDeviceInfo();
 
   const handleDeviceDragEnd = (deviceId: number, newY: number) => {
-    const relativeY = newY - baseY;
-    const bottonUnit = Math.floor(relativeY / unitHeight);
-    const newPosition = UNIT_COUNT - bottonUnit;
-    const clampedPosition = Math.max(1, Math.min(UNIT_COUNT, newPosition));
+    const draggedDevice = devices.find((d) => d.id === deviceId);
+    if (!draggedDevice) return;
+
+    const deviceBottomY = newY + draggedDevice.height * unitHeight;
+    const relativeY = deviceBottomY - baseY;
+    const bottomUnit = Math.floor(relativeY / unitHeight);
+    const newPosition = UNIT_COUNT - bottomUnit;
+    const clampedPosition = Math.max(
+      1,
+      Math.min(UNIT_COUNT - draggedDevice.height + 1, newPosition)
+    );
     onDeviceDragEnd(deviceId, clampedPosition);
   };
 

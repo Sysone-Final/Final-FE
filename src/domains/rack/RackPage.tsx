@@ -35,6 +35,7 @@ function RackPage() {
   const [floatingDevice, setFloatingDevice] = useState<FloatingDevice | null>(
     null
   );
+  const [resetKey, setResetKey] = useState(0);
 
   //카드 클릭 핸들러
   const handleCardClick = (card: DeviceCard) => {
@@ -59,6 +60,10 @@ function RackPage() {
     const draggedDevice = installedDevices.find((d) => d.id === deviceId);
     if (!draggedDevice) return;
 
+    if (draggedDevice.position === newPosition) {
+      return;
+    }
+
     //충돌 검사 (장비가 있을 경우)
     const hasCollision = installedDevices.some((device) => {
       if (device.id === deviceId) return false;
@@ -71,7 +76,7 @@ function RackPage() {
 
     if (hasCollision) {
       console.log("이동할 수 없습니다. 다른 장비와 겹칩니다.");
-      setInstalledDevices([...installedDevices]);
+      setResetKey((prev) => prev + 1);
       return;
     }
 
@@ -133,6 +138,7 @@ function RackPage() {
         {/* 중앙 렉 뷰 */}
         <section className="flex flex-col justify-center items-center rounded-[16px] bg-white/20 px-4 py-6 box-border min-h-[80vh]">
           <Rack
+            key={resetKey}
             devices={installedDevices}
             floatingDevice={floatingDevice}
             onMouseMove={handleMouseMove}
