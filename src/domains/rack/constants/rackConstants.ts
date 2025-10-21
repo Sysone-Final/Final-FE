@@ -2,8 +2,7 @@ export const UNIT_COUNT = 42;
 
 export const RACK_CONFIG = {
   height: 700,
-  width: 200,
-  stageWidth: 400,
+  width: 300,
   frameThickness: 20,
   panelWidth: 25,
   baseY: 40,
