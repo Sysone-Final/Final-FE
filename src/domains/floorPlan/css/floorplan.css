@@ -7,32 +7,29 @@ Tailwind CSS의 @apply 지시어를 사용하여 스타일을 정의합니다.
 }
 
 /* AssetLibrary.tsx에서 사용할 스타일 */
-/* [수정] 자산 라이브러리 컨테이너가 flex-grow와 h-0을 갖도록 수정 */
 .asset-library-container {
- @apply flex flex-col flex-grow h-0;
+ @apply h-full flex flex-col;
 }
 
-/* [수정] 스크롤 컨테이너가 부모의 높이를 기준으로 overflow되도록 수정 */
 .asset-list-scroll-container {
- @apply overflow-y-auto pr-2;
+ @apply flex-grow h-0 overflow-y-auto pr-2;
 }
 
 .sidebar-subtitle {
 @apply text-lg font-semibold mb-2 text-gray-800;
 }
 
-/* [수정] 아코디언 버튼 스타일 */
 .category-title-button {
  @apply w-full flex justify-between items-center p-3 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors cursor-pointer;
 }
 
-/* [추가] 아코디언 컨텐츠 (자산 목록) 스타일 */
 .accordion-content {
  @apply pl-3 pt-2 pb-1;
 }
 
+/* [수정] mb-2 (margin-bottom)을 제거하여 grid layout과 일관된 간격을 유지합니다. */
 .draggable-asset-item {
-@apply bg-white border border-gray-300 rounded-md p-3 flex items-center gap-3 transition-colors duration-200 hover:bg-blue-50 hover:border-blue-400 mb-2;
+@apply bg-white border border-gray-300 rounded-md flex items-center gap-3 transition-colors duration-200 hover:bg-blue-50 hover:border-blue-400;
 touch-action: none; /* 모바일 드래그를 위해 추가 */
 }
 

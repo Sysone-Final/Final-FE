@@ -62,7 +62,7 @@ const PropertiesViewer: React.FC = () => {
         </div>
         <div className="info-row">
             <span className="info-label">타입</span>
-            {/* [수정] selectedAsset.type -> selectedAsset.assetType */}
+            {/*  selectedAsset.type -> selectedAsset.assetType */}
             <span className="info-value">{selectedAsset.assetType.toUpperCase()}</span>
         </div>
       </div>

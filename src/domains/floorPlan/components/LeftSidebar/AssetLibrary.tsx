@@ -22,7 +22,6 @@ const LIBRARY_CATEGORIES: { category: string; layer: AssetLayer; assets: Library
       { layer: 'floor', assetType: 'wall', name: '벽', widthInCells: 5, heightInCells: 1, icon: <RectangleHorizontal />, customColor: '#868e96' },
       { layer: 'floor', assetType: 'pillar', name: '기둥', widthInCells: 1, heightInCells: 1, icon: <Component />, customColor: '#adb5bd' },
       { layer: 'floor', assetType: 'ramp', name: '경사로', widthInCells: 2, heightInCells: 3, icon: <StretchHorizontal />, customColor: '#e9ecef' },
-      // [수정] 랙 자산에 doorDirection 속성 추가
       { layer: 'floor', assetType: 'rack', name: '표준 랙 (1x2)', widthInCells: 1, heightInCells: 2, icon: <Server />, customColor: '#dbe4ff', uHeight: 42, doorDirection: 'south' },
       { layer: 'floor', assetType: 'rack', name: '중형 랙 (1x3)', widthInCells: 1, heightInCells: 3, icon: <Server />, customColor: '#dbe4ff', uHeight: 45, doorDirection: 'south' },
       { layer: 'floor', assetType: 'rack', name: '대형 랙 (2x3)', widthInCells: 2, heightInCells: 3, icon: <Server />, customColor: '#dbe4ff', uHeight: 48, doorDirection: 'south' },
@@ -41,7 +40,6 @@ const LIBRARY_CATEGORIES: { category: string; layer: AssetLayer; assets: Library
     category: '🧱 벽면 설비 (Wall-Mounted Layer)',
     layer: 'wall',
     assets: [
-        // [수정] 문 자산에 doorDirection 속성 추가
         { layer: 'wall', assetType: 'door_single', name: '단일 문', widthInCells: 2, heightInCells: 1, icon: <DoorOpen />, customColor: '#ced4da', doorDirection: 'south' },
         { layer: 'wall', assetType: 'door_double', name: '이중 문', widthInCells: 4, heightInCells: 1, icon: <DoorOpen />, customColor: '#ced4da', doorDirection: 'south' },
         { layer: 'wall', assetType: 'access_control', name: '출입 통제기', widthInCells: 1, heightInCells: 1, icon: <Fingerprint />, customColor: '#e0e0e0' },
@@ -60,7 +58,7 @@ const LIBRARY_CATEGORIES: { category: string; layer: AssetLayer; assets: Library
 ];
 
 
-const DraggableAsset = ({ template }: { template: LibraryAssetTemplate }) => {
+const DraggableAsset = ({ template, isCompact }: { template: LibraryAssetTemplate; isCompact: boolean }) => {
   const { icon, ...assetData } = template;
   
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
@@ -77,9 +75,11 @@ const DraggableAsset = ({ template }: { template: LibraryAssetTemplate }) => {
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...listeners} {...attributes} className="draggable-asset-item">
-      <span className="asset-icon">{icon}</span>
-      <span className="asset-name">{template.name}</span>
+    <div ref={setNodeRef} style={style} {...listeners} {...attributes} 
+      className={`draggable-asset-item ${isCompact ? 'p-2' : 'p-3'}`}
+    >
+      <span className={`asset-icon ${isCompact ? 'text-base' : 'text-lg'}`}>{icon}</span>
+      <span className={`asset-name ${isCompact ? 'text-xs' : 'text-sm'}`}>{template.name}</span>
     </div>
   );
 };
@@ -98,9 +98,17 @@ const AccordionCategory = ({ category, assets, isOpen, onToggle }: {
       </button>
       {isOpen && (
         <div className="accordion-content">
-          {assets.map((template) => (
-            <DraggableAsset key={`${template.assetType}-${template.name}`} template={template} />
-          ))}
+          {/* [수정] 모든 카테고리에 항상 2행 그리드 레이아웃을 적용합니다. */}
+          <div className={'grid grid-cols-2 gap-2'}>
+            {assets.map((template) => (
+              <DraggableAsset
+                key={`${template.assetType}-${template.name}`}
+                template={template}
+                // [수정] 모든 아이템을 Compact 모드로 표시하여 그리드에 맞춥니다.
+                isCompact={true}
+              />
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -136,3 +144,4 @@ const AssetLibrary: React.FC = () => {
 };
 
 export default AssetLibrary;
+

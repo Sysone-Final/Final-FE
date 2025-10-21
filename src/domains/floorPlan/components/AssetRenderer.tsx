@@ -16,7 +16,7 @@ interface AssetRendererProps {
 const STATUS_COLORS = { normal: '#27ae60', warning: '#f39c12', danger: '#c0392b', selected: '#3498db' };
 const DOOR_COLOR = '#7f8c8d';
 
-// [수정] 충돌 감지 헬퍼 함수 (그룹 이동을 위해 targetAsset에 id가 있도록 수정)
+//  충돌 감지 헬퍼 함수 (그룹 이동을 위해 targetAsset에 id가 있도록 수정)
 const checkCollision = (targetAsset: Asset, allAssets: Asset[]): boolean => {
   for (const otherAsset of allAssets) {
     // 자기 자신과는 충돌 검사를 하지 않음
@@ -72,7 +72,7 @@ const AssetRenderer: React.FC<AssetRendererProps> = ({ asset, gridSize, headerPa
       return;
     }
 
-    // [수정] 그룹 이동과 단일 이동 모두를 처리하는 충돌 감지 로직
+    //  그룹 이동과 단일 이동 모두를 처리하는 충돌 감지 로직
     const assetsToMove = asset.groupId ? assets.filter(a => a.groupId === asset.groupId) : [asset];
     const otherAssets = assets.filter(a => !assetsToMove.some(m => m.id === a.id));
 
@@ -145,12 +145,12 @@ const AssetRenderer: React.FC<AssetRendererProps> = ({ asset, gridSize, headerPa
         opacity={asset.opacity ?? 1}
       />
       
-      {/* [수정] 'rack' 또는 'door'로 시작하는 모든 자산 타입에 대해 문 표시 */}
+      {/*  'rack' 또는 'door'로 시작하는 모든 자산 타입에 대해 문 표시 */}
       {(asset.assetType === 'rack' || asset.assetType.startsWith('door')) && doorPos && (
         <Rect {...doorPos} fill={DOOR_COLOR} listening={false} />
       )}
       
-      {/* [수정] 자산 내부 정보가 올바르게 표시되도록 좌표 계산 수정 */}
+      {/*  자산 내부 정보가 올바르게 표시되도록 좌표 계산 수정 */}
       <Group listening={false}>
         {displayOptions.showName && <Text text={asset.name} x={5} y={5} fontSize={12} fill="#34495e" fontStyle="bold" />}
         {displayOptions.showStatusIndicator && asset.status && <Circle x={pixelWidth - 10} y={10} radius={5} fill={STATUS_COLORS[asset.status]} stroke="#fff" strokeWidth={1}/>}

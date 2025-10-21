@@ -98,7 +98,7 @@ const PropertiesEditor: React.FC = () => {
               <button onClick={() => handleRotate('cw')} className="rotation-btn" disabled={selectedAsset.isLocked}>↻ +45°</button>
             </div>
           </div>
-              {/* [수정] 'rack' 또는 'door'로 시작하는 모든 자산 타입에 대해 문 방향 옵션 표시 */}
+              {/*  'rack' 또는 'door'로 시작하는 모든 자산 타입에 대해 문 방향 옵션 표시 */}
           {(selectedAsset.assetType === 'rack' || selectedAsset.assetType.startsWith('door')) && <div className="input-group"><label className="input-label">문 방향</label><select name="doorDirection" className="input-field" value={editableAsset.doorDirection || 'north'} onChange={handleChange} disabled={selectedAsset.isLocked}><option value="north">북</option><option value="south">남</option><option value="east">동</option><option value="west">서</option></select></div>}
         </div>}
       </div>

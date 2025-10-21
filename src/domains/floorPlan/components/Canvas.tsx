@@ -93,7 +93,7 @@ const Canvas: React.FC = () => {
           >
             <Layer>
               <CanvasGrid gridSize={CANVAS_VIEW_CONFIG.CELL_SIZE} cols={gridCols} rows={gridRows} />
-              {/* [수정] 정렬된 자산 배열을 사용하여 렌더링합니다. */}
+              {/*  정렬된 자산 배열을 사용하여 렌더링합니다. */}
               {sortedAssets.map((asset) => (
                 <AssetRenderer
                   key={asset.id}
