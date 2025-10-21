@@ -2,13 +2,34 @@ import Tools from "./components/Tools";
 import Rack from "./components/Rack";
 import type { RackDevice, FloatingDevice, DeviceCard } from "./types";
 import { useState } from "react";
-import { colorMap } from "./utils/colorMap";
+import { typeColorMap } from "./utils/colorMap";
 
 function RackPage() {
   const [installedDevices, setInstalledDevices] = useState<RackDevice[]>([
-    { id: 1, name: "Server_1", position: 1, height: 1 },
-    { id: 2, name: "Firewall_1", position: 3, height: 1 },
-    { id: 3, name: "UPS_5F", position: 4, height: 3 },
+    {
+      id: 1,
+      name: "Server_1",
+      type: "server",
+      position: 1,
+      height: 1,
+      color: typeColorMap["server"],
+    },
+    {
+      id: 2,
+      name: "Firewall_1",
+      type: "firewall",
+      position: 3,
+      height: 1,
+      color: typeColorMap["firewall"],
+    },
+    {
+      id: 3,
+      name: "UPS_5F",
+      type: "other",
+      position: 4,
+      height: 3,
+      color: typeColorMap["other"],
+    },
   ]);
 
   const [floatingDevice, setFloatingDevice] = useState<FloatingDevice | null>(
@@ -37,7 +58,7 @@ function RackPage() {
   const handleRackClick = (position: number) => {
     if (!floatingDevice) return;
 
-    const color = colorMap[floatingDevice.card.borderColor] || "#334155";
+    const color = typeColorMap[floatingDevice.card.type] || "#334155";
 
     //충돌 검사 (장비가 있을 경우)
     const hasCollision = installedDevices.some((device) => {
@@ -58,6 +79,7 @@ function RackPage() {
     const newDevice: RackDevice = {
       id: Date.now(),
       name: floatingDevice.card.label,
+      type: floatingDevice.card.type,
       position,
       height: floatingDevice.card.height,
       color,
