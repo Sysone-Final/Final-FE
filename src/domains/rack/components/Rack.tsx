@@ -222,6 +222,7 @@ function Rack({
             device={{
               id: -1,
               name: floatingDevice.card.label,
+              type: floatingDevice.card.type,
               position: floatingInfo.position,
               height: floatingDevice.card.height,
             }}

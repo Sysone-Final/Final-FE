@@ -3,14 +3,14 @@ import storageImg from "../assets/storage.svg";
 import switchImg from "../assets/switch.svg";
 import routerImg from "../assets/router.svg";
 import type { DeviceCard } from "../types";
-import { colorMap } from "../utils/colorMap";
+import { typeColorMap } from "../utils/colorMap";
 
 interface ToolsProps {
   onCardClick: (card: DeviceCard) => void;
 }
 
 function Tools({ onCardClick }: ToolsProps) {
-  const deviceCards = [
+  const deviceCards: DeviceCard[] = [
     {
       key: "server",
       label: "서버",
@@ -18,6 +18,7 @@ function Tools({ onCardClick }: ToolsProps) {
       img: serverImg,
       borderColor: "border-l-sky-400",
       height: 2,
+      type: "server",
     },
     {
       key: "storage",
@@ -26,6 +27,7 @@ function Tools({ onCardClick }: ToolsProps) {
       img: storageImg,
       borderColor: "border-l-emerald-400",
       height: 2,
+      type: "storage",
     },
     {
       key: "switch",
@@ -34,6 +36,7 @@ function Tools({ onCardClick }: ToolsProps) {
       img: switchImg,
       borderColor: "border-l-[#E80054]",
       height: 1,
+      type: "switch",
     },
     {
       key: "router",
@@ -42,6 +45,7 @@ function Tools({ onCardClick }: ToolsProps) {
       img: routerImg,
       borderColor: "border-l-amber-400",
       height: 1,
+      type: "router",
     },
   ];
 
@@ -53,7 +57,7 @@ function Tools({ onCardClick }: ToolsProps) {
       </div>
 
       {deviceCards.map((card) => {
-        const borderLeftColor = colorMap[card.borderColor] || "#ffffff";
+        const borderLeftColor = typeColorMap[card.type] || "#64748b";
 
         return (
           <div
