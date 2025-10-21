@@ -13,6 +13,7 @@ interface RackProps {
   floatingDevice: FloatingDevice | null;
   onMouseMove: (mouseY: number) => void;
   onRackClick: (position: number) => void;
+  onDeviceDragEnd: (deviceId: number, newPosition: number) => void;
 }
 
 function Rack({
@@ -20,6 +21,7 @@ function Rack({
   floatingDevice,
   onMouseMove,
   onRackClick,
+  onDeviceDragEnd,
 }: RackProps) {
   const {
     height: rackHeight,
@@ -65,6 +67,14 @@ function Rack({
   };
 
   const floatingInfo = getFloatingDeviceInfo();
+
+  const handleDeviceDragEnd = (deviceId: number, newY: number) => {
+    const relativeY = newY - baseY;
+    const bottonUnit = Math.floor(relativeY / unitHeight);
+    const newPosition = UNIT_COUNT - bottonUnit;
+    const clampedPosition = Math.max(1, Math.min(UNIT_COUNT, newPosition));
+    onDeviceDragEnd(deviceId, clampedPosition);
+  };
 
   return (
     <Stage
@@ -213,6 +223,7 @@ function Rack({
               height={height}
               rackWidth={rackWidth}
               x={rackX}
+              onDragEnd={handleDeviceDragEnd}
             />
           );
         })}
@@ -225,6 +236,7 @@ function Rack({
               type: floatingDevice.card.type,
               position: floatingInfo.position,
               height: floatingDevice.card.height,
+              color: floatingDevice.card.type,
             }}
             y={floatingInfo.y}
             height={floatingInfo.height}

@@ -54,20 +54,47 @@ function RackPage() {
     }
   };
 
+  //드래그 종료 핸들러
+  const handleDeviceDragEnd = (deviceId: number, newPosition: number) => {
+    const draggedDevice = installedDevices.find((d) => d.id === deviceId);
+    if (!draggedDevice) return;
+
+    //충돌 검사 (장비가 있을 경우)
+    const hasCollision = installedDevices.some((device) => {
+      if (device.id === deviceId) return false;
+      const deviceBottom = device.position;
+      const deviceTop = device.position + device.height - 1;
+      const newBottom = newPosition;
+      const newTop = newPosition + draggedDevice.height - 1;
+      return !(newTop < deviceBottom || newBottom > deviceTop);
+    });
+
+    if (hasCollision) {
+      console.log("이동할 수 없습니다. 다른 장비와 겹칩니다.");
+      setInstalledDevices([...installedDevices]);
+      return;
+    }
+
+    setInstalledDevices(
+      installedDevices.map((device) =>
+        device.id === deviceId ? { ...device, position: newPosition } : device
+      )
+    );
+  };
+
   //랙 클릭 핸들러
   const handleRackClick = (position: number) => {
     if (!floatingDevice) return;
 
     const color = typeColorMap[floatingDevice.card.type] || "#334155";
 
-    //충돌 검사 (장비가 있을 경우)
+    //충돌 검사
     const hasCollision = installedDevices.some((device) => {
       const deviceBottom = device.position;
       const deviceTop = device.position + device.height - 1;
       const newBottom = position;
       const newTop = position + floatingDevice.card.height - 1;
-      const collision = !(newTop < deviceBottom || newBottom > deviceTop);
-      return collision;
+      return !(newTop < deviceBottom || newBottom > deviceTop);
     });
 
     if (hasCollision) {
@@ -110,6 +137,7 @@ function RackPage() {
             floatingDevice={floatingDevice}
             onMouseMove={handleMouseMove}
             onRackClick={handleRackClick}
+            onDeviceDragEnd={handleDeviceDragEnd}
           />
         </section>
 

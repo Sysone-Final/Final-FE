@@ -1,5 +1,6 @@
 import { Group, Rect, Text, Line } from "react-konva";
 import type { RackDevice } from "../types";
+import { useState } from "react";
 
 interface RackSlotProps {
   device: RackDevice;
@@ -9,6 +10,7 @@ interface RackSlotProps {
   rackWidth: number;
   opacity?: number;
   isFloating?: boolean;
+  onDragEnd?: (deviceId: number, newY: number) => void;
 }
 
 function Device({
@@ -19,7 +21,10 @@ function Device({
   rackWidth,
   opacity = 1,
   isFloating = false,
+  onDragEnd,
 }: RackSlotProps) {
+  const [dragging, setIsDragging] = useState(false);
+
   const fillColor = isFloating
     ? device.color || "#3b82f6"
     : device.color || "#334155";
@@ -29,7 +34,21 @@ function Device({
     : device.color || "#3f4e63";
 
   return (
-    <Group y={y} opacity={opacity}>
+    <Group
+      y={y}
+      opacity={dragging ? 0.5 : opacity}
+      draggable={!isFloating}
+      onDragStart={() => setIsDragging(true)}
+      onDragEnd={(e) => {
+        setIsDragging(false);
+        if (onDragEnd && !isFloating) {
+          onDragEnd(device.id, e.target.y());
+        }
+      }}
+      onDragMove={(e) => {
+        e.target.x(0);
+      }}
+    >
       <Rect
         x={x}
         width={rackWidth}
