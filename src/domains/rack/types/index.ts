@@ -23,7 +23,6 @@ export interface DeviceCard {
   label: string;
   size: string;
   img: string;
-  borderColor: string;
   height: number;
   type: DeviceType;
 }
