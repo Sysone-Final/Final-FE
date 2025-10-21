@@ -23,7 +23,19 @@
   @apply bg-gray-100 border border-gray-300 rounded-md p-3 flex items-center gap-3 transition-colors duration-200 hover:bg-gray-200 hover:border-gray-400 mb-2;
   touch-action: none; /* 모바일 드래그를 위해 추가 */
 }
-
+/* [추가] 아코디언 컨텐츠 (자산 목록) 스타일 */
+.accordion-content {
+  @apply pl-3 pt-2 pb-1;
+}
+/* [수정] 아코디언 버튼 스타일 */
+.category-title-button {
+  @apply w-full flex justify-between items-center p-3 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors cursor-pointer;
+}
+/* AssetLibrary.tsx에서 사용할 스타일 */
+/* [추가] 자산 라이브러리 스크롤 및 아코디언 UI를 위한 컨테이너 */
+.asset-library-container {
+  @apply h-full overflow-y-auto pr-2;
+}
 .asset-icon {
   @apply text-lg text-gray-600;
 }

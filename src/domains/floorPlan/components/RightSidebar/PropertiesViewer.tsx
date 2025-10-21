@@ -1,5 +1,4 @@
 import React from 'react';
-// [수정] 스토어 파일의 상대 경로를 올바르게 수정합니다.
 import { useFloorPlanStore } from '../../store/floorPlanStore';
 import type { Asset } from '../../types';
 
@@ -63,11 +62,12 @@ const PropertiesViewer: React.FC = () => {
         </div>
         <div className="info-row">
             <span className="info-label">타입</span>
-            <span className="info-value">{selectedAsset.type.toUpperCase()}</span>
+            {/* [수정] selectedAsset.type -> selectedAsset.assetType */}
+            <span className="info-value">{selectedAsset.assetType.toUpperCase()}</span>
         </div>
       </div>
       
-      {selectedAsset.type === 'rack' && (
+      {selectedAsset.assetType === 'rack' && (
         <div className="viewer-footer">
             <button className="detail-button">
             랙 상세 보기
@@ -79,4 +79,3 @@ const PropertiesViewer: React.FC = () => {
 };
 
 export default PropertiesViewer;
-

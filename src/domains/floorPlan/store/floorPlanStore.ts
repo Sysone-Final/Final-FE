@@ -1,6 +1,5 @@
 import { create, type StateCreator } from "zustand";
 import { temporal } from "zundo";
-// [수정] types 파일에서 Mode 타입을 다시 import 합니다.
 import type {
   FloorPlanState,
   Asset,
@@ -30,7 +29,8 @@ const storeCreator: StateCreator<FloorPlanState> = (set, get) => ({
   assets: [
     {
       id: "A-01",
-      type: "rack",
+      // [수정] type -> assetType
+      assetType: "rack",
       name: "A-01",
       status: "normal",
       data: { temperature: 22, uUsage: 60 },
@@ -41,10 +41,12 @@ const storeCreator: StateCreator<FloorPlanState> = (set, get) => ({
       customColor: "#a9f3a9",
       doorDirection: "south",
       createdAt: new Date().toISOString(),
+      uHeight: 42,
     },
     {
       id: "A-02",
-      type: "rack",
+      // [수정] type -> assetType
+      assetType: "rack",
       name: "A-02",
       status: "danger",
       data: { temperature: 28, uUsage: 85 },
@@ -55,10 +57,12 @@ const storeCreator: StateCreator<FloorPlanState> = (set, get) => ({
       customColor: "#f3a9a9",
       doorDirection: "south",
       createdAt: new Date().toISOString(),
+      uHeight: 42,
     },
     {
       id: "B-01",
-      type: "rack",
+      // [수정] type -> assetType
+      assetType: "rack",
       name: "B-01",
       status: "warning",
       data: { temperature: 25, uUsage: 70 },
@@ -69,6 +73,7 @@ const storeCreator: StateCreator<FloorPlanState> = (set, get) => ({
       customColor: "#f3e9a9",
       doorDirection: "east",
       createdAt: new Date().toISOString(),
+      uHeight: 48,
     },
   ] as Asset[],
   selectedAssetIds: [],

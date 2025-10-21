@@ -105,7 +105,7 @@ const AssetRenderer: React.FC<AssetRendererProps> = ({ asset, gridSize, headerPa
     opacity={asset.opacity ?? 0.8}
    />
    
-   {asset.type === 'rack' && doorPos && (
+   {asset.assetType === 'rack' && doorPos && (
     <Rect {...doorPos} fill={DOOR_COLOR} listening={false} />
    )}
    

@@ -19,7 +19,8 @@ const PropertiesEditor: React.FC = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     if (!selectedAsset) return;
     const { name, value } = e.target;
-    const numericFields = ['gridX', 'gridY', 'rotation', 'widthInCells', 'heightInCells', 'opacity'];
+    // [수정] uHeight를 포함한 숫자 필드 처리
+    const numericFields = ['gridX', 'gridY', 'rotation', 'widthInCells', 'heightInCells', 'opacity', 'uHeight'];
     const updatedValue = numericFields.includes(name) ? parseFloat(value) || 0 : value;
     setEditableAsset(prev => prev ? { ...prev, [name]: updatedValue } : null);
     updateAsset(selectedAsset.id, { [name]: updatedValue });
@@ -74,13 +75,28 @@ const PropertiesEditor: React.FC = () => {
         <button onClick={() => toggleSection('basic')} className="accordion-header"><span>{openSections.basic ? '▼' : '▶'} 기본</span></button>
         {openSections.basic && <div className="accordion-content">
           <div className="input-group"><label className="input-label">이름</label><input type="text" name="name" className="input-field" value={editableAsset.name || ''} onChange={handleChange} disabled={selectedAsset.isLocked} /></div>
+          
+          {/* --- [추가] 랙 U 높이 선택 드롭다운 --- */}
+          {selectedAsset.assetType === 'rack' && (
+            <div className="input-group">
+              <label className="input-label">랙 높이 (U)</label>
+              <select name="uHeight" className="input-field" value={editableAsset.uHeight || 42} onChange={handleChange} disabled={selectedAsset.isLocked}>
+                <option value="42">42U</option>
+                <option value="45">45U</option>
+                <option value="48">48U</option>
+                <option value="52">52U</option>
+              </select>
+            </div>
+          )}
+          {/* --- U 높이 드롭다운 끝 --- */}
+
           <div className="input-row">
             <div className="input-group"><label className="input-label">X</label><input type="number" name="gridX" className="input-field" value={editableAsset.gridX ?? ''} onChange={handleChange} disabled={selectedAsset.isLocked} /></div>
             <div className="input-group"><label className="input-label">Y</label><input type="number" name="gridY" className="input-field" value={editableAsset.gridY ?? ''} onChange={handleChange} disabled={selectedAsset.isLocked} /></div>
           </div>
           <div className="input-row">
-             <div className="input-group"><label className="input-label">너비</label><input type="number" name="widthInCells" className="input-field" min="1" value={editableAsset.widthInCells ?? 1} onChange={handleChange} disabled={selectedAsset.isLocked} /></div>
-             <div className="input-group"><label className="input-label">높이</label><input type="number" name="heightInCells" className="input-field" min="1" value={editableAsset.heightInCells ?? 1} onChange={handleChange} disabled={selectedAsset.isLocked} /></div>
+             <div className="input-group"><label className="input-label">너비(칸)</label><input type="number" name="widthInCells" className="input-field" min="1" value={editableAsset.widthInCells ?? 1} onChange={handleChange} disabled={selectedAsset.isLocked} /></div>
+             <div className="input-group"><label className="input-label">높이(칸)</label><input type="number" name="heightInCells" className="input-field" min="1" value={editableAsset.heightInCells ?? 1} onChange={handleChange} disabled={selectedAsset.isLocked} /></div>
           </div>
           <div className="input-group"><label className="input-label">회전: {editableAsset.rotation || 0}°</label>
             <div className="rotation-buttons">
@@ -88,7 +104,7 @@ const PropertiesEditor: React.FC = () => {
               <button onClick={() => handleRotate('cw')} className="rotation-btn" disabled={selectedAsset.isLocked}>↻ +45°</button>
             </div>
           </div>
-          {selectedAsset.type === 'rack' && <div className="input-group"><label className="input-label">문 방향</label><select name="doorDirection" className="input-field" value={editableAsset.doorDirection || 'north'} onChange={handleChange} disabled={selectedAsset.isLocked}><option value="north">북</option><option value="south">남</option><option value="east">동</option><option value="west">서</option></select></div>}
+          {selectedAsset.assetType === 'rack' && <div className="input-group"><label className="input-label">문 방향</label><select name="doorDirection" className="input-field" value={editableAsset.doorDirection || 'north'} onChange={handleChange} disabled={selectedAsset.isLocked}><option value="north">북</option><option value="south">남</option><option value="east">동</option><option value="west">서</option></select></div>}
         </div>}
       </div>
 
@@ -105,7 +121,6 @@ const PropertiesEditor: React.FC = () => {
          </div>}
       </div>
       
-      {/* ✨ 메타데이터 섹션 추가 */}
       <div className="accordion-section">
         <button onClick={() => toggleSection('metadata')} className="accordion-header"><span>{openSections.metadata ? '▼' : '▶'} 메타데이터</span></button>
         {openSections.metadata && <div className="accordion-content">
@@ -126,4 +141,3 @@ const PropertiesEditor: React.FC = () => {
 };
 
 export default PropertiesEditor;
-
