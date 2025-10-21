@@ -16,7 +16,6 @@ function Tools({ onCardClick }: ToolsProps) {
       label: "서버",
       size: "2U",
       img: serverImg,
-      borderColor: "border-l-sky-400",
       height: 2,
       type: "server",
     },
@@ -25,7 +24,6 @@ function Tools({ onCardClick }: ToolsProps) {
       label: "스토리지",
       size: "2U",
       img: storageImg,
-      borderColor: "border-l-emerald-400",
       height: 2,
       type: "storage",
     },
@@ -34,7 +32,6 @@ function Tools({ onCardClick }: ToolsProps) {
       label: "스위치",
       size: "1U",
       img: switchImg,
-      borderColor: "border-l-[#E80054]",
       height: 1,
       type: "switch",
     },
@@ -43,38 +40,37 @@ function Tools({ onCardClick }: ToolsProps) {
       label: "라우터",
       size: "1U",
       img: routerImg,
-      borderColor: "border-l-amber-400",
       height: 1,
       type: "router",
     },
   ];
 
   return (
-    <div className="text-white">
-      <div className="flex flex-col items-start justify-center p-8 pl-3 w-[300px] h-[120px] rounded-2xl border border-white shadow-md m-6 text-left bg-transparent leading-relaxed">
-        <span className="text-[15px] font-semibold">장비 추가</span>
-        <span className="text-[14px] mt-1">장비를 드래그하여 클릭하세요.</span>
-      </div>
-
+    <div className="text-white flex flex-col items-start">
       {deviceCards.map((card) => {
-        const borderLeftColor = typeColorMap[card.type] || "#64748b";
-
+        const color = typeColorMap[card.type] || "#64748b";
         return (
           <div
             key={card.key}
             onClick={() => onCardClick(card)}
-            className="flex flex-row items-center justify-start p-6 w-[300px] h-[120px] rounded-2xl bg-white text-black border border-white shadow-md m-6 gap-3 cursor-pointer hover:scale-105 transition-transform active:scale-95"
-            style={{ borderLeft: `8px solid ${borderLeftColor}` }}
+            className="
+              flex items-center justify-center
+              w-10 h-10 m-2 p-2
+              rounded-[4px]
+              transition-transform duration-150
+              cursor-pointer
+              hover:scale-105 active:scale-95
+              shadow-md
+            "
+            style={{
+              backgroundColor: color,
+            }}
           >
             <img
               src={card.img}
               alt={`${card.label} icon`}
-              className="w-7 h-7"
+              className="w-7 h-7 filter brightness-0 invert"
             />
-            <div className="flex flex-col items-start">
-              <span className="text-[15px] font-medium">{card.label}</span>
-              <span className="text-[14px]">{card.size}</span>
-            </div>
           </div>
         );
       })}
