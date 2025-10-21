@@ -2,27 +2,17 @@ import React, { useRef, useState, useLayoutEffect } from 'react';
 import { Stage, Layer } from 'react-konva';
 import { useDroppable } from '@dnd-kit/core';
 import type { KonvaEventObject } from 'konva/lib/Node';
+// [수정] 올바른 상대 경로로 수정합니다.
 import { useFloorPlanStore } from '../store/floorPlanStore';
 import AssetRenderer from './AssetRenderer';
 import CanvasGrid from './CanvasGrid';
 
-const CANVAS_VIEW_CONFIG = {
-  CELL_SIZE: 40,
-  HEADER_PADDING: 40,
-};
+const CANVAS_VIEW_CONFIG = { CELL_SIZE: 40, HEADER_PADDING: 40 };
 
 const Canvas: React.FC = () => {
-  // [수정] Zustand 스토어에서 상태를 더 안전하게 가져오기 위해 개별 selector를 사용합니다.
-  const assets = useFloorPlanStore((state) => state.assets);
-  const selectedAssetIds = useFloorPlanStore((state) => state.selectedAssetIds);
+  const { assets, selectedAssetIds, gridCols, gridRows, stage, setStage, deselectAll } = useFloorPlanStore();
   const displayMode = useFloorPlanStore((state) => state.displayMode);
   const displayOptions = useFloorPlanStore((state) => state.displayOptions);
-  const gridCols = useFloorPlanStore((state) => state.gridCols);
-  const gridRows = useFloorPlanStore((state) => state.gridRows);
-  const stage = useFloorPlanStore((state) => state.stage);
-  
-  const selectAsset = useFloorPlanStore((state) => state.selectAsset);
-  const setStage = useFloorPlanStore((state) => state.setStage);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [stageSize, setStageSize] = useState({ width: 0, height: 0 });
@@ -59,21 +49,20 @@ const Canvas: React.FC = () => {
     });
   };
 
-  const handleDragEnd = (e: KonvaEventObject<DragEvent>) => {
+  const handleStageDragEnd = (e: KonvaEventObject<DragEvent>) => {
     const stageNode = e.target.getStage();
     if (stageNode) {
-      setStage({
-        scale: stageNode.scaleX(),
-        x: stageNode.x(),
-        y: stageNode.y(),
-      });
+      setStage({ scale: stageNode.scaleX(), x: stageNode.x(), y: stageNode.y() });
+    }
+  };
+  
+  const handleStageClick = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
+    if (e.target === e.target.getStage()) {
+      deselectAll();
     }
   };
 
-  // [수정] stage 상태가 아직 준비되지 않았다면 렌더링을 잠시 멈춰 오류를 방지합니다.
-  if (!stage) {
-    return <main className="canvas-container" ref={containerRef}><div>Loading Canvas...</div></main>;
-  }
+  if (!stage) return <main className="canvas-container" ref={containerRef}><div>Loading...</div></main>;
 
   return (
     <main className="canvas-container" ref={containerRef}>
@@ -84,18 +73,16 @@ const Canvas: React.FC = () => {
             height={stageSize.height}
             onWheel={handleWheel}
             draggable
-            onDragEnd={handleDragEnd}
+            onDragEnd={handleStageDragEnd}
+            onClick={handleStageClick}
+            onTap={handleStageClick}
             scaleX={stage.scale}
             scaleY={stage.scale}
             x={stage.x}
             y={stage.y}
           >
             <Layer>
-              <CanvasGrid
-                gridSize={CANVAS_VIEW_CONFIG.CELL_SIZE}
-                cols={gridCols}
-                rows={gridRows}
-              />
+              <CanvasGrid gridSize={CANVAS_VIEW_CONFIG.CELL_SIZE} cols={gridCols} rows={gridRows} />
               {assets.map((asset) => (
                 <AssetRenderer
                   key={asset.id}
@@ -103,7 +90,6 @@ const Canvas: React.FC = () => {
                   gridSize={CANVAS_VIEW_CONFIG.CELL_SIZE}
                   headerPadding={CANVAS_VIEW_CONFIG.HEADER_PADDING}
                   isSelected={selectedAssetIds.includes(asset.id)}
-                  onSelect={() => selectAsset(asset.id)}
                   displayMode={displayMode}
                   displayOptions={displayOptions}
                 />

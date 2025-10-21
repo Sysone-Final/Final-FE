@@ -1,27 +1,43 @@
 import type { Mode } from "../store/floorPlanStore";
 
+// [신규] 랙의 문 방향을 위한 타입
+export type DoorDirection = "north" | "south" | "east" | "west";
 export type AssetStatus = "normal" | "warning" | "danger";
 export type DisplayMode = "status" | "customColor";
 
-export interface DisplayOptions {
+export interface DisplayOptionsType {
   showName: boolean;
   showStatusIndicator: boolean;
   showTemperature: boolean;
+  showUUsage: boolean;
+  showPowerStatus: boolean;
+  showAisle: boolean;
+  showPUE: boolean;
+  showFacilities: boolean;
+  showSensors: boolean;
+  useLOD: boolean;
+  showGridLine: boolean;
 }
 
 export interface Asset {
   id: string;
-  type: "rack" | "wall" | "door";
   name: string;
   gridX: number;
   gridY: number;
   widthInCells: number;
   heightInCells: number;
-  rotation?: number;
-  isLocked?: boolean;
-  customColor?: string;
+  type: "rack" | "wall" | "door";
   status?: AssetStatus;
+  customColor?: string;
+  isLocked?: boolean;
+  rotation?: number; // 0-360 도
+  opacity?: number; // 0-1 (0%~100%)
+  doorDirection?: DoorDirection; // 랙 문 방향
+  description?: string; // 메모
+  createdAt?: string; // ISO 날짜
+  updatedAt?: string; // ISO 날짜
   data?: {
+    uUsage?: number;
     temperature?: number;
   };
 }
@@ -29,7 +45,7 @@ export interface Asset {
 export interface FloorPlanState {
   mode: Mode;
   displayMode: DisplayMode;
-  displayOptions: DisplayOptions;
+  displayOptions: DisplayOptionsType;
   assets: Asset[];
   selectedAssetIds: string[];
   gridCols: number;
@@ -40,12 +56,16 @@ export interface FloorPlanState {
     y: number;
   };
   toggleMode: () => void;
-  selectAsset: (id: string) => void;
-  setDisplayOptions: (options: Partial<DisplayOptions>) => void;
+  setDisplayOptions: (options: Partial<DisplayOptionsType>) => void;
   setDisplayMode: (mode: DisplayMode) => void;
   setGridSize: (cols: number, rows: number) => void;
   addAsset: (asset: Omit<Asset, "id">) => void;
   setStage: (stage: FloorPlanState["stage"]) => void;
-  // [신규] 자산 업데이트 액션 타입 추가
   updateAsset: (id: string, newProps: Partial<Omit<Asset, "id">>) => void;
+  // ✨ 다중 선택/해제를 지원하도록 수정
+  selectAsset: (id: string, isMultiSelect?: boolean) => void;
+  deselectAll: () => void;
+  // ✨ 고급 기능 액션 추가
+  deleteAsset: (id: string) => void;
+  duplicateAsset: (id: string) => void;
 }
