@@ -7,7 +7,7 @@ export type UHeight = 42 | 45 | 48 | 52;
 // [추가] 자산의 물리적 위치(레이어)를 정의하는 타입
 export type AssetLayer = "floor" | "wall" | "overhead";
 
-// [수정] 새로운 레이어 기반 분류에 맞춰 자산 타입을 재정의
+//  새로운 레이어 기반 분류에 맞춰 자산 타입을 재정의
 export type AssetType =
   // Floor Layer
   | "wall"
