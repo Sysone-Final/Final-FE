@@ -28,7 +28,7 @@ const checkCollision = (targetAsset: Asset, allAssets: Asset[]): boolean => {
       targetAsset.gridX < otherAsset.gridX + otherAsset.widthInCells &&
       targetAsset.gridX + targetAsset.widthInCells > otherAsset.gridX &&
       targetAsset.gridY < otherAsset.gridY + otherAsset.heightInCells &&
-      targetAsset.gridY + otherAsset.heightInCells > otherAsset.gridY
+      targetAsset.gridY + targetAsset.heightInCells > otherAsset.gridY
     ) {
       return true;
     }
@@ -145,16 +145,16 @@ const AssetRenderer: React.FC<AssetRendererProps> = ({ asset, gridSize, headerPa
         opacity={asset.opacity ?? 1}
       />
       
-      {/*  'rack' 또는 'door'로 시작하는 모든 자산 타입에 대해 문 표시 */}
+      {/* 'rack' 또는 'door'로 시작하는 모든 자산 타입에 대해 문 표시 */}
       {(asset.assetType === 'rack' || asset.assetType.startsWith('door')) && doorPos && (
         <Rect {...doorPos} fill={DOOR_COLOR} listening={false} />
       )}
       
-      {/*  자산 내부 정보가 올바르게 표시되도록 좌표 계산 수정 */}
+      {/* 자산 내부 정보가 올바르게 표시되도록 좌표 계산 수정 */}
       <Group listening={false}>
-        {displayOptions.showName && <Text text={asset.name} x={5} y={5} fontSize={12} fill="#34495e" fontStyle="bold" />}
+        {displayOptions.showName && <Text text={asset.name} x={5} y={5} fontSize={12} />}
         {displayOptions.showStatusIndicator && asset.status && <Circle x={pixelWidth - 10} y={10} radius={5} fill={STATUS_COLORS[asset.status]} stroke="#fff" strokeWidth={1}/>}
-        {displayOptions.showTemperature && asset.data?.temperature && <Text text={`T: ${asset.data.temperature}°C`} x={5} y={20} fontSize={10} fill="#34495e" />}
+        {displayOptions.showTemperature && asset.data?.temperature && <Text text={`T: ${asset.data.temperature}°C`} x={5} y={20} fontSize={10} />}
         {asset.isLocked && <Text text="🔒" x={5} y={pixelHeight - 18} fontSize={14} opacity={0.7} />}
       </Group>
     </Group>
