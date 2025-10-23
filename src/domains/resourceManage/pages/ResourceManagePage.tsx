@@ -14,7 +14,7 @@ import type {
 import ResourceFilters from '../components/ResourceFilters';
 import ResourceTable from '../components/ResourceTable';
 import ResourcePaginationActions from '../components/ResourcePaginationActions';
-import ResourceFormModal from '../components/ResourceFormModal';
+import ResourceWizardModal from '../components/ResourceWizardModal';
 import { columns } from '../components/resourceTable.config';
 import { 
   useGetResourceList, 
@@ -160,7 +160,7 @@ export default function ResourceManagePage() {
         // TODO: onStatusChangeSelectedHandler 전달
       />
       
-      <ResourceFormModal
+      <ResourceWizardModal
         isOpen={isModalOpen}
         onCloseHandler={closeModalHandler}
         resource={selectedResource}

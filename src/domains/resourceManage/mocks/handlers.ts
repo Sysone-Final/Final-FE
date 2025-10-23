@@ -1,55 +1,57 @@
 import { http, HttpResponse, delay } from "msw";
-import type { Resource, ResourceStatus } from "../types/resource.types";
-
+import type {
+  Resource,
+  ResourceStatus,
+  EquipmentType,
+  PositionType,
+} from "../types/resource.types";
 // NOTE(user): Mock Data는 가변적이므로 let 사용
 let MOCK_DATA: Resource[] = [
   {
     id: "1",
-    assetName: "DB-Server-01",
-    status: "정상",
+    equipmentName: "DB-Server-01",
+    status: "NORMAL",
     ipAddress: "192.168.1.101",
-    model: "Dell PowerEdge R740",
+    modelName: "Dell PowerEdge R740",
     location: "IDC A-Zone, Rack A-01, U:22",
+    manufacturer: "Dell",
+    equipmentType: "SERVER",
+    unitSize: 2,
+    rackId: "rack1",
+    startUnit: 22,
   },
   {
     id: "2",
-    assetName: "Web-Server-02",
-    status: "경고",
+    equipmentName: "Web-Server-02",
+    status: "MAINTENANCE", // '경고' -> '점검중' (타입 변경)
     ipAddress: "192.168.1.102",
-    model: "HP ProLiant DL380",
+    modelName: "HP ProLiant DL380",
     location: "IDC A-Zone, Rack A-02, U:15",
+    manufacturer: "HP",
+    equipmentType: "SERVER",
+    unitSize: 2,
   },
   {
     id: "3",
-    assetName: "Switch-Core-01",
-    status: "정보 필요",
+    equipmentName: "Switch-Core-01",
+    status: "NORMAL", // '정보 필요' -> '정상' (타입 변경)
     ipAddress: "192.168.1.103",
-    model: "Cisco Catalyst 9300",
+    modelName: "Cisco Catalyst 9300",
     location: "IDC B-Zone, Rack B-01, U:42",
+    manufacturer: "Cisco",
+    equipmentType: "SWITCH",
+    unitSize: 1,
   },
   {
     id: "4",
-    assetName: "Storage-Array-01",
-    status: "미할당",
+    equipmentName: "Storage-Array-01",
+    status: "INACTIVE", // '미할당' -> '비활성' (타입 변경)
     ipAddress: "192.168.1.104",
-    model: "NetApp FAS8200",
-    location: "IDC C-Zone, Rack C-01, U:35",
-  },
-  {
-    id: "5",
-    assetName: "Firewall-01",
-    status: "정상",
-    ipAddress: "192.168.1.105",
-    model: "Fortinet FortiGate 600E",
-    location: "IDC A-Zone, Rack A-03, U:10",
-  },
-  {
-    id: "6",
-    assetName: "Backup-Server-01",
-    status: "경고",
-    ipAddress: "192.168.1.106",
-    model: "IBM System x3650 M5",
-    location: "IDC B-Zone, Rack B-02, U:28",
+    modelName: "NetApp FAS8200",
+    location: "미지정",
+    manufacturer: "NetApp",
+    equipmentType: "SERVER", // (예시)
+    unitSize: 4,
   },
 ];
 
@@ -67,15 +69,16 @@ export const handlers = [
     // const type = url.searchParams.get('type') || '';
     // const location = url.searchParams.get('location') || '';
 
-     
     let filteredData = MOCK_DATA;
 
     if (searchTerm) {
       filteredData = filteredData.filter(
         (r) =>
-          r.assetName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          r.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          r.ipAddress.includes(searchTerm),
+          // [수정] 필드명 변경
+          r.equipmentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (r.modelName &&
+            r.modelName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (r.ipAddress && r.ipAddress.includes(searchTerm)),
       );
     }
     if (status) {
@@ -110,29 +113,61 @@ export const handlers = [
     }
   }),
 
-  // --- POST /resourceManage ---
+  // --- POST /resourceManage (새 자원 등록) ---
   http.post(`${API_BASE_URL}/resourceManage`, async ({ request }) => {
     await delay(500);
     const formData = await request.formData();
+
+    // [수정] 3단계 폼의 모든 필드를 받도록 수정
     const newResource: Resource = {
       id: `new-${Date.now()}`,
-      assetName: formData.get("assetName") as string,
-      ipAddress: (formData.get("ipAddress") as string) || "N/A",
-      model: formData.get("model") as string,
-      status: (formData.get("status") as ResourceStatus) || "미할당",
-      vendor: (formData.get("vendor") as string) || "Unknown",
-      osType: (formData.get("osType") as string) || "Unknown",
-      location: "미지정",
-      imageUrl: formData.get("imageFile")
-        ? `https://via.placeholder.com/150?text=${formData.get("assetName")}`
+      // 1단계
+      equipmentName: formData.get("equipmentName") as string,
+      // [수정] 'as any' 대신 'as EquipmentType' 사용
+      equipmentType:
+        (formData.get("equipmentType") as EquipmentType) || "SERVER",
+      unitSize: Number(formData.get("unitSize")) || 1, // (필수)
+      // [수정] 'as any' 대신 'as ResourceStatus' 사용
+      status: (formData.get("status") as ResourceStatus) || "INACTIVE", // (필수)
+      manufacturer: (formData.get("manufacturer") as string) || undefined,
+      modelName: (formData.get("modelName") as string) || undefined,
+      serialNumber: (formData.get("serialNumber") as string) || undefined,
+      equipmentCode: (formData.get("equipmentCode") as string) || undefined,
+      imageUrlFront: formData.get("imageFrontFile")
+        ? `https://via.placeholder.com/150?text=Front`
         : undefined,
+      imageUrlRear: formData.get("imageRearFile")
+        ? `https://via.placeholder.com/150?text=Rear`
+        : undefined,
+
+      // 2단계
+      datacenterId: (formData.get("datacenterId") as string) || undefined,
+      rackId: (formData.get("rackId") as string) || undefined,
+      startUnit: Number(formData.get("startUnit")) || undefined,
+      // [수정] 'as any' 대신 'as PositionType' 사용
+      positionType: (formData.get("positionType") as PositionType) || undefined,
+      os: (formData.get("os") as string) || undefined,
+      cpuSpec: (formData.get("cpuSpec") as string) || undefined,
+      memorySpec: (formData.get("memorySpec") as string) || undefined,
+      diskSpec: (formData.get("diskSpec") as string) || undefined,
+      ipAddress: (formData.get("ipAddress") as string) || undefined,
+      macAddress: (formData.get("macAddress") as string) || undefined,
+
+      // 3단계
+      managerId: (formData.get("managerId") as string) || undefined,
+      installationDate:
+        (formData.get("installationDate") as string) || undefined,
+      notes: (formData.get("notes") as string) || undefined,
+      monitoringEnabled: formData.get("monitoringEnabled") === "true",
+
+      location: "미지정", // (임시)
     };
     MOCK_DATA.unshift(newResource);
     console.log("[MSW] 자원 생성됨:", newResource);
     return HttpResponse.json(newResource, { status: 201 });
   }),
 
-  // --- PUT /resourceManage/:id ---
+  // --- PUT /resourceManage/:id (자원 수정) ---
   http.put(
     `${API_BASE_URL}/resourceManage/:id`,
     async ({ params, request }) => {
@@ -143,21 +178,75 @@ export const handlers = [
 
       if (index > -1) {
         const existingResource = MOCK_DATA[index];
+
+        // [수정] 3단계 폼의 모든 필드를 업데이트하도록 수정
         const updatedResource: Resource = {
           ...existingResource,
-          assetName:
-            (formData.get("assetName") as string) || existingResource.assetName,
-          ipAddress:
-            (formData.get("ipAddress") as string) || existingResource.ipAddress,
-          model: (formData.get("model") as string) || existingResource.model,
+          // 1단계
+          equipmentName:
+            (formData.get("equipmentName") as string) ||
+            existingResource.equipmentName,
+          // [수정] 'as any' 대신 'as EquipmentType' 사용
+          equipmentType:
+            (formData.get("equipmentType") as EquipmentType) ||
+            existingResource.equipmentType,
+          unitSize:
+            Number(formData.get("unitSize")) || existingResource.unitSize,
+          // [수정] 'as any' 대신 'as ResourceStatus' 사용
           status:
             (formData.get("status") as ResourceStatus) ||
             existingResource.status,
-          vendor: (formData.get("vendor") as string) || existingResource.vendor,
-          osType: (formData.get("osType") as string) || existingResource.osType,
-          imageUrl: formData.get("imageFile")
-            ? `https://via.placeholder.com/150?text=updated-${formData.get("assetName")}`
-            : existingResource.imageUrl,
+          manufacturer:
+            (formData.get("manufacturer") as string) ||
+            existingResource.manufacturer,
+          modelName:
+            (formData.get("modelName") as string) || existingResource.modelName,
+          serialNumber:
+            (formData.get("serialNumber") as string) ||
+            existingResource.serialNumber,
+          equipmentCode:
+            (formData.get("equipmentCode") as string) ||
+            existingResource.equipmentCode,
+          imageUrlFront: formData.get("imageFrontFile")
+            ? `https://via.placeholder.com/150?text=Front-Upd`
+            : existingResource.imageUrlFront,
+          imageUrlRear: formData.get("imageRearFile")
+            ? `https://via.placeholder.com/150?text=Rear-Upd`
+            : existingResource.imageUrlRear,
+
+          // 2단계
+          datacenterId:
+            (formData.get("datacenterId") as string) ||
+            existingResource.datacenterId,
+          rackId: (formData.get("rackId") as string) || existingResource.rackId,
+          startUnit:
+            Number(formData.get("startUnit")) || existingResource.startUnit,
+          // [수정] 'as any' 대신 'as PositionType' 사용
+          positionType:
+            (formData.get("positionType") as PositionType) ||
+            existingResource.positionType,
+          os: (formData.get("os") as string) || existingResource.os,
+          cpuSpec:
+            (formData.get("cpuSpec") as string) || existingResource.cpuSpec,
+          memorySpec:
+            (formData.get("memorySpec") as string) ||
+            existingResource.memorySpec,
+          diskSpec:
+            (formData.get("diskSpec") as string) || existingResource.diskSpec,
+          ipAddress:
+            (formData.get("ipAddress") as string) || existingResource.ipAddress,
+          macAddress:
+            (formData.get("macAddress") as string) ||
+            existingResource.macAddress,
+
+          // 3단계
+          managerId:
+            (formData.get("managerId") as string) || existingResource.managerId,
+          installationDate:
+            (formData.get("installationDate") as string) ||
+            existingResource.installationDate,
+          notes: (formData.get("notes") as string) || existingResource.notes,
+          monitoringEnabled: formData.get("monitoringEnabled") === "true",
         };
         MOCK_DATA[index] = updatedResource;
         console.log("[MSW] 자원 수정됨:", updatedResource);

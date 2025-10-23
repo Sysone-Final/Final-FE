@@ -21,6 +21,7 @@ export const useGetResourceList = (
     queryKey: [RESOURCE_QUERY_KEY, page, size, filters],
     queryFn: () => getResourceList(page, size, filters),
     placeholderData: (previousData) => previousData,
+    // keepPreviousData: true,
   });
 };
 
