@@ -1,9 +1,14 @@
 import { Stage, Layer, Rect, Line, Text } from "react-konva";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import type { RackDevice } from "../types";
 import Device from "./Device";
 import { RACK_CONFIG, UNIT_COUNT } from "../constants/rackConstants";
 import type { FloatingDevice } from "../types";
+import {
+  getFloatingDeviceInfo,
+  calculateDraggedPosition,
+  calculateDeviceY,
+} from "../utils/rackCalculation";
 
 interface RackProps {
   devices: RackDevice[];
@@ -21,9 +26,8 @@ function Rack({
   onDeviceDragEnd,
 }: RackProps) {
   // 랙 설정
-  const { width: rackWidth, frameThickness, panelWidth } = RACK_CONFIG;
   const [, setScrollY] = useState(0);
-
+  const { width: rackWidth, frameThickness, panelWidth } = RACK_CONFIG;
   const unitHeight = 40;
   const rackHeight = UNIT_COUNT * unitHeight;
   const baseY = frameThickness;
@@ -43,44 +47,28 @@ function Rack({
     line: "#4b5563",
     unitText: "#6b7280",
   };
-
-  // 마우스 위치로 U 위치 계산
-  const calculationPosition = (mouseY: number): number => {
-    const relativeY = mouseY - baseY;
-    const unit = Math.floor(relativeY / unitHeight);
-    const position = UNIT_COUNT - unit;
-    return Math.max(1, Math.min(UNIT_COUNT, position));
-  };
-
-  // 떠있는 장비 정보 계산
-  const getFloatingDeviceInfo = () => {
-    if (!floatingDevice) return null;
-    const position = calculationPosition(floatingDevice.mouseY);
-    const y =
-      rackHeight -
-      (position - 1) * unitHeight -
-      floatingDevice.card.height * unitHeight +
-      baseY;
-    const height = unitHeight * floatingDevice.card.height;
-    return { position, y, height };
-  };
-
-  const floatingInfo = getFloatingDeviceInfo();
+  const floatingInfo = useMemo(
+    () =>
+      getFloatingDeviceInfo(floatingDevice, {
+        rackHeight,
+        baseY,
+        unitHeight,
+      }),
+    [floatingDevice, rackHeight, baseY, unitHeight]
+  );
 
   // 장비 드래그 종료 처리
   const handleDeviceDragEnd = (deviceId: number, newY: number) => {
     const draggedDevice = devices.find((d) => d.id === deviceId);
     if (!draggedDevice) return;
 
-    const deviceBottomY = newY + draggedDevice.height * unitHeight;
-    const relativeY = deviceBottomY - baseY;
-    const bottomUnit = Math.floor(relativeY / unitHeight);
-    const newPosition = UNIT_COUNT - bottomUnit;
-    const clampedPosition = Math.max(
-      1,
-      Math.min(UNIT_COUNT - draggedDevice.height + 1, newPosition)
+    const newPosition = calculateDraggedPosition(
+      newY,
+      draggedDevice.height,
+      baseY,
+      unitHeight
     );
-    onDeviceDragEnd(deviceId, clampedPosition);
+    onDeviceDragEnd(deviceId, newPosition);
   };
 
   // 스크롤 처리
@@ -90,8 +78,13 @@ function Rack({
 
   return (
     <div
-      className="overflow-y-auto overflow-x-hidden"
-      style={{ maxHeight: "800px" }}
+      className="overflow-y-auto overflow-x-hidden "
+      style={{
+        height: "670px",
+        width: `${fullWidth}px`,
+        scrollbarWidth: "none",
+        msOverflowStyle: "none",
+      }}
       onScroll={handleScroll}
     >
       <Stage
@@ -145,7 +138,6 @@ function Rack({
                   text={`${unitNumber}U`}
                   fontSize={12}
                   fill={RACK_COLORS.unitText}
-                  fontFamily="Arial"
                 />
               );
             }
@@ -155,11 +147,13 @@ function Rack({
 
           {/* 장비 슬롯 */}
           {devices.map((device) => {
-            const y =
-              rackHeight -
-              (device.position - 1) * unitHeight -
-              device.height * unitHeight +
-              baseY;
+            const y = calculateDeviceY(
+              device.position,
+              device.height,
+              rackHeight,
+              baseY,
+              unitHeight
+            );
             const height = unitHeight * device.height;
             return (
               <Device
@@ -183,7 +177,6 @@ function Rack({
                 type: floatingDevice.card.type,
                 position: floatingInfo.position,
                 height: floatingDevice.card.height,
-                color: floatingDevice.card.type,
               }}
               y={floatingInfo.y}
               height={floatingInfo.height}

@@ -3,6 +3,7 @@ import type { RackDevice, FloatingDevice, DeviceCard } from "../types";
 import { useState } from "react";
 import { typeColorMap } from "../utils/colorMap";
 import Sidebar from "../components/Sidebar";
+import { checkCollision } from "../utils/rackCollistionDetection";
 
 function RackView() {
   const [installedDevices, setInstalledDevices] = useState<RackDevice[]>([
@@ -37,7 +38,7 @@ function RackView() {
   );
   const [resetKey, setResetKey] = useState(0);
 
-  //카드 클릭 핸들러
+  // 카드 클릭 핸들러
   const handleCardClick = (card: DeviceCard) => {
     setFloatingDevice({
       card,
@@ -45,7 +46,7 @@ function RackView() {
     });
   };
 
-  //마우스 이동
+  // 마우스 이동
   const handleMouseMove = (mouseY: number) => {
     if (floatingDevice) {
       setFloatingDevice({
@@ -55,24 +56,25 @@ function RackView() {
     }
   };
 
-  //드래그 종료 핸들러
+  // 드래그 종료 핸들러
   const handleDeviceDragEnd = (deviceId: number, newPosition: number) => {
     const draggedDevice = installedDevices.find((d) => d.id === deviceId);
     if (!draggedDevice) return;
 
+    // 위치가 변경되지 않았으면 무시
     if (draggedDevice.position === newPosition) {
       return;
     }
 
-    //충돌 검사 (장비가 있을 경우)
-    const hasCollision = installedDevices.some((device) => {
-      if (device.id === deviceId) return false;
-      const deviceBottom = device.position;
-      const deviceTop = device.position + device.height - 1;
-      const newBottom = newPosition;
-      const newTop = newPosition + draggedDevice.height - 1;
-      return !(newTop < deviceBottom || newBottom > deviceTop);
-    });
+    // 충돌 검사
+    const hasCollision = checkCollision(
+      {
+        position: newPosition,
+        height: draggedDevice.height,
+      },
+      installedDevices,
+      deviceId
+    );
 
     if (hasCollision) {
       console.log("이동할 수 없습니다. 다른 장비와 겹칩니다.");
@@ -80,6 +82,7 @@ function RackView() {
       return;
     }
 
+    // 장비 위치 업데이트
     setInstalledDevices(
       installedDevices.map((device) =>
         device.id === deviceId ? { ...device, position: newPosition } : device
@@ -87,27 +90,27 @@ function RackView() {
     );
   };
 
-  //랙 클릭 핸들러
+  // 랙 클릭 핸들러
   const handleRackClick = (position: number) => {
     if (!floatingDevice) return;
 
     const color = typeColorMap[floatingDevice.card.type] || "#334155";
 
-    //충돌 검사
-    const hasCollision = installedDevices.some((device) => {
-      const deviceBottom = device.position;
-      const deviceTop = device.position + device.height - 1;
-      const newBottom = position;
-      const newTop = position + floatingDevice.card.height - 1;
-      return !(newTop < deviceBottom || newBottom > deviceTop);
-    });
+    // 충돌 검사
+    const hasCollision = checkCollision(
+      {
+        position,
+        height: floatingDevice.card.height,
+      },
+      installedDevices
+    );
 
     if (hasCollision) {
       console.log("이미 장비가 있습니다.");
       return;
     }
 
-    //새 장비 추가
+    // 새 장비 추가
     const newDevice: RackDevice = {
       id: Date.now(),
       name: floatingDevice.card.label,
@@ -116,10 +119,11 @@ function RackView() {
       height: floatingDevice.card.height,
       color,
     };
-    console.log("생성된 newDevice:", newDevice);
+
     setInstalledDevices([...installedDevices, newDevice]);
     setFloatingDevice(null);
   };
+
   return (
     <div className="min-h-dvh flex flex-col text-white">
       <main className="flex flex-1 justify-center items-center pb-20">
