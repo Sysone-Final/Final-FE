@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
 body {
-  @apply min-h-screen bg-gradient-to-br from-black/50 to-sky-700;
+  @apply min-h-screen bg-gray-950;
   font-family: Pretendard;
 }

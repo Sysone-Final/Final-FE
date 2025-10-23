@@ -37,8 +37,8 @@ const router = createBrowserRouter([
         element: <ServerRoomDetailView />,
       },
       {
-        path: "floor-plan", // 이 주소로 접속하면
-        element: <FloorPlanPage />, // FloorPlanPage를 보여준다
+        path: "floor-plan", 
+        element: <FloorPlanPage />,
       },
     ],
   },
