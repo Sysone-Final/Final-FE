@@ -1,8 +1,9 @@
 import { Group, Rect, Text, Line } from "react-konva";
 import type { RackDevice } from "../types";
 import { useState } from "react";
+import { UNIT_COUNT } from "../constants/rackConstants";
 
-interface RackSlotProps {
+interface DeviceProps {
   device: RackDevice;
   y: number;
   x: number;
@@ -22,7 +23,7 @@ function Device({
   opacity = 1,
   isFloating = false,
   onDragEnd,
-}: RackSlotProps) {
+}: DeviceProps) {
   const [dragging, setIsDragging] = useState(false);
 
   const fillColor = isFloating
@@ -33,11 +34,34 @@ function Device({
     ? device.color || "#60a5fa"
     : device.color || "#3f4e63";
 
+  const handleDragBound = (pos: { x: number; y: number }) => {
+    const unitHeight = 40;
+    const baseY = 20;
+    const rackHeight = UNIT_COUNT * unitHeight;
+
+    const newX = 0;
+
+    const minY = baseY;
+    const maxY = baseY + rackHeight - height;
+
+    const relativeY = pos.y - baseY;
+    const snappedRelativeY = Math.round(relativeY / unitHeight) * unitHeight;
+    const snappedY = snappedRelativeY + baseY;
+
+    const clampedY = Math.max(minY, Math.min(maxY, snappedY));
+
+    return {
+      x: newX,
+      y: clampedY,
+    };
+  };
+
   return (
     <Group
       y={y}
       opacity={dragging ? 0.5 : opacity}
       draggable={!isFloating}
+      dragBoundFunc={!isFloating ? handleDragBound : undefined}
       onDragStart={() => setIsDragging(true)}
       onDragEnd={(e) => {
         setIsDragging(false);

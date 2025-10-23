@@ -36,11 +36,16 @@ export function getFloatingDeviceInfo(
   },
 ) {
   if (!floatingDevice) return null;
-  const position = calculationPosition(
+  let position = calculationPosition(
     floatingDevice.mouseY,
     rackConfig.baseY,
     rackConfig.unitHeight,
   );
+
+  const minPosition = 1;
+  const maxPosition = UNIT_COUNT - floatingDevice.card.height + 1;
+  position = Math.max(minPosition, Math.min(maxPosition, position));
+
   const y = calculateDeviceY(
     position,
     floatingDevice.card.height,
@@ -59,11 +64,21 @@ export function calculateDraggedPosition(
   baseY: number,
   unitHeight: number,
 ): number {
-  const deviceBottomY = newY + deviceHeight * unitHeight;
-  const relativeY = deviceBottomY - baseY;
-  const bottomUnit = Math.floor(relativeY / unitHeight);
-  const newPosition = UNIT_COUNT - bottomUnit;
+  // 1. 상단의 상대 Y 좌표
+  const relativeY = newY - baseY;
 
-  // 랙 범위 내로 제한
-  return Math.max(1, Math.min(UNIT_COUNT - deviceHeight + 1, newPosition));
+  // 2. 상단이 몇 번째 유닛인지 계산
+  const topUnit = Math.round(relativeY / unitHeight);
+
+  // 3. 상단의 U 위치
+  const topPosition = UNIT_COUNT - topUnit;
+
+  // 4. 하단의 U 위치 계산 (position은 하단!)
+  const bottomPosition = topPosition - deviceHeight + 1;
+
+  // 5. 범위 제한
+  const minPosition = 1;
+  const maxPosition = UNIT_COUNT;
+
+  return Math.max(minPosition, Math.min(maxPosition, bottomPosition));
 }
