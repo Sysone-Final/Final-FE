@@ -1,18 +1,18 @@
 export const UNIT_COUNT = 42;
 
 export const RACK_CONFIG = {
-  height: 700,
   width: 300,
+  height: 700,
   frameThickness: 20,
   panelWidth: 25,
-  baseY: 40,
-};
+  leftPanelOffset: -5,
+  unitHeight: 40,
+} as const;
 
 export const RACK_COLORS = {
   background: "#1f2937",
-  gradientTop: "#374151",
-  gradientBottom: "#1f2937",
-  scalePanel: "#0f172a",
-  line: "#1f2937",
-  text: "#ffffff",
-};
+  border: "#374151",
+  rackBody: "#000000",
+  line: "#4b5563",
+  unitText: "#6b7280",
+} as const;
