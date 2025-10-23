@@ -1,10 +1,10 @@
-// src/domains/resourceManage/components/ResourcePaginationActions.tsx
+
 import React from 'react';
 import type { Table } from '@tanstack/react-table';
-// 💡 수정: '@/' 대신 상대 경로 '..' 사용
+
 import type { Resource } from '../types/resource.types';
 
-// TODO(user): 아이콘 라이브러리 (lucide-react 등) 설치 후 주석 해제
+// 아이콘 라이브러리 (lucide-react 등) 
 // import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Trash2 } from 'lucide-react';
 
 interface ResourcePaginationActionsProps {
@@ -20,19 +20,19 @@ export default function ResourcePaginationActions({ table }: ResourcePaginationA
     <div className="mt-4 flex flex-col md:flex-row justify-between items-center gap-4">
       {/* Prompt 3: Bulk Actions (Left-aligned) */}
       <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-700">{selectedCount} items selected:</span>
+        <span className="text-sm text-gray-700">{selectedCount} 개 항목 선택됨:</span>
         <button
           disabled={selectedCount === 0}
           className="flex items-center px-3 py-1 border border-gray-300 rounded-lg text-sm disabled:opacity-50"
         >
           {/* <Trash2 size={14} className="mr-1" /> */}
-          <span>🗑️ Delete</span>
+          <span>🗑️ 삭제</span>
         </button>
         <select
           disabled={selectedCount === 0}
           className="border border-gray-300 rounded-lg py-1 px-2 text-sm disabled:opacity-50"
         >
-          <option>Change Status</option>
+          <option>상태 변경</option>
           {/* ... */}
         </select>
       </div>

@@ -1,10 +1,13 @@
 // src/domains/resourceManage/components/ResourceTable.tsx
 import React from 'react';
 import { flexRender } from '@tanstack/react-table';
-import type { Table as TanStackTable } from '@tanstack/react-table';
-// 💡 수정: '@/' 대신 상대 경로 '..' 사용
+import type {
+  Table as TanStackTable,
+  HeaderGroup,
+  Row,
+  Cell,
+} from '@tanstack/react-table';
 import type { Resource } from '../types/resource.types';
-// 💡 수정: Fast Refresh 오류 해결을 위해 columns를 별도 파일에서 임포트
 import { columns } from './resourceTable.config';
 
 interface ResourceTableProps {
@@ -14,10 +17,10 @@ interface ResourceTableProps {
 
 export default function ResourceTable({ table, isLoading }: ResourceTableProps) {
   if (isLoading) {
-    // TODO(user): 공통 스켈레톤 UI 컴포넌트로 대체
+     // TODO(user): 공통 스켈레톤 UI 컴포넌트로 대체
     return (
       <div className="text-center py-10 text-gray-500">
-        Loading resources...
+        자원을 불러오는 중...
       </div>
     );
   }
@@ -27,14 +30,17 @@ export default function ResourceTable({ table, isLoading }: ResourceTableProps) 
     <div className="overflow-x-auto bg-white rounded-lg shadow-md">
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
-          {table.getHeaderGroups().map((headerGroup) => (
+          {table.getHeaderGroups().map((headerGroup: HeaderGroup<Resource>) => (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
                 <th
                   key={header.id}
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                 >
-                  {flexRender(header.column.columnDef.header, header.getContext())}
+                  {flexRender(
+                    header.column.columnDef.header,
+                    header.getContext(),
+                  )}
                 </th>
               ))}
             </tr>
@@ -42,10 +48,13 @@ export default function ResourceTable({ table, isLoading }: ResourceTableProps) 
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {table.getRowModel().rows.length > 0 ? (
-            table.getRowModel().rows.map((row) => (
+            table.getRowModel().rows.map((row: Row<Resource>) => (
               <tr key={row.id} className="hover:bg-gray-50">
-                {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                {row.getVisibleCells().map((cell: Cell<Resource, unknown>) => (
+                  <td
+                    key={cell.id}
+                    className="px-6 py-4 whitespace-nowrap text-sm text-gray-700"
+                  >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}
@@ -53,8 +62,11 @@ export default function ResourceTable({ table, isLoading }: ResourceTableProps) 
             ))
           ) : (
             <tr>
-              <td colSpan={columns.length} className="text-center py-10 text-gray-500">
-                No resources found.
+              <td
+                colSpan={columns.length}
+                className="text-center py-10 text-gray-500"
+              >
+                표시할 자원이 없습니다.
               </td>
             </tr>
           )}

@@ -1,6 +1,6 @@
-// src/domains/resourceManage/components/ResourceFormModal.tsx
+
 import React, { useState, useEffect } from 'react';
-// 💡 수정: '@/' 대신 상대 경로 '..' 사용
+
 import type { Resource, ResourceStatus } from '../types/resource.types';
 import { useCreateResource, useUpdateResource } from '../hooks/useResourceQueries';
 
@@ -17,7 +17,7 @@ export default function ResourceFormModal({ isOpen, onCloseHandler, resource }: 
   const [model, setModel] = useState('');
   const [vendor, setVendor] = useState('');
   const [osType, setOsType] = useState('');
-  const [status, setStatus] = useState<ResourceStatus>('Unassigned');
+  const [status, setStatus] = useState<ResourceStatus>('미할당');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const createResourceMutation = useCreateResource();
@@ -37,7 +37,7 @@ export default function ResourceFormModal({ isOpen, onCloseHandler, resource }: 
       setAssetName('');
       setIpAddress('');
       setModel('');
-      setStatus('Unassigned');
+      setStatus('미할당');
       setVendor('');
       setOsType('');
     }
@@ -67,7 +67,7 @@ export default function ResourceFormModal({ isOpen, onCloseHandler, resource }: 
     formData.append('osType', osType);
     
     if (selectedFile) {
-      formData.append('imageFile', selectedFile); // 백엔드와 키 이름("imageFile") 협의
+      formData.append('imageFile', selectedFile); // 백엔드 키 이름("imageFile") 매치시키기
     }
 
     if (resource) {
@@ -89,37 +89,37 @@ export default function ResourceFormModal({ isOpen, onCloseHandler, resource }: 
     <div className="fixed inset-0 bg-black bg-opacity-50 z-40 flex justify-center items-center">
       <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-lg z-50">
         <h2 className="text-xl font-bold mb-4">
-          {resource ? 'Edit Asset' : 'Add New Asset'}
+          {resource ? '자산 수정' : '새 자산 추가'}
         </h2>
         
         <form onSubmit={submitHandler}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             {/* 폼 필드 (엑셀 및 UI 기반) */}
-            <input type="text" placeholder="Asset Name" value={assetName} onChange={(e) => setAssetName(e.target.value)} className="border p-2 rounded w-full" required />
-            <input type="text" placeholder="IP Address" value={ipAddress} onChange={(e) => setIpAddress(e.target.value)} className="border p-2 rounded w-full" />
-            <input type="text" placeholder="Model" value={model} onChange={(e) => setModel(e.target.value)} className="border p-2 rounded w-full" required />
-            <input type="text" placeholder="Vendor" value={vendor} onChange={(e) => setVendor(e.target.value)} className="border p-2 rounded w-full" />
-            <input type="text" placeholder="OS Type" value={osType} onChange={(e) => setOsType(e.target.value)} className="border p-2 rounded w-full" />
+            <input type="text" placeholder="자산명" value={assetName} onChange={(e) => setAssetName(e.target.value)} className="border p-2 rounded w-full" required />
+            <input type="text" placeholder="IP 주소" value={ipAddress} onChange={(e) => setIpAddress(e.target.value)} className="border p-2 rounded w-full" />
+            <input type="text" placeholder="모델명" value={model} onChange={(e) => setModel(e.target.value)} className="border p-2 rounded w-full" required />
+            <input type="text" placeholder="제조사" value={vendor} onChange={(e) => setVendor(e.target.value)} className="border p-2 rounded w-full" />
+            <input type="text" placeholder="OS 타입" value={osType} onChange={(e) => setOsType(e.target.value)} className="border p-2 rounded w-full" />
             <select value={status} onChange={(e) => setStatus(e.target.value as ResourceStatus)} className="border p-2 rounded w-full">
-              <option value="Unassigned">Unassigned</option>
-              <option value="Normal">Normal</option>
-              <option value="Warning">Warning</option>
-              <option value="Info Needed">Info Needed</option>
+              <option value="미할당">미할당</option>
+              <option value="정상">정상</option>
+              <option value="경고">경고</option>
+              <option value="정보 필요">정보 필요</option>
             </select>
             
             {/* P0: 이미지 업로드 */}
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Asset Image</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">자산 이미지</label>
               <input type="file" accept="image/*" onChange={fileChangeHandler} className="border p-2 rounded w-full text-sm" />
             </div>
           </div>
           
           <div className="flex justify-end gap-2">
             <button type="button" onClick={onCloseHandler} disabled={isLoading} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
-              Cancel
+              취소
             </button>
             <button type="submit" disabled={isLoading} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-blue-300">
-              {isLoading ? 'Saving...' : 'Save'}
+              {isLoading ? '저장 중...' : '저장'}
             </button>
           </div>
         </form>

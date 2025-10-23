@@ -1,27 +1,30 @@
-// src/domains/resourceManage/components/resourceTable.config.tsx
-// 💡 수정: useRef, useEffect 삭제. React는 JSX 때문에 유지
+
 import React from 'react'; 
-// 💡 수정: Table 타입 임포트 삭제
-import type { ColumnDef } from '@tanstack/react-table'; 
+import type { ColumnDef } from '@tanstack/react-table';
 import type { Resource, ResourceStatus, ResourceTableMeta } from '../types/resource.types';
-// 💡 추가: 방금 만든 HeaderCheckbox 컴포넌트 임포트
+//  HeaderCheckbox 컴포넌트를 임포트
 import HeaderCheckbox from './HeaderCheckbox';
 
-// ... (statusColorMap 코드는 그대로 둡니다) ...
+// NOTE(user): Status Pill 스타일 (Tailwind) - Prompt 2 요구사항
 const statusColorMap: Record<ResourceStatus, string> = {
-  Normal: 'bg-green-100 text-green-800',
-  Warning: 'bg-orange-100 text-orange-800',
-  'Info Needed': 'bg-blue-100 text-blue-800',
-  Unassigned: 'bg-gray-100 text-gray-800',
+  '정상': 'bg-green-100 text-green-800',
+  '경고': 'bg-orange-100 text-orange-800',
+  '정보 필요': 'bg-blue-100 text-blue-800',
+  '미할당': 'bg-gray-100 text-gray-800',
 };
 
-// 💡 삭제: function HeaderCheckbox(...) 정의를 여기서 삭제합니다.
+// 💡 --- 삭제 ---
+// interface HeaderCheckboxProps { ... }
+// function HeaderCheckbox({ table }: HeaderCheckboxProps) { ... }
+// (이 파일에 있던 HeaderCheckbox 관련 코드를 모두 삭제합니다)
+// 💡 --- 삭제 끝 ---
+
 
 // NOTE(user): 컬럼 정의
 export const columns: ColumnDef<Resource>[] = [
   {
     id: 'select',
-    // 💡 수정: 임포트한 컴포넌트를 렌더링
+    //  임포트한 컴포넌트를 사용
     header: ({ table }) => <HeaderCheckbox table={table} />,
     cell: ({ row }) => (
       <input
@@ -33,20 +36,19 @@ export const columns: ColumnDef<Resource>[] = [
       />
     ),
   },
-  // ... (나머지 컬럼 정의는 그대로 둡니다) ...
   {
     accessorKey: 'assetName',
-    header: 'Asset Name',
+    header: '자산명',
   },
   {
     accessorKey: 'status',
-    header: 'Status',
+    header: '상태',
     cell: ({ getValue }) => {
       const status = getValue<ResourceStatus>();
       return (
         <span
           className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
-            statusColorMap[status] ?? statusColorMap.Unassigned
+            statusColorMap[status] ?? statusColorMap['미할당']
           }`}
         >
           {status}
@@ -56,19 +58,19 @@ export const columns: ColumnDef<Resource>[] = [
   },
   {
     accessorKey: 'ipAddress',
-    header: 'IP Address',
+    header: 'IP 주소',
   },
   {
     accessorKey: 'model',
-    header: 'Model',
+    header: '모델명',
   },
   {
     accessorKey: 'location',
-    header: 'Location',
+    header: '위치',
   },
   {
     id: 'manage',
-    header: 'Manage',
+    header: '관리',
     cell: ({ row, table }) => (
       <div className="flex gap-2">
         <button
@@ -77,7 +79,7 @@ export const columns: ColumnDef<Resource>[] = [
             (table.options.meta as ResourceTableMeta)?.editResourceHandler(row.original)
           }
         >
-          <span>✏️</span>
+          <span>수정</span>
         </button>
         <button
           className="text-gray-600 hover:text-red-600"
@@ -85,7 +87,7 @@ export const columns: ColumnDef<Resource>[] = [
             (table.options.meta as ResourceTableMeta)?.deleteResourceHandler(row.original.id)
           }
         >
-          <span>🗑️</span>
+          <span>삭제</span>
         </button>
       </div>
     ),

@@ -1,4 +1,3 @@
-// src/domains/resourceManage/components/HeaderCheckbox.tsx
 import React, { useRef, useEffect } from 'react';
 import type { Table } from '@tanstack/react-table';
 import type { Resource } from '../types/resource.types';
