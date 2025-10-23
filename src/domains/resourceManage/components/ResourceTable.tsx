@@ -1,4 +1,3 @@
-// src/domains/resourceManage/components/ResourceTable.tsx
 import React from 'react';
 import { flexRender } from '@tanstack/react-table';
 import type {

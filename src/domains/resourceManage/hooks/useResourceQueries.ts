@@ -1,65 +1,84 @@
-// src/domains/resourceManage/hooks/useResourceQueries.ts
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-// 💡 수정: '@/' 대신 상대 경로 '..' 사용
 import {
   getResourceList,
   createResource,
   updateResource,
   deleteResource,
+  deleteMultipleResources,
 } from "../api/resourceManageApi";
+//  ResourceListFilters를 types 파일에서 임포트
+import type { ResourceListFilters } from "../types/resource.types";
+// TODO(user): 공용 useToast 훅 임포트
 
-// NOTE(user): 쿼리 키 상수화 (컨벤션)
 export const RESOURCE_QUERY_KEY = "resources";
 
-/**
- * 자원 목록 조회 (GET)
- */
-export const useGetResourceList = (page: number, size: number) => {
+export const useGetResourceList = (
+  page: number,
+  size: number,
+  filters: ResourceListFilters,
+) => {
   return useQuery({
-    queryKey: [RESOURCE_QUERY_KEY, page, size],
-    queryFn: () => getResourceList(page, size),
-    placeholderData: (previousData) => previousData, // 페이지 이동 시 UI 유지
+    queryKey: [RESOURCE_QUERY_KEY, page, size, filters],
+    queryFn: () => getResourceList(page, size, filters),
+    placeholderData: (previousData) => previousData,
   });
 };
 
-/**
- * 신규 자원 등록 (POST)
- */
 export const useCreateResource = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: createResource,
+    //  formData 파라미터 명시적 전달
+    mutationFn: (formData: FormData) => createResource(formData),
     onSuccess: () => {
-      // NOTE(user): 성공 시 'resources' 쿼리를 무효화하여 자동 갱신
       queryClient.invalidateQueries({ queryKey: [RESOURCE_QUERY_KEY] });
     },
-    // TODO(user): onError 핸들러 추가 (예: useToast 훅 사용)
+    onError: (error) => {
+      console.error("자원 생성 실패:", error);
+      alert("자원 생성에 실패했습니다.");
+    },
   });
 };
 
-/**
- * 자원 정보 수정 (PUT)
- */
 export const useUpdateResource = () => {
   const queryClient = useQueryClient();
   return useMutation({
+    //  { id, formData } 파라미터 명시적 전달 (기존과 동일하지만 확인)
     mutationFn: ({ id, formData }: { id: string; formData: FormData }) =>
       updateResource(id, formData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [RESOURCE_QUERY_KEY] });
     },
+    onError: (error) => {
+      console.error("자원 수정 실패:", error);
+      alert("자원 수정에 실패했습니다.");
+    },
   });
 };
 
-/**
- * 자원 삭제 (DELETE)
- */
 export const useDeleteResource = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: deleteResource,
+    //  id 파라미터 명시적 전달
+    mutationFn: (id: string) => deleteResource(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [RESOURCE_QUERY_KEY] });
+    },
+    onError: (error) => {
+      console.error("자원 삭제 실패:", error);
+    },
+  });
+};
+
+export const useDeleteMultipleResources = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    //  ids 파라미터 명시적 전달
+    mutationFn: (ids: string[]) => deleteMultipleResources(ids),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [RESOURCE_QUERY_KEY] });
+    },
+    onError: (error) => {
+      console.error("자원 대량 삭제 실패:", error);
     },
   });
 };

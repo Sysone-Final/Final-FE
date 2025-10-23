@@ -1,11 +1,9 @@
-
 import React from 'react'; 
 import type { ColumnDef } from '@tanstack/react-table';
 import type { Resource, ResourceStatus, ResourceTableMeta } from '../types/resource.types';
-//  HeaderCheckbox 컴포넌트를 임포트
 import HeaderCheckbox from './HeaderCheckbox';
+import { Pencil, Trash2, ArrowUpDown } from 'lucide-react';
 
-// NOTE(user): Status Pill 스타일 (Tailwind) - Prompt 2 요구사항
 const statusColorMap: Record<ResourceStatus, string> = {
   '정상': 'bg-green-100 text-green-800',
   '경고': 'bg-orange-100 text-orange-800',
@@ -13,18 +11,10 @@ const statusColorMap: Record<ResourceStatus, string> = {
   '미할당': 'bg-gray-100 text-gray-800',
 };
 
-// 💡 --- 삭제 ---
-// interface HeaderCheckboxProps { ... }
-// function HeaderCheckbox({ table }: HeaderCheckboxProps) { ... }
-// (이 파일에 있던 HeaderCheckbox 관련 코드를 모두 삭제합니다)
-// 💡 --- 삭제 끝 ---
-
-
 // NOTE(user): 컬럼 정의
 export const columns: ColumnDef<Resource>[] = [
   {
     id: 'select',
-    //  임포트한 컴포넌트를 사용
     header: ({ table }) => <HeaderCheckbox table={table} />,
     cell: ({ row }) => (
       <input
@@ -35,14 +25,28 @@ export const columns: ColumnDef<Resource>[] = [
         onChange={row.getToggleSelectedHandler()}
       />
     ),
+    // 정렬/필터 비활성화
+    enableSorting: false,
+    enableHiding: false, 
   },
   {
     accessorKey: 'assetName',
-    header: '자산명',
+    header: ({ column }) => {
+      return (
+        <button
+          className="flex items-center hover:text-gray-700" // 호버 효과 추가
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          자산명
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </button>
+      )
+    },
+    // TODO(user): 필요 시 cell 렌더링 커스텀 (예: 이미지 미리보기 추가)
   },
   {
     accessorKey: 'status',
-    header: '상태',
+    header: '상태', // TODO(user): 상태 컬럼도 정렬/필터링 가능하도록 구현
     cell: ({ getValue }) => {
       const status = getValue<ResourceStatus>();
       return (
@@ -66,7 +70,7 @@ export const columns: ColumnDef<Resource>[] = [
   },
   {
     accessorKey: 'location',
-    header: '위치',
+    header: '위치', // TODO(user): 위치 컬럼도 정렬/필터링 가능하도록 구현
   },
   {
     id: 'manage',
@@ -78,18 +82,22 @@ export const columns: ColumnDef<Resource>[] = [
           onClick={() => 
             (table.options.meta as ResourceTableMeta)?.editResourceHandler(row.original)
           }
+          aria-label={`${row.original.assetName} 수정`}
         >
-          <span>수정</span>
+          <Pencil size={16} />
         </button>
         <button
           className="text-gray-600 hover:text-red-600"
           onClick={() => 
             (table.options.meta as ResourceTableMeta)?.deleteResourceHandler(row.original.id)
           }
+          aria-label={`${row.original.assetName} 삭제`}
         >
-          <span>삭제</span>
+          <Trash2 size={16} />
         </button>
       </div>
     ),
+    // 액션 컬럼은 정렬/필터 필요 없음
+    enableSorting: false, 
   },
 ];

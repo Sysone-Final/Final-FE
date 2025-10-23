@@ -1,4 +1,3 @@
-// src/domains/resourceManage/types/resource.types.ts
 import type { TableMeta } from "@tanstack/react-table";
 
 // NOTE(user): UI 디자인 기준 자원 상태 타입
@@ -12,9 +11,9 @@ export interface Resource {
   ipAddress: string;
   model: string;
   location: string;
-  vendor?: string; // 엑셀 데이터 참고 (선택적)
-  osType?: string; // 엑셀 데이터 참고 (선택적)
-  imageUrl?: string; // P0 핵심 기능 (이미지)
+  vendor?: string;
+  osType?: string;
+  imageUrl?: string;
 }
 
 // NOTE(user): TanStack Table meta 타입 (핸들러 전달용)
@@ -31,4 +30,13 @@ export interface PaginatedResourceResponse {
   last: boolean;
   size: number;
   number: number; // 현재 페이지 번호 (0-based)
+}
+
+//  ResourceListFilters 인터페이스가 여기에 정의되어 있는지 확인 ---
+// NOTE(user): 검색/필터링을 위한 필터 타입
+export interface ResourceListFilters {
+  searchTerm?: string;
+  status?: string;
+  type?: string; // TODO(user): 실제 타입 필터 구현 시 사용
+  location?: string; // TODO(user): 실제 위치 필터 구현 시 사용
 }
