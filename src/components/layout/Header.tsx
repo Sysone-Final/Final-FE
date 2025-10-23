@@ -16,7 +16,7 @@ function Header() {
   ];
 
   return (
-    <header className="py-3 px-4">
+    <header className="px-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           {/* 네비게이션 메뉴 */}
@@ -26,12 +26,12 @@ function Header() {
                 key={item.id}
                 to={item.path}
                 className={({ isActive }) =>
-                  `px-4 py-2 rounded-lg transition-all duration-300 text-white ${
-                    isActive ? "bg-white/20" : "hover:bg-white/10"
+                  `px-4 py-4 transition-all duration-300 text-white ${
+                    isActive ? "bg-white/40" : "hover:bg-white/10"
                   }`
                 }
               >
-                <span className="text-sm font-medium">{item.label}</span>
+                <span className="text-lg font-medium">{item.label}</span>
               </NavLink>
             ))}
           </nav>

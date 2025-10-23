@@ -1,4 +1,4 @@
-import BabylonDatacenterView from './components/BabylonDatacenterView';
+import BabylonDatacenterView from '../components/BabylonDatacenterView';
 
 export default function Babylonmap() {
   return (

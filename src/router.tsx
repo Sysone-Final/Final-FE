@@ -1,9 +1,9 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
 import RackPage from "./domains/rack/RackPage";
-import Babylonmap from "./domains/view3d/Babylonmap";
+import Babylonmap from "./domains/view3d/pages/Babylonmap";
 import ServerRoomDashboard from "./domains/serverRoom/pages/ServerRoomDashboard";
-import ServerRoomDetailView from "./domains/serverRoom/pages/ServerRoomDetailView";
+import ServerRoomDetailView from "./domains/view3d/pages/ServerRoomDetailView";
 import FloorPlanPage from "./domains/floorPlan/pages/FloorPlanPage";
 
 const router = createBrowserRouter([

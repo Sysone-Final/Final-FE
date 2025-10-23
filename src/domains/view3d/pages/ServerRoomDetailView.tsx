@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import BabylonDatacenterView from '../../view3d/components/BabylonDatacenterView';
+import BabylonDatacenterView from '../components/BabylonDatacenterView';
 
 function ServerRoomDetailView() {
   const { id } = useParams<{ id: string }>();
