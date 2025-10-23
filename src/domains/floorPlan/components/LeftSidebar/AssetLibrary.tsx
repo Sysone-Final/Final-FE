@@ -98,13 +98,13 @@ const AccordionCategory = ({ category, assets, isOpen, onToggle }: {
       </button>
       {isOpen && (
         <div className="accordion-content">
-          {/* [수정] 모든 카테고리에 항상 2행 그리드 레이아웃을 적용합니다. */}
+          {/*  모든 카테고리에 항상 2행 그리드 레이아웃을 적용합니다. */}
           <div className={'grid grid-cols-2 gap-2'}>
             {assets.map((template) => (
               <DraggableAsset
                 key={`${template.assetType}-${template.name}`}
                 template={template}
-                // [수정] 모든 아이템을 Compact 모드로 표시하여 그리드에 맞춥니다.
+                //  모든 아이템을 Compact 모드로 표시하여 그리드에 맞춥니다.
                 isCompact={true}
               />
             ))}

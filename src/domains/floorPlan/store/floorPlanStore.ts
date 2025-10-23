@@ -23,11 +23,11 @@ const storeCreator: StateCreator<FloorPlanState> = (set, get) => ({
     useLOD: true,
     showGridLine: true,
   },
-  // [수정] 그리드 크기를 목업 데이터에 맞게 확장
+  //  그리드 크기를 목업 데이터에 맞게 확장
   gridCols: 50,
   gridRows: 25,
   stage: { scale: 1, x: 0, y: 0 },
-  // [수정] 현실적인 데이터센터 레이아웃을 반영한 새로운 목업 데이터
+  //  현실적인 데이터센터 레이아웃을 반영한 새로운 목업 데이터
   assets: [
     // --- Walls and Structure ---
     {

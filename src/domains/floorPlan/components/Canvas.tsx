@@ -9,7 +9,7 @@ import type { AssetLayer } from '../types';
 
 const CANVAS_VIEW_CONFIG = { CELL_SIZE: 40, HEADER_PADDING: 40 };
 
-// [추가] 레이어 순서를 정의하여 z-index 효과를 구현
+//  레이어 순서를 정의하여 z-index 효과를 구현
 const layerOrder: Record<AssetLayer, number> = {
   floor: 1,
   wall: 2,
@@ -69,7 +69,7 @@ const Canvas: React.FC = () => {
     }
   };
   
-  // [추가] 렌더링 전에 자산을 레이어 순서대로 정렬합니다.
+  //  렌더링 전에 자산을 레이어 순서대로 정렬합니다.
   const sortedAssets = [...assets].sort((a, b) => (layerOrder[a.layer] || 0) - (layerOrder[b.layer] || 0));
 
   if (!stage) return <main className="canvas-container" ref={containerRef}><div>Loading...</div></main>;
