@@ -32,7 +32,8 @@ const FloorPlanPage: React.FC = () => {
   const addAsset = useFloorPlanStore((state) => state.addAsset);
   const stage = useFloorPlanStore((state) => state.stage);
   const assets = useFloorPlanStore((state) => state.assets);
-
+  const mode = useFloorPlanStore((state) => state.mode);
+  
   const handleDragEnd = (event: DragEndEvent) => {
     const { over, active } = event;
     if (!over || over.id !== 'canvas-drop-area' || !stage) {
@@ -65,14 +66,19 @@ const FloorPlanPage: React.FC = () => {
       {/* 배경색, 폰트, 여백 스타일이 모두 제거된 최상위 div */}
       <div className="flex flex-col h-full w-full overflow-hidden">
         <TopToolbar />
-        {/* 여백(p-4)이 제거된 내부 그리드 div */}
-        <div className="grid grid-cols-[280px_1fr_320px] flex-grow gap-4 overflow-hidden">
-          <LeftSidebar />
-          {/* Canvas를 감싸던 div를 제거하여 배경이 없도록 함 */}
-          <Canvas />
-          <RightSidebar />
-        </div>
-      </div>
+    <div
+     className={`grid ${
+      mode === 'view'
+       ? 'grid-cols-[280px_1fr]' // 뷰 모드: 2단
+       : 'grid-cols-[280px_1fr_320px]' // 편집 모드: 3단
+     } flex-grow gap-4 overflow-hidden`}
+    >
+     <LeftSidebar />
+     <Canvas />
+     {/* 편집 모드일 때만 RightSidebar를 렌더링합니다. */}
+     {mode === 'edit' && <RightSidebar />}
+    </div>
+   </div>
     </DndContext>
   );
 };
