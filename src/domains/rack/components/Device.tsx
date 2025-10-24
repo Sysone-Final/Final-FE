@@ -1,12 +1,13 @@
-import { Group, Rect, Text, Line } from "react-konva";
+import { Group, Rect, Text, Line, Image } from "react-konva";
 import type { RackDevice } from "../types";
 import { useState } from "react";
 import {
   UNIT_COUNT,
   RACK_CONFIG,
-  DEVICE_COLORS,
   DEVICE_STYLING,
 } from "../constants/rackConstants";
+import { deviceImageMap } from "../utils/deviceImageMap";
+import { useImageLoad } from "../hooks/useImageLoad";
 
 interface DeviceProps {
   device: RackDevice;
@@ -35,13 +36,8 @@ function Device({
   const { unitHeight, frameThickness: baseY } = RACK_CONFIG;
   const rackHeight = UNIT_COUNT * unitHeight;
 
-  const fillColor = isFloating
-    ? device.color || DEVICE_COLORS.floating.fill
-    : device.color || DEVICE_COLORS.normal.fill;
-
-  const strokeColor = isFloating
-    ? device.color || DEVICE_COLORS.floating.stroke
-    : device.color || DEVICE_COLORS.normal.stroke;
+  const imageUrl = deviceImageMap[device.type] || deviceImageMap.server;
+  const image = useImageLoad(imageUrl);
 
   // 드래그 경계 처리
   const handleDragBound = (pos: { x: number; y: number }) => {
@@ -58,7 +54,7 @@ function Device({
     const clampedY = Math.max(minY, Math.min(maxY, snappedY));
 
     return {
-      x: 0, // X축은 항상 0으로 고정
+      x: 0,
       y: clampedY,
     };
   };
@@ -80,13 +76,16 @@ function Device({
         e.target.x(0);
       }}
     >
+      {image && (
+        <Image image={image} x={x} y={0} width={rackWidth} height={height} />
+      )}
+
       {/* 장비 본체 */}
       <Rect
         x={x}
         width={rackWidth}
         height={height}
-        fill={fillColor}
-        stroke={strokeColor}
+        fill="transparent"
         strokeWidth={
           isFloating
             ? DEVICE_STYLING.floatingStrokeWidth
@@ -97,14 +96,12 @@ function Device({
       {/* 상단 테두리 */}
       <Line
         points={[x, 0, x + rackWidth, 0]}
-        stroke={strokeColor}
         strokeWidth={DEVICE_STYLING.borderStrokeWidth.top}
       />
 
       {/* 하단 테두리 */}
       <Line
         points={[x, height, x + rackWidth, height]}
-        stroke={strokeColor}
         strokeWidth={DEVICE_STYLING.borderStrokeWidth.bottom}
       />
 
