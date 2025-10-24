@@ -7,7 +7,7 @@ import LeftSidebar from './../components/LeftSidebar';
 import Canvas from '../components/Canvas';
 import RightSidebar from '../components/RightSidebar';
 
-const CELL_SIZE = 40;
+const CELL_SIZE = 80;
 const HEADER_PADDING = 40;
 
 // 충돌 감지 헬퍼 함수

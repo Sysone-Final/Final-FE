@@ -1,3 +1,4 @@
+// src/domains/resourceManage/hooks/useResourceQueries.ts
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getResourceList,
@@ -5,12 +6,19 @@ import {
   updateResource,
   deleteResource,
   deleteMultipleResources,
+  getDatacenters,
+  getRacksByDatacenter,
 } from "../api/resourceManageApi";
-//  ResourceListFilters를 types 파일에서 임포트
-import type { ResourceListFilters } from "../types/resource.types";
-// TODO(user): 공용 useToast 훅 임포트
+import type {
+  ResourceListFilters,
+  // [추가] 타입 임포트
+  Datacenter,
+  Rack,
+} from "../types/resource.types";
 
 export const RESOURCE_QUERY_KEY = "resources";
+export const DATACENTER_QUERY_KEY = "datacenters";
+export const RACK_QUERY_KEY = "racks";
 
 export const useGetResourceList = (
   page: number,
@@ -21,14 +29,39 @@ export const useGetResourceList = (
     queryKey: [RESOURCE_QUERY_KEY, page, size, filters],
     queryFn: () => getResourceList(page, size, filters),
     placeholderData: (previousData) => previousData,
-    // keepPreviousData: true,
   });
 };
 
+// --- 전산실 목록 조회 훅 ---
+export const useGetDatacenters = () => {
+  // [수정] 반환 데이터 타입은 Datacenter[] 입니다.
+  return useQuery<Datacenter[], Error>({
+    queryKey: [DATACENTER_QUERY_KEY],
+    queryFn: getDatacenters,
+    staleTime: 1000 * 60 * 5,
+  });
+};
+
+// --- 랙 목록 조회 훅 ---
+export const useGetRacksByDatacenter = (datacenterId: string | null) => {
+  // [수정] 반환 데이터 타입은 Rack[] 입니다.
+  return useQuery<Rack[], Error>({
+    queryKey: [RACK_QUERY_KEY, datacenterId],
+    queryFn: () => {
+      if (!datacenterId) {
+        return Promise.resolve([]);
+      }
+      return getRacksByDatacenter(datacenterId);
+    },
+    enabled: !!datacenterId,
+    staleTime: 1000 * 60 * 5,
+  });
+};
+
+// --- 기존 CUD 훅 ---
 export const useCreateResource = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    //  formData 파라미터 명시적 전달
     mutationFn: (formData: FormData) => createResource(formData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [RESOURCE_QUERY_KEY] });
@@ -43,7 +76,6 @@ export const useCreateResource = () => {
 export const useUpdateResource = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    //  { id, formData } 파라미터 명시적 전달 (기존과 동일하지만 확인)
     mutationFn: ({ id, formData }: { id: string; formData: FormData }) =>
       updateResource(id, formData),
     onSuccess: () => {
@@ -59,7 +91,6 @@ export const useUpdateResource = () => {
 export const useDeleteResource = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    //  id 파라미터 명시적 전달
     mutationFn: (id: string) => deleteResource(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [RESOURCE_QUERY_KEY] });
@@ -73,7 +104,6 @@ export const useDeleteResource = () => {
 export const useDeleteMultipleResources = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    //  ids 파라미터 명시적 전달
     mutationFn: (ids: string[]) => deleteMultipleResources(ids),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [RESOURCE_QUERY_KEY] });

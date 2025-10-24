@@ -4,7 +4,87 @@ import type {
   ResourceStatus,
   EquipmentType,
   PositionType,
+  Datacenter,
+  Rack,
 } from "../types/resource.types";
+
+// Datacenter 목 데이터 (API 3.1 기준) ---
+const MOCK_DATACENTERS: Datacenter[] = [
+  {
+    id: "dc1",
+    name: "서울 데이터센터",
+    code: "DC-SEL-001",
+    location: "서울시 강남구",
+    status: "ACTIVE",
+    rackCount: 50,
+    managerName: "김철수",
+  },
+  {
+    id: "dc2",
+    name: "부산 데이터센터",
+    code: "DC-BUS-001",
+    location: "부산시 해운대구",
+    status: "ACTIVE",
+    rackCount: 30,
+    managerName: "이영희",
+  },
+];
+
+// --- [수정] Rack 목 데이터 (API 5.1 기준) ---
+const MOCK_RACKS: Rack[] = [
+  {
+    id: "rack1",
+    rackName: "RACK-A01",
+    groupNumber: "A-Zone",
+    rackLocation: "Row 1 Col 1",
+    totalUnits: 42,
+    usedUnits: 30,
+    availableUnits: 12,
+    status: "ACTIVE",
+    usageRate: 71.43,
+    powerUsageRate: 65.5,
+    currentPowerUsage: 3275.0,
+    maxPowerCapacity: 5000.0,
+    department: "IT팀",
+    managerId: "1",
+    datacenterId: "dc1", // MSW 필터링을 위한 편의용 필드
+  },
+  {
+    id: "rack2",
+    rackName: "RACK-A02",
+    groupNumber: "A-Zone",
+    rackLocation: "Row 1 Col 2",
+    totalUnits: 48,
+    usedUnits: 20,
+    availableUnits: 28,
+    status: "ACTIVE",
+    usageRate: 41.67,
+    powerUsageRate: 50.0,
+    currentPowerUsage: 2500.0,
+    maxPowerCapacity: 5000.0,
+    department: "IT팀",
+    managerId: "1",
+    datacenterId: "dc1",
+  },
+  {
+    id: "rack3",
+    rackName: "RACK-B01",
+    groupNumber: "B-Zone",
+    rackLocation: "Row 1 Col 1",
+    totalUnits: 42,
+    usedUnits: 40,
+    availableUnits: 2,
+    status: "ACTIVE",
+    usageRate: 95.24,
+    powerUsageRate: 85.0,
+    currentPowerUsage: 4250.0,
+    maxPowerCapacity: 5000.0,
+    department: "운영팀",
+    managerId: "2",
+    datacenterId: "dc2",
+  },
+];
+
 // NOTE(user): Mock Data는 가변적이므로 let 사용
 let MOCK_DATA: Resource[] = [
   {
@@ -58,7 +138,35 @@ let MOCK_DATA: Resource[] = [
 const API_BASE_URL = "https://api.yserverway.shop/api";
 
 export const handlers = [
-  // --- GET /resourceManage ---
+  // --- [추가] GET /datacenters ---
+  http.get(`${API_BASE_URL}/datacenters`, async () => {
+    await delay(300);
+    // API 3.1의 응답 형식(result 키)에 맞게 수정
+    return HttpResponse.json({
+      status_code: 200,
+      status_message: "전산실 목록 조회 완료",
+      result: MOCK_DATACENTERS,
+    });
+  }),
+
+  // --- [추가] GET /racks/datacenter/:datacenterId ---
+  http.get(
+    `${API_BASE_URL}/racks/datacenter/:datacenterId`,
+    async ({ params }) => {
+      await delay(400);
+      const { datacenterId } = params;
+      const filteredRacks = MOCK_RACKS.filter(
+        (r) => r.datacenterId === datacenterId,
+      );
+      // API 5.1의 응답 형식(result 키)에 맞게 수정
+      return HttpResponse.json({
+        status_code: 200,
+        status_message: "랙 목록 조회 완료",
+        result: filteredRacks,
+      });
+    },
+  ),
+
   http.get(`${API_BASE_URL}/resourceManage`, async ({ request }) => {
     await delay(500);
     const url = new URL(request.url);
@@ -123,12 +231,10 @@ export const handlers = [
       id: `new-${Date.now()}`,
       // 1단계
       equipmentName: formData.get("equipmentName") as string,
-      // [수정] 'as any' 대신 'as EquipmentType' 사용
       equipmentType:
         (formData.get("equipmentType") as EquipmentType) || "SERVER",
-      unitSize: Number(formData.get("unitSize")) || 1, // (필수)
-      // [수정] 'as any' 대신 'as ResourceStatus' 사용
-      status: (formData.get("status") as ResourceStatus) || "INACTIVE", // (필수)
+      unitSize: Number(formData.get("unitSize")) || 1,
+      status: (formData.get("status") as ResourceStatus) || "INACTIVE",
       manufacturer: (formData.get("manufacturer") as string) || undefined,
       modelName: (formData.get("modelName") as string) || undefined,
       serialNumber: (formData.get("serialNumber") as string) || undefined,
@@ -144,7 +250,6 @@ export const handlers = [
       datacenterId: (formData.get("datacenterId") as string) || undefined,
       rackId: (formData.get("rackId") as string) || undefined,
       startUnit: Number(formData.get("startUnit")) || undefined,
-      // [수정] 'as any' 대신 'as PositionType' 사용
       positionType: (formData.get("positionType") as PositionType) || undefined,
       os: (formData.get("os") as string) || undefined,
       cpuSpec: (formData.get("cpuSpec") as string) || undefined,
@@ -168,6 +273,7 @@ export const handlers = [
   }),
 
   // --- PUT /resourceManage/:id (자원 수정) ---
+  // --- PUT /resourceManage/:id (자원 수정) ---
   http.put(
     `${API_BASE_URL}/resourceManage/:id`,
     async ({ params, request }) => {
@@ -179,20 +285,17 @@ export const handlers = [
       if (index > -1) {
         const existingResource = MOCK_DATA[index];
 
-        // [수정] 3단계 폼의 모든 필드를 업데이트하도록 수정
         const updatedResource: Resource = {
           ...existingResource,
           // 1단계
           equipmentName:
             (formData.get("equipmentName") as string) ||
             existingResource.equipmentName,
-          // [수정] 'as any' 대신 'as EquipmentType' 사용
           equipmentType:
             (formData.get("equipmentType") as EquipmentType) ||
             existingResource.equipmentType,
           unitSize:
             Number(formData.get("unitSize")) || existingResource.unitSize,
-          // [수정] 'as any' 대신 'as ResourceStatus' 사용
           status:
             (formData.get("status") as ResourceStatus) ||
             existingResource.status,
@@ -221,7 +324,6 @@ export const handlers = [
           rackId: (formData.get("rackId") as string) || existingResource.rackId,
           startUnit:
             Number(formData.get("startUnit")) || existingResource.startUnit,
-          // [수정] 'as any' 대신 'as PositionType' 사용
           positionType:
             (formData.get("positionType") as PositionType) ||
             existingResource.positionType,

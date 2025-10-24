@@ -4,6 +4,8 @@ import type {
   PaginatedResourceResponse,
   Resource,
   ResourceListFilters,
+  Datacenter,
+  Rack,
 } from "../types/resource.types";
 
 const apiClient = axios.create({
@@ -95,4 +97,33 @@ export const deleteMultipleResources = async (ids: string[]): Promise<void> => {
     data: { ids },
   });
   // void 타입은 return 문이 없어도 됨 (오류 없음)
+};
+
+// API 응답 래퍼 타입 정의
+interface ApiResponseWrapper<T> {
+  status_code: number;
+  status_message: string;
+  result: T;
+}
+
+/**
+ * 3.1 접근 가능한 전산실 목록 조회 (GET /datacenters)
+ */
+export const getDatacenters = async (): Promise<Datacenter[]> => {
+  const response = await apiClient.get<Datacenter[]>("/datacenters");
+  return response.data;
+};
+
+/**
+ * 5.1 전산실별 랙 목록 조회 (GET /racks/datacenter/{dataCenterId})
+ * @param dataCenterId 전산실 ID
+ */
+export const getRacksByDatacenter = async (
+  dataCenterId: string,
+): Promise<Rack[]> => {
+  // [수정] 응답 래퍼 타입 사용 및 result 추출
+  const response = await apiClient.get<ApiResponseWrapper<Rack[]>>(
+    `/racks/datacenter/${dataCenterId}`,
+  );
+  return response.data.result;
 };

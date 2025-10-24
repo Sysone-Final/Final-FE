@@ -7,7 +7,7 @@ import AssetRenderer from './AssetRenderer';
 import CanvasGrid from './CanvasGrid';
 import type { AssetLayer } from '../types';
 
-const CANVAS_VIEW_CONFIG = { CELL_SIZE: 40, HEADER_PADDING: 40 };
+const CANVAS_VIEW_CONFIG = { CELL_SIZE: 80, HEADER_PADDING: 80 };
 
 //  레이어 순서를 정의하여 z-index 효과를 구현
 const layerOrder: Record<AssetLayer, number> = {

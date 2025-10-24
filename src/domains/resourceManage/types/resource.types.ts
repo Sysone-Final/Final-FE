@@ -13,12 +13,12 @@ export type ResourceStatus =
 export type EquipmentType = "SERVER" | "SWITCH" | "ROUTER" | "PDU" | "UPS";
 
 // NOTE(user): 3단계 폼 기준 설치 방향 타입
-export type PositionType = "FRONT" | "REAR";
+export type PositionType = "FRONT" | "REAR" | "NORMAL";
 
 // NOTE(user): 자원(Equipment) 핵심 인터페이스 (3단계 폼 기준)
 export interface Resource {
   // 1단계: 기본 식별 정보
-  id: string; // (NOT NULL - PK)
+  id: string; // (NOT NULL - PK)    Corresponds to equipmentId
   equipmentName: string; // (NOT NULL)
   equipmentType: EquipmentType; // (NOT NULL)
   manufacturer?: string | null;
@@ -30,7 +30,7 @@ export interface Resource {
 
   // 2단계: 위치 및 사양
   // 2-1. 물리적 위치 (Nullable)
-  datacenterId?: string | null;
+  datacenterId?: string | null; // User defined (for form logic)
   rackId?: string | null;
   startUnit?: number | null;
   unitSize: number; // (NOT NULL)
@@ -62,6 +62,13 @@ export interface Resource {
   diskThresholdWarning?: number | null;
   diskThresholdCritical?: number | null;
 
+  // API 9.2 Read-only/Additional fields
+  rackName?: string | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+  position?: number | null; // (API 9.2, startUnit과 유사)
+  height?: number | null; // (API 9.2, unitSize와 유사)
+
   // 기존 타입 호환 (임시)
   location?: string; // (기존 테이블 표시용, rackId 등으로 대체 필요)
 }
@@ -88,4 +95,34 @@ export interface ResourceListFilters {
   status?: string;
   type?: string; // TODO(user): 실제 타입 필터 구현 시 사용
   location?: string; // TODO(user): 실제 위치 필터 구현 시 사용
+}
+
+// [수정] 3.1 접근 가능한 전산실 목록 조회 (GET /datacenters) - 전체 필드
+export interface Datacenter {
+  id: string; // Sticking with string based on mocks
+  name: string;
+  code: string;
+  location: string;
+  status: string; // "ACTIVE" etc.
+  rackCount: number;
+  managerName: string;
+}
+
+// [수정] 5.1 전산실별 랙 목록 조회 (GET /racks/datacenter/{dataCenterId}) - 전체 필드
+export interface Rack {
+  id: string; // Sticking with string
+  rackName: string;
+  groupNumber: string | null;
+  rackLocation: string | null;
+  totalUnits: number;
+  usedUnits: number;
+  availableUnits: number;
+  status: string;
+  usageRate: number;
+  powerUsageRate: number;
+  currentPowerUsage: number;
+  maxPowerCapacity: number;
+  department: string | null;
+  managerId: string | null; // Sticking with string for mocks
+  datacenterId?: string; // For MSW convenience
 }
