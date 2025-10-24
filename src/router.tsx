@@ -1,6 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
-import RackPage from "./domains/rack/RackPage";
+import RackView from "./domains/rack/RackPage";
 import DataCenter from "./domains/datacenter/DataCenter";
 import Babylonmap from "./domains/view3d/Babylonmap";
 import ServerRoomDashboard from "./domains/serverRoom/pages/ServerRoomDashboard";
