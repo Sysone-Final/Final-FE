@@ -1,6 +1,11 @@
-export const colorMap: Record<string, string> = {
-  "border-l-sky-400": "#38bdf8",
-  "border-l-emerald-400": "#34d399",
-  "border-l-[#E80054]": "#E80054",
-  "border-l-amber-400": "#fbbf24",
+export const typeColorMap: Record<string, string> = {
+  server: "#38bdf8",
+  switch: "#E80054",
+  router: "#fbbf24",
+  storage: "#34d399",
+  firewall: "#8B0000",
+  loadbalancer: "#06b6d4",
+  pdu: "#f59e0b",
+  kvm: "#ec4899",
+  other: "#64748b",
 };

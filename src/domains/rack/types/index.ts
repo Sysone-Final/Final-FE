@@ -1,6 +1,18 @@
+export type DeviceType =
+  | "server"
+  | "switch"
+  | "router"
+  | "storage"
+  | "firewall"
+  | "loadbalancer"
+  | "pdu"
+  | "kvm"
+  | "other";
+
 export interface RackDevice {
   id: number;
   name: string;
+  type: DeviceType;
   position: number;
   height: number;
   color?: string;
@@ -11,8 +23,8 @@ export interface DeviceCard {
   label: string;
   size: string;
   img: string;
-  borderColor: string;
   height: number;
+  type: DeviceType;
 }
 
 export interface FloatingDevice {
