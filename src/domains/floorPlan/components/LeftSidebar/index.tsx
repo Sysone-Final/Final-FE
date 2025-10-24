@@ -14,11 +14,11 @@ const LeftSidebar: React.FC = () => {
   return (
     //  사이드바가 부모의 전체 높이를 차지하도록 h-full 클래스를 추가합니다.
     <aside className="rounded-lg shadow-lg flex flex-col h-full">
-      <div className="p-4 border-b">
-        <h2>
-          {mode === 'view' ? '표시 옵션' : '자산 라이브-러리'}
-        </h2>
-      </div>
+   <div className="p-4 border-b">
+    <h2 className="text-title-sidebar">
+     {mode === 'view' ? '표시 옵션' : '자산 라이브러리'}
+    </h2>
+   </div>
       
       {/* 이 컨테이너가 남은 공간을 모두 차지하고(flex-grow), 
           내부 컨텐츠가 넘칠 경우 자동으로 스크롤바가 생기도록(overflow-y-auto) 수정합니다.

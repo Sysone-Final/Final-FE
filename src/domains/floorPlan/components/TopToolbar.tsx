@@ -39,16 +39,16 @@ const TopToolbar: React.FC = () => {
   return (
     <div className="shadow-md p-3 flex justify-between items-center w-full z-10">
       {/* 왼쪽: 타이틀 */}
-      <h1>제1서버실 A-Zone</h1>
+   <h1 className="text-title-page">제1서버실 A-Zone</h1>
 
-      {/* 오른쪽: 컨트롤 버튼 */}
-      <div className="flex items-center gap-4">
+   {/* 오른쪽: 컨트롤 버튼 */}
+   <div className="flex items-center gap-4">
 
-        {/* --- 보기 모드 컨트롤 --- */}
-        {mode === 'view' && (
-          <>
-            {/* 보기 모드 선택 */}
-            <div className="flex items-center gap-2">
+    {/* --- 보기 모드 컨트롤 --- */}
+    {mode === 'view' && (
+     <>
+      {/* 보기 모드 선택 */}
+      <div className="flex items-center gap-2">
               <Palette className="w-5 h-5" />
               <select
                 value={displayMode}
@@ -61,55 +61,55 @@ const TopToolbar: React.FC = () => {
             </div>
 
             {/* 2D/3D 토글 */}
-            <div className="flex items-center rounded-full p-1">
-              <button
-                onClick={() => setViewDimension('2D')}
-                className={`px-3 py-1 rounded-full transition-colors ${viewDimension === '2D' ? 'shadow' : ''}`}
-              >
-                2D
-              </button>
-              <button
-                onClick={() => setViewDimension('3D')}
-                className={`px-3 py-1 rounded-full transition-colors ${viewDimension === '3D' ? 'shadow' : ''}`}
-              >
-                3D
-              </button>
-            </div>
+      <div className="flex items-center rounded-full p-1">
+       <button
+        onClick={() => setViewDimension('2D')}
+        className={`px-3 py-1 rounded-full transition-colors text-button ${viewDimension === '2D' ? 'shadow' : ''}`}
+       >
+        2D
+       </button>
+       <button
+        onClick={() => setViewDimension('3D')}
+        className={`px-3 py-1 rounded-full transition-colors text-button ${viewDimension === '3D' ? 'shadow' : ''}`}
+       >
+        3D
+       </button>
+      </div>
             
             {/* 줌 컨트롤 */}
-            <div className="flex items-center border rounded-lg p-1">
-               <button onClick={() => zoom('out')} className="p-1 rounded-md">
-                 <ZoomOut className="w-5 h-5"/>
-               </button>
-               <span className="px-2 select-none">Zoom</span>
-               <button onClick={() => zoom('in')} className="p-1 rounded-md">
-                 <ZoomIn className="w-5 h-5"/>
-               </button>
-            </div>
-          </>
-        )}
+      <div className="flex items-center border rounded-lg p-1">
+       <button onClick={() => zoom('out')} className="p-1 rounded-md text-button">
+        <ZoomOut className="w-5 h-5"/>
+       </button>
+       <span className="px-2 select-none text-body-primary">Zoom</span>
+       <button onClick={() => zoom('in')} className="p-1 rounded-md text-button">
+        <ZoomIn className="w-5 h-5"/>
+       </button>
+      </div>
+     </>
+    )}
 
-        {/* --- 편집 모드 컨트롤 --- */}
-        {mode === 'edit' && (
-          <div className="flex items-center gap-2 border rounded-lg p-1">
-            <button onClick={() => undo()} className="p-2 rounded-md flex items-center gap-1.5">
-              <Undo2 className="w-4 h-4"/> 되돌리기
-            </button>
-            <button onClick={() => redo()} className="p-2 rounded-md flex items-center gap-1.5">
-              <Redo2 className="w-4 h-4"/> 다시 실행
-            </button>
-          </div>
-        )}
+    {/* --- 편집 모드 컨트롤 --- */}
+    {mode === 'edit' && (
+     <div className="flex items-center gap-2 border rounded-lg p-1">
+      <button onClick={() => undo()} className="p-2 rounded-md flex items-center gap-1.5 text-button">
+       <Undo2 className="w-4 h-4"/> 되돌리기
+      </button>
+      <button onClick={() => redo()} className="p-2 rounded-md flex items-center gap-1.5 text-button">
+       <Redo2 className="w-4 h-4"/> 다시 실행
+      </button>
+     </div>
+    )}
 
         {/* --- 메인 모드 전환 버튼 --- */}
         <button
-          onClick={handleToggleMode}
-          className="py-2 px-4 rounded-lg flex items-center gap-2 transition-colors"
-        >
-          {mode === 'view' ? <Settings className="w-5 h-5"/> : <Eye className="w-5 h-5" />}
-          {mode === 'view' ? '편집 모드' : '보기 모드'}
-        </button>
-      </div>
+     onClick={handleToggleMode}
+     className="py-2 px-4 rounded-lg flex items-center gap-2 transition-colors text-button"
+    >
+     {mode === 'view' ? <Settings className="w-5 h-5"/> : <Eye className="w-5 h-5" />}
+     {mode === 'view' ? '편집 모드' : '보기 모드'}
+    </button>
+   </div>
     </div>
   );
 };

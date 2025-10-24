@@ -1,4 +1,3 @@
-import React from 'react';
 import { Search, Plus } from 'lucide-react';
 
 interface ResourceFiltersProps {
@@ -20,7 +19,7 @@ export default function ResourceFilters({
 }: ResourceFiltersProps) {
   return (
     <div className="mb-4">
-      <h1 className="text-2xl font-bold mb-4">자원 관리 목록</h1>
+      <h1 className="text-3xl font-bold mb-4">자원 관리 목록</h1>
       
       <div className="flex flex-col md:flex-row justify-between items-center gap-4">
         <div className="relative w-full md:flex-1">

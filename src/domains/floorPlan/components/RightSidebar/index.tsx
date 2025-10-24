@@ -14,7 +14,7 @@ const RightSidebar: React.FC = () => {
  return (
   <aside className="rounded-lg shadow-lg flex flex-col">
     <div className="p-4 border-b">
-     <h2>
+     <h2 className="text-title-sidebar">
       {mode === 'view' ? '속성 정보' : '속성 편집'}
      </h2>
     </div>

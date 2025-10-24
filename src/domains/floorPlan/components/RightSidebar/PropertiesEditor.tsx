@@ -49,14 +49,14 @@ const PropertiesEditor: React.FC = () => {
 
   if (!isSingleSelection) {
     return (
-      <div className="properties-editor-container">
-        <div className="editor-header"><h3 className="editor-title">{selectedAssetIds.length}개 자산 선택됨</h3></div>
-        <div className="p-2 flex flex-col gap-2">
-          <button onClick={groupSelectedAssets} className="action-button group-btn">🔗 그룹 만들기</button>
-          <button onClick={ungroupSelectedAssets} className="action-button group-btn">✂️ 그룹 해제</button>
-          <button onClick={handleDeleteSelected} className="action-button delete-btn">🗑️ 선택 자산 모두 삭제</button>
-        </div>
-      </div>
+   <div className="properties-editor-container">
+    <div className="editor-header"><h3 className="editor-title text-title-section">{selectedAssetIds.length}개 자산 선택됨</h3></div>
+    <div className="p-2 flex flex-col gap-2">
+     <button onClick={groupSelectedAssets} className="action-button group-btn text-button">🔗 그룹 만들기</button>
+     <button onClick={ungroupSelectedAssets} className="action-button group-btn text-button">✂️ 그룹 해제</button>
+     <button onClick={handleDeleteSelected} className="action-button delete-btn text-button">🗑️ 선택 자산 모두 삭제</button>
+    </div>
+   </div>
     );
   }
 
