@@ -22,6 +22,7 @@ function GridFloor({ scene, gridConfig }: GridFloorProps) {
     // 기존 메시 제거
     if (floorRef.current) {
       floorRef.current.dispose();
+      floorRef.current = null;
     }
     gridLinesRef.current.forEach((line) => line.dispose());
     gridLinesRef.current = [];
@@ -85,10 +86,22 @@ function GridFloor({ scene, gridConfig }: GridFloorProps) {
     }
 
     return () => {
+      // cleanup 시 material도 정리
       if (floorRef.current) {
+        if (floorRef.current.material) {
+          floorRef.current.material.dispose();
+        }
         floorRef.current.dispose();
+        floorRef.current = null;
       }
-      gridLinesRef.current.forEach((line) => line.dispose());
+      
+      gridLinesRef.current.forEach((line) => {
+        if (line.material) {
+          line.material.dispose();
+        }
+        line.dispose();
+      });
+      gridLinesRef.current = [];
     };
   }, [scene, gridConfig]);
 
