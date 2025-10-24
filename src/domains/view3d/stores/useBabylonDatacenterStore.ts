@@ -14,6 +14,12 @@ interface BabylonDatacenterStore {
   equipment: Equipment3D[];
   selectedEquipmentId: string | null;
 
+  // 랙 모달 상태
+  isRackModalOpen: boolean;
+  selectedServerId: string | null;
+  openRackModal: (serverId: string) => void;
+  closeRackModal: () => void;
+
   // 장비 관리
   addEquipment: (type: EquipmentType, gridX: number, gridY: number) => void;
   updateEquipmentPosition: (
@@ -50,6 +56,18 @@ export const useBabylonDatacenterStore = create<BabylonDatacenterStore>(
     // 초기 장비 목록
     equipment: [],
     selectedEquipmentId: null,
+
+    // 랙 모달 상태
+    isRackModalOpen: false,
+    selectedServerId: null,
+
+    openRackModal: (serverId) => {
+      set({ isRackModalOpen: true, selectedServerId: serverId });
+    },
+
+    closeRackModal: () => {
+      set({ isRackModalOpen: false, selectedServerId: null });
+    },
 
     // 장비 추가
     addEquipment: (type, gridX, gridY) => {
