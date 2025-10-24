@@ -1,10 +1,8 @@
-
-
 import React, { useState, useEffect, useMemo } from 'react';
 import ServerRoomList from '../components/ServerRoomList';
 import { MOCK_SERVER_ROOMS } from '../constants/mockData';
 import type{ ServerRoom } from '../types';
-import './ServerRoomDashboard.css'; // 대시보드 전체 스타일
+import '../css/serverRoomDashboard.css';
 
 const ServerRoomDashboard: React.FC = () => {
   const [serverRooms, setServerRooms] = useState<ServerRoom[]>([]);
@@ -26,35 +24,47 @@ const ServerRoomDashboard: React.FC = () => {
 
 
   return (
-    <div className="dashboard-container">
+    <div className="dashboard-layout">
+      {/* Header */}
       <header className="dashboard-header">
         <div>
-          <h1>서버실 관리</h1>
-          <p>데이터 센터 인프라를 모니터링하고 관리하세요</p>
+          <h1 className="dashboard-title">서버실 관리</h1>
+          <p className="dashboard-subtitle">데이터 센터 인프라를 모니터링하고 관리하세요</p>
         </div>
-        <button className="add-room-button">+ 새 서버실 추가</button>
+        <button className="add-room-button">
+          + 새 서버실 추가
+        </button>
       </header>
       
-      <main>
+      {/* Main Content */}
+      <main className="dashboard-main">
         <ServerRoomList rooms={serverRooms} />
 
-        <section className="overview-statistics">
-          <h2>전체 통계</h2>
+        {/* Statistics Section */}
+        <section className="statistics-section">
+          <h2 className="statistics-title">전체 통계</h2>
           <div className="stats-grid">
+            {/* Stat Item 1 */}
             <div className="stat-item">
               <span className="stat-value">{stats.totalRooms}</span>
               <span className="stat-label">총 서버실</span>
             </div>
+            
+            {/* Stat Item 2 */}
             <div className="stat-item">
               <span className="stat-value">{stats.totalRacks}</span>
               <span className="stat-label">총 랙 수</span>
             </div>
+            
+            {/* Stat Item 3 */}
             <div className="stat-item">
-              <span className="stat-value" style={{ color: '#28a745' }}>{stats.normalStatus}</span>
+              <span className="stat-value-success">{stats.normalStatus}</span>
               <span className="stat-label">정상 상태</span>
             </div>
+            
+            {/* Stat Item 4 */}
             <div className="stat-item">
-              <span className="stat-value" style={{ color: '#ffc107' }}>{stats.needAttention}</span>
+              <span className="stat-value-warning">{stats.needAttention}</span>
               <span className="stat-label">주의 필요</span>
             </div>
           </div>
