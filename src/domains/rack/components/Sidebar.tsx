@@ -10,7 +10,7 @@ function Sidebar({ onCardClick }: SidebarProps) {
     <div
       className="
       flex flex-col items-center justify-start
-      w-[56px] h-[850px]
+      w-[56px] h-[700px]
       bg-black
       pt-10
       space-y-3
