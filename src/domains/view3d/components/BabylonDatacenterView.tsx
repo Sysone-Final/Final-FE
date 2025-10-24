@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import { Engine, Scene, ArcRotateCamera, HemisphericLight, Vector3, Color4 } from '@babylonjs/core';
 import GridFloor from './GridFloor';
 import Equipment3DModel from './Equipment3DModel';
@@ -45,19 +45,19 @@ function BabylonDatacenterView({ mode = 'edit', serverRoomId }: BabylonDatacente
   }, [mode, serverRoomId, loadEquipment]);
 
   // 장비 추가 핸들러
-  const handleAddEquipment = (type: EquipmentType) => {
+  const handleAddEquipment = useCallback((type: EquipmentType) => {
     // 맵 중앙에 추가
     const centerX = Math.floor(gridConfig.columns / 2);
     const centerY = Math.floor(gridConfig.rows / 2);
     addEquipment(type, centerX, centerY);
-  };
+  }, [addEquipment, gridConfig.columns, gridConfig.rows]);
 
   // Server 클릭 핸들러 (view 모드에서만)
-  const handleServerClick = (serverId: string) => {
+  const handleServerClick = useCallback((serverId: string) => {
     if (mode === 'view') {
       openRackModal(serverId);
     }
-  };
+  }, [mode, openRackModal]);
 
   // 격자 설정 변경
   // const handleGridChange = (key: 'rows' | 'columns', value: number) => {
