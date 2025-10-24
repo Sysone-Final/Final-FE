@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { Scene, SceneLoader, AbstractMesh, Vector3, Color3, PointerDragBehavior } from '@babylonjs/core';
+import { Scene, SceneLoader, AbstractMesh, Vector3, Color3, PointerDragBehavior, ActionManager, ExecuteCodeAction } from '@babylonjs/core';
 import '@babylonjs/loaders/glTF';
 import { COLORS, EQUIPMENT_SCALE, EQUIPMENT_Y_OFFSET, EQUIPMENT_POSITION_OFFSET } from '../constants/config';
 import type { Equipment3D } from '../types';
@@ -13,6 +13,7 @@ interface Equipment3DModelProps {
   onSelect: (id: string) => void;
   onPositionChange: (id: string, gridX: number, gridY: number) => void;
   isDraggable?: boolean; // 드래그 가능 여부 (기본값: true)
+  onServerClick?: (serverId: string) => void; // server 클릭 핸들러 추가
 }
 
 function Equipment3DModel({
@@ -24,11 +25,12 @@ function Equipment3DModel({
   onSelect,
   onPositionChange,
   isDraggable = true, // 기본값: 드래그 가능
+  onServerClick, // server 클릭 핸들러
 }: Equipment3DModelProps) {
   const meshRef = useRef<AbstractMesh | null>(null);
   const dragBehaviorRef = useRef<PointerDragBehavior | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
-  // 🔥 각 메시의 원래 emissive 색상을 저장
+  // 각 메시의 원래 emissive 색상을 저장
   const originalEmissiveColors = useRef<Map<string, Color3>>(new Map());
 
   // 격자 좌표를 월드 좌표로 변환
@@ -57,14 +59,13 @@ function Equipment3DModel({
     if (!scene || !modelPath) return;
 
     let rootMesh: AbstractMesh | null = null;
+    // cleanup을 위해 현재 originalEmissiveColors Map 참조 저장
+    const emissiveColorsMap = originalEmissiveColors.current;
 
     // 3D 모델 로드 - rootUrl과 fileName 분리
-    console.log('Loading model from:', modelPath);
     const lastSlashIndex = modelPath.lastIndexOf('/');
     const rootUrl = lastSlashIndex > -1 ? modelPath.substring(0, lastSlashIndex + 1) : '/';
     const fileName = lastSlashIndex > -1 ? modelPath.substring(lastSlashIndex + 1) : modelPath;
-    
-    console.log('RootUrl:', rootUrl, 'FileName:', fileName);
     
     SceneLoader.ImportMesh(
       '',
@@ -72,7 +73,6 @@ function Equipment3DModel({
       fileName,  // 파일명만
       scene,
       (meshes) => {
-        console.log('Model loaded successfully:', meshes.length, 'meshes');
         if (meshes.length === 0) return;
 
         // 루트 메시 생성
@@ -102,14 +102,41 @@ function Equipment3DModel({
             const material = mesh.material as { emissiveColor?: Color3 };
             if (material.emissiveColor) {
               // 원래 색상 복사해서 저장
-              originalEmissiveColors.current.set(
+              emissiveColorsMap.set(
                 mesh.uniqueId.toString(),
                 material.emissiveColor.clone()
               );
-              console.log(`💾 Saved original emissive for ${mesh.name}:`, material.emissiveColor);
             }
           }
         });
+
+        // 메시 클릭 이벤트 추가 (view 모드에서 server 클릭 시)
+        if (!isDraggable && equipment.type === 'server' && onServerClick) {
+          rootMesh.actionManager = new ActionManager(scene);
+          rootMesh.actionManager.registerAction(
+            new ExecuteCodeAction(
+              ActionManager.OnPickTrigger,
+              () => {
+                onServerClick(equipment.id);
+              }
+            )
+          );
+          
+          // 모든 자식 메시에도 동일한 액션 적용
+          meshes.forEach((mesh) => {
+            if (mesh !== rootMesh) {
+              mesh.actionManager = new ActionManager(scene);
+              mesh.actionManager.registerAction(
+                new ExecuteCodeAction(
+                  ActionManager.OnPickTrigger,
+                  () => {
+                    onServerClick(equipment.id);
+                  }
+                )
+              );
+            }
+          });
+        }
 
         meshRef.current = rootMesh;
         setIsLoaded(true);
@@ -167,11 +194,30 @@ function Equipment3DModel({
       }
 
       if (meshRef.current) {
+        // ActionManager 정리
+        if (meshRef.current.actionManager) {
+          meshRef.current.actionManager.dispose();
+          meshRef.current.actionManager = null;
+        }
+        
+        // 모든 자식 메시의 ActionManager도 정리
+        const childMeshes = meshRef.current.getChildMeshes();
+        childMeshes.forEach((mesh) => {
+          if (mesh.actionManager) {
+            mesh.actionManager.dispose();
+            mesh.actionManager = null;
+          }
+        });
+        
+        // 메시 dispose
         meshRef.current.dispose();
         meshRef.current = null;
       }
+      
+      // 원본 색상 맵 정리
+      emissiveColorsMap.clear();
     };
-  }, [scene, equipment.id, equipment.type, equipment.gridX, equipment.gridY, equipment.gridZ, equipment.rotation, modelPath, cellSize, onSelect, onPositionChange, gridToWorld, worldToGrid, isDraggable]);
+  }, [scene, equipment.id, equipment.type, equipment.gridX, equipment.gridY, equipment.gridZ, equipment.rotation, modelPath, cellSize, onSelect, onPositionChange, gridToWorld, worldToGrid, isDraggable, onServerClick]);
 
   // 위치 업데이트
   useEffect(() => {

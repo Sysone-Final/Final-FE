@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import BabylonDatacenterView from '../components/BabylonDatacenterView';
+import RackModal from '../components/RackModal';
 
 function ServerRoomDetailView() {
   const { id } = useParams<{ id: string }>();
@@ -43,6 +44,9 @@ function ServerRoomDetailView() {
       <div className="flex-1 overflow-hidden">
         <BabylonDatacenterView mode="view" serverRoomId={id} />
       </div>
+
+      {/* 랙 모달 */}
+      <RackModal />
     </div>
   );
 }
