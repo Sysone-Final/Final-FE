@@ -1,18 +1,9 @@
 import { Stage, Layer, Rect, Line, Text } from "react-konva";
 import { useMemo, Fragment } from "react";
 import type { KonvaEventObject } from "konva/lib/Node";
-import type { RackDevice, FloatingDevice } from "../types";
+import type { RackDevice, FloatingDevice, ViewMode } from "../types";
 import Device from "./Device";
-import {
-  RACK_CONFIG,
-  UNIT_COUNT,
-  RACK_COLORS,
-  RACK_STYLING,
-  RACK_TEXT,
-  FLOATING_DEVICE,
-  RACK_CONTAINER,
-  STAGE_STYLING,
-} from "../constants/rackConstants";
+import { RACK_CONFIG, UNIT_COUNT } from "../constants/rackConstants";
 import {
   getFloatingDeviceInfo,
   calculateDraggedPosition,
@@ -26,7 +17,10 @@ interface RackProps {
   onMouseMove: (mouseY: number) => void;
   onRackClick: (position: number) => void;
   onDeviceDragEnd: (deviceId: number, newPosition: number) => void;
+  viewMode: ViewMode;
 }
+
+const FLOATING_DEVICE_ID = -1;
 
 function Rack({
   devices,
@@ -34,9 +28,9 @@ function Rack({
   onMouseMove,
   onRackClick,
   onDeviceDragEnd,
+  viewMode,
 }: RackProps) {
   const { width: rackWidth, unitHeight } = RACK_CONFIG;
-  const { border, rackBody, line, unitText } = RACK_COLORS;
 
   const layout = useMemo(() => rackLayout(RACK_CONFIG), []);
   const { rackHeight, baseY, fullWidth, fullHeight, rackX } = layout;
@@ -80,18 +74,13 @@ function Rack({
 
   return (
     <div
-      className="overflow-y-auto overflow-x-hidden"
-      style={{
-        height: RACK_CONTAINER.height,
-        width: `${fullWidth}px`,
-        scrollbarWidth: RACK_CONTAINER.scrollbarWidth,
-        msOverflowStyle: RACK_CONTAINER.msOverflowStyle,
-      }}
+      className="overflow-y-auto overflow-x-hidden h-[670px] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+      style={{ width: `${fullWidth}px` }}
     >
       <Stage
         width={fullWidth}
         height={fullHeight}
-        style={STAGE_STYLING}
+        className="block m-0 p-0"
         onMouseMove={handleMouseMove}
         onClick={handleRackClick}
       >
@@ -102,9 +91,9 @@ function Rack({
             y={baseY}
             width={rackWidth}
             height={rackHeight}
-            fill={rackBody}
-            stroke={border}
-            strokeWidth={RACK_STYLING.strokeWidth}
+            fill="#000000"
+            stroke="#374151"
+            strokeWidth={1}
           />
 
           {/* U 단위 구분선 및 번호 */}
@@ -116,16 +105,16 @@ function Rack({
               <Fragment key={i}>
                 <Line
                   points={[rackX, yPos, rackX + rackWidth, yPos]}
-                  stroke={line}
-                  strokeWidth={RACK_STYLING.lineStrokeWidth}
+                  stroke="#4b5563"
+                  strokeWidth={0.5}
                 />
                 {i < UNIT_COUNT && (
                   <Text
-                    x={rackX + RACK_TEXT.unitOffset.x}
-                    y={yPos + RACK_TEXT.unitOffset.y}
+                    x={rackX + 8}
+                    y={yPos + 12}
                     text={`${unitNumber}U`}
-                    fontSize={RACK_TEXT.unitSize}
-                    fill={unitText}
+                    fontSize={12}
+                    fill="#6b7280"
                   />
                 )}
               </Fragment>
@@ -152,6 +141,7 @@ function Rack({
                 rackWidth={rackWidth}
                 x={rackX}
                 onDragEnd={handleDeviceDragEnd}
+                viewMode={viewMode}
               />
             );
           })}
@@ -160,7 +150,7 @@ function Rack({
           {floatingDevice && floatingInfo && (
             <Device
               device={{
-                id: FLOATING_DEVICE.id,
+                id: FLOATING_DEVICE_ID,
                 name: floatingDevice.card.label,
                 type: floatingDevice.card.type,
                 position: floatingInfo.position,
@@ -171,7 +161,8 @@ function Rack({
               rackWidth={rackWidth}
               x={rackX}
               isFloating={true}
-              opacity={FLOATING_DEVICE.opacity}
+              opacity={0.2}
+              viewMode={viewMode}
             />
           )}
         </Layer>

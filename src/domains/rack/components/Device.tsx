@@ -1,13 +1,10 @@
 import { Group, Rect, Text, Line, Image } from "react-konva";
-import type { RackDevice } from "../types";
 import { useState } from "react";
-import {
-  UNIT_COUNT,
-  RACK_CONFIG,
-  DEVICE_STYLING,
-} from "../constants/rackConstants";
+import type { RackDevice, ViewMode } from "../types";
 import { deviceImageMap } from "../utils/deviceImageMap";
 import { useImageLoad } from "../hooks/useImageLoad";
+import { dragBound } from "../utils/dragBound";
+import { UNIT_COUNT, RACK_CONFIG } from "../constants/rackConstants";
 
 interface DeviceProps {
   device: RackDevice;
@@ -17,6 +14,7 @@ interface DeviceProps {
   rackWidth: number;
   opacity?: number;
   isFloating?: boolean;
+  viewMode: ViewMode;
   onDragEnd?: (deviceId: number, newY: number) => void;
 }
 
@@ -29,40 +27,30 @@ function Device({
   opacity = 1,
   isFloating = false,
   onDragEnd,
+  viewMode,
 }: DeviceProps) {
   const [dragging, setIsDragging] = useState(false);
 
-  //RACK_CONFIG 값 사용
   const { unitHeight, frameThickness: baseY } = RACK_CONFIG;
   const rackHeight = UNIT_COUNT * unitHeight;
 
-  const imageUrl = deviceImageMap[device.type] || deviceImageMap.server;
+  const imageUrls = deviceImageMap[device.type] || deviceImageMap.server;
+  const imageUrl = viewMode === "front" ? imageUrls.front : imageUrls.back;
   const image = useImageLoad(imageUrl);
 
-  // 드래그 경계 처리
   const handleDragBound = (pos: { x: number; y: number }) => {
-    // Y축 범위 제한
-    const minY = baseY;
-    const maxY = baseY + rackHeight - height;
-
-    // 유닛 단위로 스냅
-    const relativeY = pos.y - baseY;
-    const snappedRelativeY = Math.round(relativeY / unitHeight) * unitHeight;
-    const snappedY = snappedRelativeY + baseY;
-
-    // 최종 Y좌표 계산
-    const clampedY = Math.max(minY, Math.min(maxY, snappedY));
-
-    return {
-      x: 0,
-      y: clampedY,
-    };
+    return dragBound(pos, {
+      baseY,
+      rackHeight,
+      deviceHeight: height,
+      unitHeight,
+    });
   };
 
   return (
     <Group
       y={y}
-      opacity={dragging ? DEVICE_STYLING.dragOpacity : opacity}
+      opacity={dragging ? 0.5 : opacity}
       draggable={!isFloating}
       dragBoundFunc={!isFloating ? handleDragBound : undefined}
       onDragStart={() => setIsDragging(true)}
@@ -86,33 +74,35 @@ function Device({
         width={rackWidth}
         height={height}
         fill="transparent"
-        strokeWidth={
-          isFloating
-            ? DEVICE_STYLING.floatingStrokeWidth
-            : DEVICE_STYLING.normalStrokeWidth
-        }
+        strokeWidth={isFloating ? 2 : 1}
       />
 
       {/* 상단 테두리 */}
-      <Line
-        points={[x, 0, x + rackWidth, 0]}
-        strokeWidth={DEVICE_STYLING.borderStrokeWidth.top}
-      />
+      <Line points={[x, 0, x + rackWidth, 0]} strokeWidth={1} />
 
       {/* 하단 테두리 */}
-      <Line
-        points={[x, height, x + rackWidth, height]}
-        strokeWidth={DEVICE_STYLING.borderStrokeWidth.bottom}
-      />
+      <Line points={[x, height, x + rackWidth, height]} strokeWidth={2} />
 
       {/* 장비 이름 */}
-      <Text
-        x={x + DEVICE_STYLING.textOffset.x}
-        y={height / 2 - DEVICE_STYLING.textOffset.y}
-        text={device.name}
-        fontSize={DEVICE_STYLING.textSize}
-        fill={DEVICE_STYLING.textColor}
-      />
+      {viewMode === "front" ? (
+        <Text
+          x={x + 10}
+          y={height / 2 - 6}
+          text={device.name}
+          fontSize={12}
+          fill="#fff"
+        />
+      ) : (
+        <>
+          <Text
+            x={x + 10}
+            y={height / 2 - 6}
+            text={`${device.name} (뒷면)`}
+            fontSize={12}
+            fill="#fff"
+          />
+        </>
+      )}
     </Group>
   );
 }
