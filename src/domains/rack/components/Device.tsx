@@ -1,6 +1,6 @@
 import { Group, Rect, Text, Line, Image } from "react-konva";
 import { useState } from "react";
-import type { RackDevice, ViewMode } from "../types";
+import type { RackDevice } from "../types";
 import { deviceImageMap } from "../utils/deviceImageMap";
 import { useImageLoad } from "../hooks/useImageLoad";
 import { dragBound } from "../utils/dragBound";
@@ -14,7 +14,8 @@ interface DeviceProps {
   rackWidth: number;
   opacity?: number;
   isFloating?: boolean;
-  viewMode: ViewMode;
+  frontView: boolean;
+  editMode: boolean;
   onDragEnd?: (deviceId: number, newY: number) => void;
 }
 
@@ -27,7 +28,8 @@ function Device({
   opacity = 1,
   isFloating = false,
   onDragEnd,
-  viewMode,
+  frontView,
+  editMode,
 }: DeviceProps) {
   const [dragging, setIsDragging] = useState(false);
 
@@ -35,7 +37,7 @@ function Device({
   const rackHeight = UNIT_COUNT * unitHeight;
 
   const imageUrls = deviceImageMap[device.type] || deviceImageMap.server;
-  const imageUrl = viewMode === "front" ? imageUrls.front : imageUrls.back;
+  const imageUrl = frontView ? imageUrls.front : imageUrls.back;
   const image = useImageLoad(imageUrl);
 
   const handleDragBound = (pos: { x: number; y: number }) => {
@@ -51,12 +53,12 @@ function Device({
     <Group
       y={y}
       opacity={dragging ? 0.5 : opacity}
-      draggable={!isFloating}
-      dragBoundFunc={!isFloating ? handleDragBound : undefined}
+      draggable={!isFloating && editMode}
+      dragBoundFunc={!isFloating && editMode ? handleDragBound : undefined}
       onDragStart={() => setIsDragging(true)}
       onDragEnd={(e) => {
         setIsDragging(false);
-        if (onDragEnd && !isFloating) {
+        if (onDragEnd && !isFloating && editMode) {
           onDragEnd(device.id, e.target.y());
         }
       }}
@@ -84,25 +86,13 @@ function Device({
       <Line points={[x, height, x + rackWidth, height]} strokeWidth={2} />
 
       {/* 장비 이름 */}
-      {viewMode === "front" ? (
-        <Text
-          x={x + 10}
-          y={height / 2 - 6}
-          text={device.name}
-          fontSize={12}
-          fill="#fff"
-        />
-      ) : (
-        <>
-          <Text
-            x={x + 10}
-            y={height / 2 - 6}
-            text={`${device.name} (뒷면)`}
-            fontSize={12}
-            fill="#fff"
-          />
-        </>
-      )}
+      <Text
+        x={x + 10}
+        y={height / 2 - 6}
+        text={device.name}
+        fontSize={12}
+        fill="#fff"
+      />
     </Group>
   );
 }

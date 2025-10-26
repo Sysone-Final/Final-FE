@@ -1,7 +1,7 @@
 import { Stage, Layer, Rect, Line, Text } from "react-konva";
 import { useMemo, Fragment } from "react";
 import type { KonvaEventObject } from "konva/lib/Node";
-import type { RackDevice, FloatingDevice, ViewMode } from "../types";
+import type { RackDevice, FloatingDevice } from "../types";
 import Device from "./Device";
 import { RACK_CONFIG, UNIT_COUNT } from "../constants/rackConstants";
 import {
@@ -17,7 +17,8 @@ interface RackProps {
   onMouseMove: (mouseY: number) => void;
   onRackClick: (position: number) => void;
   onDeviceDragEnd: (deviceId: number, newPosition: number) => void;
-  viewMode: ViewMode;
+  frontView: boolean;
+  editMode: boolean;
 }
 
 const FLOATING_DEVICE_ID = -1;
@@ -28,7 +29,8 @@ function Rack({
   onMouseMove,
   onRackClick,
   onDeviceDragEnd,
-  viewMode,
+  frontView,
+  editMode,
 }: RackProps) {
   const { width: rackWidth, unitHeight } = RACK_CONFIG;
 
@@ -141,7 +143,8 @@ function Rack({
                 rackWidth={rackWidth}
                 x={rackX}
                 onDragEnd={handleDeviceDragEnd}
-                viewMode={viewMode}
+                frontView={frontView}
+                editMode={editMode}
               />
             );
           })}
@@ -162,7 +165,8 @@ function Rack({
               x={rackX}
               isFloating={true}
               opacity={0.2}
-              viewMode={viewMode}
+              frontView={frontView}
+              editMode={editMode}
             />
           )}
         </Layer>
