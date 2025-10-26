@@ -15,16 +15,4 @@ export default defineConfig({
       brotliSize: true,
     }),
   ],
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          // 캐싱 최적화
-          babylon: ["@babylonjs/core", "@babylonjs/loaders"],
-        },
-      },
-    },
-  },
-
-  assetsInclude: ["**/*.glb", "**/*.gltf"],
 });
