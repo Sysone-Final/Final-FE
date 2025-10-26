@@ -9,8 +9,6 @@ export type DeviceType =
   | "kvm"
   | "other";
 
-export type ViewMode = "front" | "back";
-
 export interface RackDevice {
   id: number;
   name: string;
