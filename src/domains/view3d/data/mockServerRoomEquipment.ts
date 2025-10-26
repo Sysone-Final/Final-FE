@@ -11,6 +11,11 @@ import type { Equipment3D } from "../types";
  * - 에어컨: 천장/벽면 상부
  * - 소화기: 출입구 및 중요 위치
  * - 온도계: 모니터링이 필요한 위치
+ *
+ * 📌 백엔드 연동 시:
+ * - id: 백엔드에서 받은 equipmentId (UUID)를 그대로 사용
+ * - 목 데이터의 id는 예시이며, 실제로는 백엔드 UUID로 대체됨
+ * - API: GET /api/server-rooms/{serverRoomId}/equipment
  */
 
 // IDC A-Zone, Floor 3 (Seoul) - 32개 랙, Normal
@@ -1569,7 +1574,13 @@ export const MOCK_SERVER_ROOM_EQUIPMENT_MAP: Record<string, Equipment3D[]> = {
   f6: SERVER_ROOM_F6_EQUIPMENT,
 };
 
-// 서버실 ID로 장비 데이터 가져오기
+/**
+ * 서버실 ID로 장비 데이터 가져오기 (목 데이터)
+ *
+ * 📌 실제 백엔드 연동 시:
+ * import { fetchServerRoomEquipment } from '../api/serverRoomEquipmentApi';
+ * const equipment = await fetchServerRoomEquipment(serverRoomId);
+ */
 export function getServerRoomEquipment(serverRoomId: string): Equipment3D[] {
   return MOCK_SERVER_ROOM_EQUIPMENT_MAP[serverRoomId] || [];
 }
