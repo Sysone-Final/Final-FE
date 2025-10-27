@@ -2,6 +2,8 @@ import Rack from "../components/Rack";
 import { useRackManager } from "../hooks/useRackManager";
 import Sidebar from "./Sidebar";
 import RackHeader from "./RackHeader";
+import Button from "./Button";
+import { useState } from "react";
 
 interface RackViewProps {
   onClose?: () => void;
@@ -10,6 +12,8 @@ interface RackViewProps {
 
 function RackView({ onClose, rackName }: RackViewProps = {}) {
   const rackManager = useRackManager();
+  const [frontView, setFrontView] = useState(true);
+  const [editMode, setEditMode] = useState(false);
 
   return (
     <div className="h-full w-full flex flex-col text-white overflow-hidden">
@@ -32,7 +36,7 @@ function RackView({ onClose, rackName }: RackViewProps = {}) {
             </div>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

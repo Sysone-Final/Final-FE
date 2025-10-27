@@ -1,18 +1,16 @@
 export const UNIT_COUNT = 42;
 
 export const RACK_CONFIG = {
-  width: 300,
+  width: 350,
   height: 700,
-  frameThickness: 20,
-  panelWidth: 25,
+  frameThickness: 10,
+  panelWidth: 5,
   leftPanelOffset: -5,
   unitHeight: 40,
 } as const;
 
-export const RACK_COLORS = {
-  background: "#1f2937",
-  border: "#374151",
-  rackBody: "#000000",
-  line: "#4b5563",
-  unitText: "#6b7280",
+export const RACK_LABELS = {
+  TOTAL: "총 U 수",
+  USED: "사용 중",
+  REMAIN: "남은 U 수",
 } as const;
