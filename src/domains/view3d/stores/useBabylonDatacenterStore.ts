@@ -29,6 +29,7 @@ interface BabylonDatacenterStore {
     gridZ?: number,
   ) => void;
   updateEquipmentRotation: (id: string, rotation: number) => void;
+  rotateEquipment90: (id: string, clockwise?: boolean) => void; // 90도 회전 함수 추가
   removeEquipment: (id: string) => void;
   setSelectedEquipment: (id: string | null) => void;
   loadEquipment: (equipmentList: Equipment3D[]) => void; // 장비 목록 일괄 로드
@@ -121,6 +122,28 @@ export const useBabylonDatacenterStore = create<BabylonDatacenterStore>(
         equipment: state.equipment.map((eq) =>
           eq.id === id ? { ...eq, rotation } : eq,
         ),
+      }));
+    },
+
+    // 장비 90도 회전 (시계방향)
+    rotateEquipment90: (id: string, clockwise: boolean = true) => {
+      set((state) => ({
+        equipment: state.equipment.map((eq) => {
+          if (eq.id === id) {
+            // 90도 = π/2 라디안
+            const rotation90 = Math.PI / 2;
+            const newRotation = clockwise
+              ? eq.rotation + rotation90
+              : eq.rotation - rotation90;
+
+            // 0 ~ 2π 범위로 정규화
+            const normalizedRotation =
+              ((newRotation % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+
+            return { ...eq, rotation: normalizedRotation };
+          }
+          return eq;
+        }),
       }));
     },
 

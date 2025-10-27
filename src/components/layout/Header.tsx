@@ -16,22 +16,28 @@ function Header() {
   ];
 
   return (
-    <header className="px-4">
+    <header className="px-10">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+        <div className="flex flex-1 items-center">
+          {/* 로고 */}
+          <div className="flex items-center gap-2 mr-8">
+            <img src="/logo.svg" alt="SERVERWAY" className="w-8 h-8" />
+            <span className="text-xl font-bold text-gray-50">SERVERWAY</span>
+          </div>
+          
           {/* 네비게이션 메뉴 */}
-          <nav className="flex gap-2">
+          <nav className="flex items-center gap-x-2">
             {menuItems.map((item) => (
               <NavLink
                 key={item.id}
                 to={item.path}
                 className={({ isActive }) =>
-                  `px-4 py-4 transition-all duration-300 text-white ${
-                    isActive ? "bg-white/40" : "hover:bg-white/10"
+                  `px-4 py-4 transition-all duration-300 ${
+                    isActive ? "text-gray-50 border-b border-gray-100" : "text-gray-500 hover:text-gray-200"
                   }`
                 }
               >
-                <span className="text-lg font-medium">{item.label}</span>
+                <span className="text-lg font-semibold">{item.label}</span>
               </NavLink>
             ))}
           </nav>
