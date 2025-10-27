@@ -10,7 +10,7 @@ function Sidebar({ onCardClick, isOpen }: SidebarProps) {
   return (
     <div
       className={`
-        flex flex-col items-center justify-start
+  flex flex-col items-center justify-start flex-shrink-0
         bg-[#404452]/90 backdrop-blur-sm
         border-r border-slate-300/40
         rounded-l-xl

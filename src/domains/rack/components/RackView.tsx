@@ -27,8 +27,8 @@ function RackView({ rackName }: RackViewProps = {}) {
   ];
 
   return (
-    <div className="min-h-dvh flex justify-center items-center text-white p-6">
-      <div className="flex flex-col bg-[#404452]/90 backdrop-blur-sm border border-slate-300/40 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
+    <div className="h-full flex justify-center items-center text-white p-6 overflow-auto">
+      <div className="flex flex-col bg-[#404452]/90 backdrop-blur-sm border border-slate-300/40 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.5)] max-h-full w-full overflow-hidden">
         {/* 상단바 */}
         <header className="flex justify-between items-center px-6 py-4 border-b border-slate-300/40">
           {/* 왼쪽: RackHeader (전체 너비 차지) */}
@@ -55,7 +55,7 @@ function RackView({ rackName }: RackViewProps = {}) {
         </header>
 
         {/* 메인 컨텐츠 영역 */}
-        <div className="flex">
+        <div className="flex flex-1 min-h-0">
           {/* 사이드바 */}
           <Sidebar
             onCardClick={rackManager.handleCardClick}
@@ -63,20 +63,22 @@ function RackView({ rackName }: RackViewProps = {}) {
           />
 
           {/* 랙 + 범례 영역 */}
-          <div className="flex flex-col flex-1">
+          <div className="flex flex-col flex-1 min-h-0">
             {/* 랙 영역 - 패딩 줄임 */}
-            <div className="flex justify-center items-center px-8 pt-8 pb-2">
-              <Rack
-                key={rackManager.resetKey}
-                devices={rackManager.installedDevices}
-                floatingDevice={rackManager.floatingDevice}
-                onMouseMove={rackManager.handleMouseMove}
-                onRackClick={rackManager.handleRackClick}
-                onDeviceDragEnd={rackManager.handleDeviceDragEnd}
-                onDeviceDelete={rackManager.removeDevice}
-                frontView={!frontView}
-                editMode={editMode}
-              />
+            <div className="flex-1 flex justify-center items-center px-4 pt-8 pb-2 overflow-hidden min-h-0">
+              <div className="w-full h-full min-h-0">
+                <Rack
+                  key={rackManager.resetKey}
+                  devices={rackManager.installedDevices}
+                  floatingDevice={rackManager.floatingDevice}
+                  onMouseMove={rackManager.handleMouseMove}
+                  onRackClick={rackManager.handleRackClick}
+                  onDeviceDragEnd={rackManager.handleDeviceDragEnd}
+                  onDeviceDelete={rackManager.removeDevice}
+                  frontView={!frontView}
+                  editMode={editMode}
+                />
+              </div>
             </div>
 
             {/* Footer - 범례 */}
