@@ -1,11 +1,5 @@
-<<<<<<< HEAD
-import React, { useState, useEffect, useMemo } from "react";
+import  { useState, useEffect, useMemo } from "react";
 import type { Resource, Rack } from "../types/resource.types";
-=======
-import { useState, useEffect, useMemo } from "react";
-// [수정] Datacenter 타입을 import 합니다.
-import type { Resource, Rack, Datacenter } from "../types/resource.types";
->>>>>>> origin/main
 import {
   useCreateResource,
   useUpdateResource,
@@ -34,7 +28,7 @@ interface Step1Props {
   formData: Partial<Resource>;
   handleChange: ChangeHandler;
   handleFileChange: FileChangeHandler;
-  // [추가] 미리보기 URL props
+  //  미리보기 URL props
   imageFrontPreview: string | null;
   imageRearPreview: string | null;
 }
@@ -49,12 +43,12 @@ interface Step3Props {
   handleChange: ChangeHandler;
 }
 
-// --- [이동] 스텝 1 컴포넌트 ---
+// 스텝 1 컴포넌트 ---
 const Step1Identity = ({
   formData,
   handleChange,
   handleFileChange,
-  // [추가] 미리보기 URL props 받기
+  //  미리보기 URL props 받기
   imageFrontPreview,
   imageRearPreview,
 }: Step1Props) => (
@@ -144,7 +138,7 @@ const Step1Identity = ({
         onChange={handleFileChange}
         className={`${inputStyle} text-sm`}
       />
-      {/* [추가] 앞면 이미지 미리보기 */}
+      {/*  앞면 이미지 미리보기 */}
       {imageFrontPreview && (
         <div className="mt-2 border border-white border-opacity-30 rounded p-1 inline-block">
           <img
@@ -164,7 +158,7 @@ const Step1Identity = ({
         onChange={handleFileChange}
         className={`${inputStyle} text-sm`}
       />
-      {/* [추가] 뒷면 이미지 미리보기 */}
+      {/*  뒷면 이미지 미리보기 */}
       {imageRearPreview && (
         <div className="mt-2 border border-white border-opacity-30 rounded p-1 inline-block">
           <img
@@ -715,7 +709,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             formData={formData}
             handleChange={handleChange}
             handleFileChange={handleFileChange}
-            // [추가] 미리보기 URL props 전달
+            //  미리보기 URL props 전달
             imageFrontPreview={imageFrontPreview}
             imageRearPreview={imageRearPreview}
           />
