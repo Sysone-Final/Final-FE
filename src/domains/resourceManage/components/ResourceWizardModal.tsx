@@ -1,4 +1,16 @@
-import  { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import {
+  useForm,
+  useFormState, 
+} from "react-hook-form";
+import type {
+  SubmitHandler,
+  FieldErrors,
+  UseFormRegister,
+  UseFormWatch,
+  UseFormGetValues,
+
+} from "react-hook-form";
 import type { Resource, Rack } from "../types/resource.types";
 import {
   useCreateResource,
@@ -8,47 +20,51 @@ import {
 } from "../hooks/useResourceQueries";
 import { X, ArrowLeft } from "lucide-react";
 
-// ---  공통 폼 필드 스타일 ---
+// --- 공통 폼 필드 스타일 ---
 const inputStyle =
-  "bg-gray-900/20 border border-white border-opacity-30 text-white p-2 rounded w-full placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:bg-gray-700 disabled:bg-opacity-30 disabled:placeholder-gray-500"; //  배경 약간 어둡게(bg-black/20), placeholder 진하게(placeholder-gray-400), disabled 스타일 추가
+  "bg-gray-900/20 border border-white border-opacity-30 text-white p-2 rounded w-full placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:bg-gray-700 disabled:bg-opacity-30 disabled:placeholder-gray-500";
 const labelStyle = "block text-sm font-medium text-white mb-1";
 const gridContainerStyle = "grid grid-cols-1 md:grid-cols-2 gap-4";
 const gridSpanFullStyle = "md:col-span-2";
 const fieldGroupStyle = "mb-6 p-4 border-t border-white border-opacity-20";
 const fieldGroupTitleStyle = "text-lg font-semibold mb-3 text-white";
 const helperTextStyle = "text-xs text-white text-opacity-70 mt-1 pl-1";
+const errorTextStyle = "text-xs text-red-400 mt-1";
 
-// ---  Step 컴포넌트들의 prop 타입을 명시적으로 변경 ---
-type ChangeHandler = (
-  e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
-) => void;
+// (기존 Resource 타입과 거의 동일하지만, 명시적으로 사용)
+type FormValues = Partial<Resource>;
+
+// --- Step 컴포넌트들의 prop 타입을 react-hook-form 기준으로 변경 ---
 type FileChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => void;
 
+//  props 변경
 interface Step1Props {
-  formData: Partial<Resource>;
-  handleChange: ChangeHandler;
+  register: UseFormRegister<FormValues>;
+  errors: FieldErrors<FormValues>;
   handleFileChange: FileChangeHandler;
-  //  미리보기 URL props
   imageFrontPreview: string | null;
   imageRearPreview: string | null;
 }
 
 interface Step2Props {
-  formData: Partial<Resource>;
-  handleChange: ChangeHandler;
+  register: UseFormRegister<FormValues>;
+  errors: FieldErrors<FormValues>;
+  watch: UseFormWatch<FormValues>;
+  getValues: UseFormGetValues<FormValues>;
 }
 
 interface Step3Props {
-  formData: Partial<Resource>;
-  handleChange: ChangeHandler;
+  register: UseFormRegister<FormValues>;
+  errors: FieldErrors<FormValues>;
+  watch: UseFormWatch<FormValues>;
 }
 
-// 스텝 1 컴포넌트 ---
+// --- 스텝 1 컴포넌트 ---
+// (CHANGES: register, errors 적용)
 const Step1Identity = ({
-  formData,
-  handleChange,
+  register,
+  errors,
   handleFileChange,
-  //  미리보기 URL props 받기
   imageFrontPreview,
   imageRearPreview,
 }: Step1Props) => (
@@ -60,23 +76,25 @@ const Step1Identity = ({
       </label>
       <input
         type="text"
-        name="equipmentName"
-        value={formData.equipmentName}
-        onChange={handleChange}
-        className={inputStyle}
-        required
+        {...register("equipmentName", {
+          required: "장비명은 필수 입력 항목입니다.",
+        })}
+        className={`${inputStyle} ${errors.equipmentName ? "border-red-500 ring-red-500" : ""}`}
       />
+      {errors.equipmentName && (
+        <p className={errorTextStyle}>{errors.equipmentName.message}</p>
+      )}
     </div>
+
     <div>
       <label className={labelStyle}>
         장비 유형 (Equipment Type) <span className="text-red-500">*</span>
       </label>
       <select
-        name="equipmentType"
-        value={formData.equipmentType}
-        onChange={handleChange}
-        className={inputStyle}
-        required
+        {...register("equipmentType", {
+          required: "장비 유형을 선택하세요.",
+        })}
+        className={`${inputStyle} ${errors.equipmentType ? "border-red-500 ring-red-500" : ""}`}
       >
         <option value="SERVER">SERVER</option>
         <option value="SWITCH">SWITCH</option>
@@ -84,16 +102,17 @@ const Step1Identity = ({
         <option value="PDU">PDU</option>
         <option value="UPS">UPS</option>
       </select>
+      {errors.equipmentType && (
+        <p className={errorTextStyle}>{errors.equipmentType.message}</p>
+      )}
     </div>
 
-    {/* --- 선택 --- */}
+    {/* --- 선택 (모두 register 적용) --- */}
     <div>
       <label className={labelStyle}>제조사 (Manufacturer)</label>
       <input
         type="text"
-        name="manufacturer"
-        value={formData.manufacturer || ""}
-        onChange={handleChange}
+        {...register("manufacturer")}
         className={inputStyle}
       />
     </div>
@@ -101,9 +120,7 @@ const Step1Identity = ({
       <label className={labelStyle}>모델명 (Model Name)</label>
       <input
         type="text"
-        name="modelName"
-        value={formData.modelName || ""}
-        onChange={handleChange}
+        {...register("modelName")}
         className={inputStyle}
       />
     </div>
@@ -111,9 +128,7 @@ const Step1Identity = ({
       <label className={labelStyle}>시리얼 번호 (Serial Number)</label>
       <input
         type="text"
-        name="serialNumber"
-        value={formData.serialNumber || ""}
-        onChange={handleChange}
+        {...register("serialNumber")}
         className={inputStyle}
       />
     </div>
@@ -121,30 +136,27 @@ const Step1Identity = ({
       <label className={labelStyle}>자산 관리 코드 (Equipment Code)</label>
       <input
         type="text"
-        name="equipmentCode"
-        value={formData.equipmentCode || ""}
-        onChange={handleChange}
+        {...register("equipmentCode")}
         className={inputStyle}
       />
     </div>
 
-    {/* --- 이미지 --- */}
+    {/* --- 이미지 (파일 입력은 기존 방식 유지) --- */}
     <div className={gridSpanFullStyle}>
       <label className={labelStyle}>장비 이미지 (앞면)</label>
       <input
         type="file"
         name="imageFrontFile"
         accept="image/*"
-        onChange={handleFileChange}
+        onChange={handleFileChange} // RHF register 사용 안 함
         className={`${inputStyle} text-sm`}
       />
-      {/*  앞면 이미지 미리보기 */}
       {imageFrontPreview && (
         <div className="mt-2 border border-white border-opacity-30 rounded p-1 inline-block">
           <img
             src={imageFrontPreview}
             alt="앞면 미리보기"
-            className="max-h-32 max-w-full object-contain rounded" // 크기 제한 및 스타일
+            className="max-h-32 max-w-full object-contain rounded"
           />
         </div>
       )}
@@ -155,16 +167,15 @@ const Step1Identity = ({
         type="file"
         name="imageRearFile"
         accept="image/*"
-        onChange={handleFileChange}
+        onChange={handleFileChange} // RHF register 사용 안 함
         className={`${inputStyle} text-sm`}
       />
-      {/*  뒷면 이미지 미리보기 */}
       {imageRearPreview && (
         <div className="mt-2 border border-white border-opacity-30 rounded p-1 inline-block">
           <img
             src={imageRearPreview}
             alt="뒷면 미리보기"
-            className="max-h-32 max-w-full object-contain rounded" // 크기 제한 및 스타일
+            className="max-h-32 max-w-full object-contain rounded"
           />
         </div>
       )}
@@ -173,101 +184,171 @@ const Step1Identity = ({
 );
 
 // --- 스텝 2 컴포넌트 (API 연동) ---
-const Step2Location = ({ formData, handleChange }: Step2Props) => {
-  // API 훅 호출 (훅의 반환값은 이미 배열)
-  const { data: datacenters, isLoading: isLoadingDatacenters, isError: isErrorDatacenters } =
-    useGetDatacenters();
-  const { data: racks, isLoading: isLoadingRacks, isError: isErrorRacks } =
-    useGetRacksByDatacenter(formData.datacenterId || null);
+// register, errors, watch, getValues 적용)
+const Step2Location = ({ register, errors, watch, getValues }: Step2Props) => {
+  //  watch를 사용하여 datacenterId 값 감시
+  const watchedDatacenterId = watch("datacenterId");
+  //  rackId 감시 (startUnit, unitSize 활성화용)
+  const watchedRackId = watch("rackId");
 
+  //  formData.datacenterId 대신 watchedDatacenterId 사용
+  const {
+    data: datacenters,
+    isLoading: isLoadingDatacenters,
+    isError: isErrorDatacenters,
+  } = useGetDatacenters();
+  const {
+    data: racks,
+    isLoading: isLoadingRacks,
+    isError: isErrorRacks,
+  } = useGetRacksByDatacenter(watchedDatacenterId || null);
 
-
-// 선택된 랙 정보 찾기 (maxUnits 계산용)
+  // 랙 목록(racks) 또는 선택된 랙(watchedRackId)이 바뀔 때 maxUnits 재계산
   const selectedRack = useMemo(() => {
-    if (!formData.rackId || !racks || !Array.isArray(racks)) return null;
-    return racks.find((r: Rack) => r.id === formData.rackId);
-  }, [formData.rackId, racks]);
+    if (!watchedRackId || !racks || !Array.isArray(racks)) return null;
+    return racks.find((r: Rack) => r.id === watchedRackId);
+  }, [watchedRackId, racks]);
 
-  const maxUnits = selectedRack?.totalUnits || 48; // 선택된 랙의 totalUnits 사용, 없으면 기본값
+  const maxUnits = selectedRack?.totalUnits || 48;
 
- return (
+  return (
     <div>
       {/* 2-1. 물리적 위치 */}
       <fieldset className={fieldGroupStyle}>
         <legend className={fieldGroupTitleStyle}>물리적 위치</legend>
         <div className={gridContainerStyle}>
           <div>
-            <label className={labelStyle}>전산실</label>
+            <label className={labelStyle}>
+              전산실 <span className="text-red-500">*</span>
+            </label>
             <select
-              name="datacenterId"
-              value={formData.datacenterId || ""}
-              onChange={handleChange}
-              className={inputStyle}
+              {...register("datacenterId", {
+                //  required 대신 validate 사용하여 빈 문자열("") 체크
+                validate: (value) => value !== "" || "전산실을 선택해야 합니다.",
+              })}
+              className={`${inputStyle} ${errors.datacenterId ? "border-red-500 ring-red-500" : ""}`}
               disabled={isLoadingDatacenters || isErrorDatacenters}
             >
-              <option value="">
-                {isLoadingDatacenters ? "불러오는 중..." : isErrorDatacenters ? "오류 발생" : "-- 전산실 선택 --"}
+              <option value=""> {/* 기본 옵션의 value는 "" */}
+                {isLoadingDatacenters
+                  ? "불러오는 중..."
+                  : isErrorDatacenters
+                    ? "오류 발생"
+                    : "-- 전산실 선택 --"}
               </option>
-              {/*  Array.isArray 체크 추가 */}
-              {Array.isArray(datacenters) && datacenters.map((dc) => (
-                <option key={dc.id} value={dc.id}>
-                  {dc.name}
-                </option>
-              ))}
+              {Array.isArray(datacenters) &&
+                datacenters.map((dc) => (
+                  <option key={dc.id} value={dc.id}>
+                    {dc.name}
+                  </option>
+                ))}
             </select>
+            {errors.datacenterId && (
+              <p className={errorTextStyle}>{errors.datacenterId.message}</p>
+            )}
           </div>
           <div>
-            <label className={labelStyle}>랙</label>
+            <label className={labelStyle}>
+              랙 (Rack) <span className="text-red-500">*</span>
+            </label>
             <select
-              name="rackId"
-              value={formData.rackId || ""}
-              onChange={handleChange}
-              className={inputStyle}
-              disabled={!formData.datacenterId || isLoadingRacks || isErrorRacks}
+              {...register("rackId", {
+                //  전산실과 마찬가지로 validate 사용
+                validate: (value) => value !== "" || "랙을 선택해야 합니다.",
+              })}
+              className={`${inputStyle} ${errors.rackId ? "border-red-500 ring-red-500" : ""}`}
+              disabled={!watchedDatacenterId || isLoadingRacks || isErrorRacks}
             >
               <option value="">
-                {isLoadingRacks ? "불러오는 중..." : !formData.datacenterId ? "-- 전산실 먼저 선택 --" : isErrorRacks ? "오류 발생" : "-- 랙 선택 --"}
+                {isLoadingRacks
+                  ? "불러오는 중..."
+                  : !watchedDatacenterId
+                    ? "-- 전산실 먼저 선택 --"
+                    : isErrorRacks
+                      ? "오류 발생"
+                      : "-- 랙 선택 --"}
               </option>
-              {/*  Array.isArray 체크 추가 */}
-              {Array.isArray(racks) && racks.map((rack) => (
-                <option key={rack.id} value={rack.id}>
-                  {rack.rackName} ({rack.availableUnits}U / {rack.totalUnits}U)
-                </option>
-              ))}
+              {Array.isArray(racks) &&
+                racks.map((rack) => (
+                  <option key={rack.id} value={rack.id}>
+                    {rack.rackName} ({rack.availableUnits}U / {rack.totalUnits}
+                    U)
+                  </option>
+                ))}
             </select>
+            {errors.rackId && (
+              <p className={errorTextStyle}>{errors.rackId.message}</p>
+            )}
           </div>
+          
+          {/* --- startUnit, unitSize RHF 적용 --- */}
           <div>
-            <label className={labelStyle}>시작 유닛</label>
+            <label className={labelStyle}>
+              시작 유닛 <span className="text-red-500">*</span>
+            </label>
             <input
               type="number"
-              name="startUnit"
-              value={formData.startUnit || ""}
+              {...register("startUnit", {
+                required: "시작 유닛을 입력하세요.",
+                valueAsNumber: true,
+                min: { value: 1, message: "시작 유닛은 1 이상이어야 합니다." },
+                max: {
+                  value: maxUnits,
+                  message: `이 랙의 최대 유닛(${maxUnits}U)을 초과할 수 없습니다.`,
+                },
+              })}
               min="1"
               max={maxUnits}
-              onChange={handleChange}
-              className={inputStyle}
-              disabled={!formData.rackId}
+              className={`${inputStyle} ${errors.startUnit ? "border-red-500 ring-red-500" : ""}`}
+              disabled={!watchedRackId}
             />
-            <p className={helperTextStyle}>랙의 몇 번째 U부터? (최대: {maxUnits}U)</p>
+            <p className={helperTextStyle}>
+              랙의 몇 번째 U부터? (최대: {maxUnits}U)
+            </p>
+            {errors.startUnit && (
+              <p className={errorTextStyle}>{errors.startUnit.message}</p>
+            )}
           </div>
           <div>
-            <label className={labelStyle}>유닛 크기 <span className="text-red-500">*</span></label>
+            <label className={labelStyle}>
+              유닛 크기 <span className="text-red-500">*</span>
+            </label>
             <input
               type="number"
-              name="unitSize"
-              value={formData.unitSize}
+              {...register("unitSize", {
+                required: "유닛 크기는 필수입니다.",
+                valueAsNumber: true,
+                min: { value: 1, message: "유닛 크기는 1 이상이어야 합니다." },
+                // (선택적) 시작 유닛 + 크기 검증
+                validate: (value) => {
+                  const startUnit = getValues("startUnit");
+                  if (typeof startUnit === 'number' && typeof value === 'number') {
+                    return (
+                      startUnit + value - 1 <= maxUnits ||
+                      `설치 위치(U)가 랙의 최대 크기(${maxUnits}U)를 초과합니다.`
+                    );
+                  }
+                  return true; // startUnit이 없으면 이 검증은 통과
+                },
+              })}
               min="1"
-              max={maxUnits} // 시작 유닛 + 크기 - 1 <= maxUnits 검증 필요
-              onChange={handleChange}
-              className={inputStyle}
-              required
-              disabled={!formData.rackId}
+              max={maxUnits}
+              className={`${inputStyle} ${errors.unitSize ? "border-red-500 ring-red-500" : ""}`}
+              disabled={!watchedRackId}
             />
             <p className={helperTextStyle}>장비가 차지하는 U 크기 (예: 2U)</p>
+            {errors.unitSize && (
+              <p className={errorTextStyle}>{errors.unitSize.message}</p>
+            )}
           </div>
+          {/* --- END --- */}
+
           <div className={gridSpanFullStyle}>
             <label className={labelStyle}>설치 방향</label>
-            <select name="positionType" value={formData.positionType || ""} onChange={handleChange} className={inputStyle}>
+            <select
+              {...register("positionType")}
+              className={inputStyle}
+            >
               <option value="">-- 방향 선택 --</option>
               <option value="FRONT">FRONT</option>
               <option value="REAR">REAR</option>
@@ -277,7 +358,7 @@ const Step2Location = ({ formData, handleChange }: Step2Props) => {
         </div>
       </fieldset>
 
-      {/* 2-2. 하드웨어 및 네트워크 사양 */}
+      {/* 2-2. 하드웨어 및 네트워크 사양 (모두 register 적용) */}
       <fieldset className={`${fieldGroupStyle} mt-4`}>
         <legend className={fieldGroupTitleStyle}>HW & Network Specs</legend>
         <div className={gridContainerStyle}>
@@ -285,9 +366,7 @@ const Step2Location = ({ formData, handleChange }: Step2Props) => {
             <label className={labelStyle}>운영체제 (OS)</label>
             <input
               type="text"
-              name="os"
-              value={formData.os || ""}
-              onChange={handleChange}
+              {...register("os")}
               className={inputStyle}
               placeholder="예: Ubuntu 20.04, Windows Server 2019"
             />
@@ -296,9 +375,7 @@ const Step2Location = ({ formData, handleChange }: Step2Props) => {
             <label className={labelStyle}>CPU 사양 (CPU Spec)</label>
             <input
               type="text"
-              name="cpuSpec"
-              value={formData.cpuSpec || ""}
-              onChange={handleChange}
+              {...register("cpuSpec")}
               className={inputStyle}
               placeholder="예: Intel Xeon Gold 6248"
             />
@@ -307,9 +384,7 @@ const Step2Location = ({ formData, handleChange }: Step2Props) => {
             <label className={labelStyle}>메모리 사양 (Memory Spec)</label>
             <input
               type="text"
-              name="memorySpec"
-              value={formData.memorySpec || ""}
-              onChange={handleChange}
+              {...register("memorySpec")}
               className={inputStyle}
               placeholder="예: 128GB DDR4"
             />
@@ -318,9 +393,7 @@ const Step2Location = ({ formData, handleChange }: Step2Props) => {
             <label className={labelStyle}>디스크 사양 (Disk Spec)</label>
             <input
               type="text"
-              name="diskSpec"
-              value={formData.diskSpec || ""}
-              onChange={handleChange}
+              {...register("diskSpec")}
               className={inputStyle}
               placeholder="예: 2TB SSD x 2"
             />
@@ -329,23 +402,35 @@ const Step2Location = ({ formData, handleChange }: Step2Props) => {
             <label className={labelStyle}>IP 주소 (IP Address)</label>
             <input
               type="text"
-              name="ipAddress"
-              value={formData.ipAddress || ""}
-              onChange={handleChange}
-              className={inputStyle}
+              {...register("ipAddress", {
+                pattern: {
+                  value: /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/,
+                  message: "유효한 IP 주소 형식이 아닙니다. (예: 192.168.0.1)",
+                },
+              })}
+              className={`${inputStyle} ${errors.ipAddress ? "border-red-500 ring-red-500" : ""}`}
               placeholder="예: 192.168.1.10"
             />
+            {errors.ipAddress && (
+              <p className={errorTextStyle}>{errors.ipAddress.message}</p>
+            )}
           </div>
           <div>
             <label className={labelStyle}>MAC 주소 (MAC Address)</label>
             <input
               type="text"
-              name="macAddress"
-              value={formData.macAddress || ""}
-              onChange={handleChange}
-              className={inputStyle}
+              {...register("macAddress", {
+                 pattern: {
+                   value: /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/,
+                   message: "유효한 MAC 주소 형식이 아닙니다. (예: 00:1A:2B:..)",
+                 }
+              })}
+              className={`${inputStyle} ${errors.macAddress ? "border-red-500 ring-red-500" : ""}`}
               placeholder="예: 00:1A:2B:3C:4D:5E"
             />
+            {errors.macAddress && (
+              <p className={errorTextStyle}>{errors.macAddress.message}</p>
+            )}
           </div>
         </div>
       </fieldset>
@@ -354,168 +439,154 @@ const Step2Location = ({ formData, handleChange }: Step2Props) => {
 };
 
 // --- [이동] 스텝 3 컴포넌트 ---
-const Step3Management = ({ formData, handleChange }: Step3Props) => (
-  <div>
-    {/* 3-1. 관리 정보 */}
-    <fieldset className={fieldGroupStyle}>
-      <legend className={fieldGroupTitleStyle}>
-        관리 정보 (Management Info)
-      </legend>
-      <div className={gridContainerStyle}>
-        <div>
-          <label className={labelStyle}>담당자 (Manager)</label>
-          <input
-            type="text"
-            name="managerId"
-            value={formData.managerId || ""}
-            onChange={handleChange}
-            className={inputStyle}
-            placeholder="담당자 ID 또는 이름"
-          />
+//  register, errors, watch 적용
+const Step3Management = ({ register, errors, watch }: Step3Props) => {
+  // watch를 사용하여 monitoringEnabled 값 감시
+  const watchedMonitoringEnabled = watch("monitoringEnabled");
+
+  return (
+    <div>
+      {/* 3-1. 관리 정보 */}
+      <fieldset className={fieldGroupStyle}>
+        <legend className={fieldGroupTitleStyle}>
+          관리 정보 (Management Info)
+        </legend>
+        <div className={gridContainerStyle}>
+          <div>
+            <label className={labelStyle}>담당자 (Manager)</label>
+            <input
+              type="text"
+              {...register("managerId")}
+              className={inputStyle}
+              placeholder="담당자 ID 또는 이름"
+            />
+          </div>
+          <div>
+            <label className={labelStyle}>
+              장비 상태 (Status) <span className="text-red-500">*</span>
+            </label>
+            <select
+              {...register("status", {
+                required: "장비 상태를 선택하세요.",
+              })}
+              className={`${inputStyle} ${errors.status ? "border-red-500 ring-red-500" : ""}`}
+            >
+              <option value="INACTIVE">INACTIVE - 비활성/재고</option>
+              <option value="NORMAL">NORMAL - 운영중</option>
+              <option value="MAINTENANCE">MAINTENANCE - 점검중</option>
+              <option value="DISPOSED">DISPOSED - 폐기</option>
+            </select>
+            {errors.status && (
+              <p className={errorTextStyle}>{errors.status.message}</p>
+            )}
+          </div>
+          <div>
+            <label className={labelStyle}>설치일 (Installation Date)</label>
+            <input
+              type="date"
+              {...register("installationDate")}
+              className={inputStyle}
+            />
+          </div>
+          <div className={gridSpanFullStyle}>
+            <label className={labelStyle}>메모 (Notes)</label>
+            <textarea
+              {...register("notes")}
+              rows={3}
+              className={inputStyle}
+            ></textarea>
+          </div>
         </div>
-        <div>
-          <label className={labelStyle}>
-            장비 상태 (Status) <span className="text-red-500">*</span>
-          </label>
-          <select
-            name="status"
-            value={formData.status}
-            onChange={handleChange}
-            className={inputStyle}
-            required
+      </fieldset>
+
+      {/* 3-2. 모니터링 설정 (모두 register, disabled 적용) */}
+      <fieldset className={`${fieldGroupStyle} mt-4`}>
+        <legend className={fieldGroupTitleStyle}>
+          모니터링 설정 (Monitoring Configuration)
+        </legend>
+
+        <div className="flex items-center mb-4">
+          <input
+            type="checkbox"
+            id="monitoringEnabled"
+            {...register("monitoringEnabled")}
+            className="h-4 w-4 text-blue-600 border-gray-300 rounded mr-2"
+          />
+          <label
+            htmlFor="monitoringEnabled"
+            className="font-medium text-white"
           >
-            <option value="INACTIVE">INACTIVE - 비활성/재고</option>
-            <option value="NORMAL">NORMAL - 운영중</option>
-            <option value="MAINTENANCE">MAINTENANCE - 점검중</option>
-            <option value="DISPOSED">DISPOSED - 폐기</option>
-          </select>
+            실시간 모니터링 활성화
+          </label>
         </div>
-        <div>
-          <label className={labelStyle}>설치일 (Installation Date)</label>
-          <input
-            type="date"
-            name="installationDate"
-            value={formData.installationDate || ""}
-            onChange={handleChange}
-            className={inputStyle}
-          />
-        </div>
-        <div className={gridSpanFullStyle}>
-          <label className={labelStyle}>메모 (Notes)</label>
-          <textarea
-            name="notes"
-            value={formData.notes || ""}
-            onChange={handleChange}
-            rows={3}
-            className={inputStyle}
-          ></textarea>
-        </div>
-      </div>
-    </fieldset>
 
-    {/* 3-2. 모니터링 설정 */}
-    <fieldset className={`${fieldGroupStyle} mt-4`}>
-      <legend className={fieldGroupTitleStyle}>
-        모니터링 설정 (Monitoring Configuration)
-      </legend>
-
-      <div className="flex items-center mb-4">
-        <input
-          type="checkbox"
-          id="monitoringEnabled"
-          name="monitoringEnabled"
-          checked={!!formData.monitoringEnabled}
-          onChange={handleChange}
-          className="h-4 w-4 text-blue-600 border-gray-300 rounded mr-2"
-        />
-        <label
-          htmlFor="monitoringEnabled"
-          className="font-medium text-white" //  text-white
-        >
-          실시간 모니터링 활성화
-        </label>
-      </div>
-
-      <div className={gridContainerStyle}>
-        <div>
-          <label className={labelStyle}>CPU 경고 임계치 (%)</label>
-          <input
-            type="number"
-            name="cpuThresholdWarning"
-            value={formData.cpuThresholdWarning || ""}
-            onChange={handleChange}
-            className={inputStyle}
-            disabled={!formData.monitoringEnabled}
-          />
+        <div className={gridContainerStyle}>
+          <div>
+            <label className={labelStyle}>CPU 경고 임계치 (%)</label>
+            <input
+              type="number"
+              {...register("cpuThresholdWarning", { valueAsNumber: true })}
+              className={inputStyle}
+              disabled={!watchedMonitoringEnabled}
+            />
+          </div>
+          <div>
+            <label className={labelStyle}>CPU 위험 임계치 (%)</label>
+            <input
+              type="number"
+              {...register("cpuThresholdCritical", { valueAsNumber: true })}
+              className={inputStyle}
+              disabled={!watchedMonitoringEnabled}
+            />
+          </div>
+          <div>
+            <label className={labelStyle}>메모리 경고 임계치 (%)</label>
+            <input
+              type="number"
+              {...register("memoryThresholdWarning", { valueAsNumber: true })}
+              className={inputStyle}
+              disabled={!watchedMonitoringEnabled}
+            />
+          </div>
+          <div>
+            <label className={labelStyle}>메모리 위험 임계치 (%)</label>
+            <input
+              type="number"
+              {...register("memoryThresholdCritical", { valueAsNumber: true })}
+              className={inputStyle}
+              disabled={!watchedMonitoringEnabled}
+            />
+          </div>
+          <div>
+            <label className={labelStyle}>디스크 경고 임계치 (%)</label>
+            <input
+              type="number"
+              {...register("diskThresholdWarning", { valueAsNumber: true })}
+              className={inputStyle}
+              disabled={!watchedMonitoringEnabled}
+            />
+          </div>
+          <div>
+            <label className={labelStyle}>디스크 위험 임계치 (%)</label>
+            <input
+              type="number"
+              {...register("diskThresholdCritical", { valueAsNumber: true })}
+              className={inputStyle}
+              disabled={!watchedMonitoringEnabled}
+            />
+          </div>
         </div>
-        <div>
-          <label className={labelStyle}>CPU 위험 임계치 (%)</label>
-          <input
-            type="number"
-            name="cpuThresholdCritical"
-            value={formData.cpuThresholdCritical || ""}
-            onChange={handleChange}
-            className={inputStyle}
-            disabled={!formData.monitoringEnabled}
-          />
-        </div>
-        <div>
-          <label className={labelStyle}>메모리 경고 임계치 (%)</label>
-          <input
-            type="number"
-            name="memoryThresholdWarning"
-            value={formData.memoryThresholdWarning || ""}
-            onChange={handleChange}
-            className={inputStyle}
-            disabled={!formData.monitoringEnabled}
-          />
-        </div>
-        <div>
-          <label className={labelStyle}>메모리 위험 임계치 (%)</label>
-          <input
-            type="number"
-            name="memoryThresholdCritical"
-            value={formData.memoryThresholdCritical || ""}
-            onChange={handleChange}
-            className={inputStyle}
-            disabled={!formData.monitoringEnabled}
-          />
-        </div>
-        <div>
-          <label className={labelStyle}>디스크 경고 임계치 (%)</label>
-          <input
-            type="number"
-            name="diskThresholdWarning"
-            value={formData.diskThresholdWarning || ""}
-            onChange={handleChange}
-            className={inputStyle}
-            disabled={!formData.monitoringEnabled}
-          />
-        </div>
-        <div>
-          <label className={labelStyle}>디스크 위험 임계치 (%)</label>
-          <input
-            type="number"
-            name="diskThresholdCritical"
-            value={formData.diskThresholdCritical || ""}
-            onChange={handleChange}
-            className={inputStyle}
-            disabled={!formData.monitoringEnabled}
-          />
-        </div>
-      </div>
-    </fieldset>
-  </div>
-);
+      </fieldset>
+    </div>
+  );
+};
 
 // 폼 기본값 (새 장비 등록 시)
 const getDefaultFormData = (): Partial<Resource> => ({
   equipmentName: "",
   equipmentType: "SERVER",
   unitSize: 1,
-  status: "INACTIVE", // '선등록' 시 기본 상태는 '비활성/재고'
-
-  // Nullable 필드
+  status: "INACTIVE",
   manufacturer: "",
   modelName: "",
   serialNumber: "",
@@ -554,14 +625,37 @@ export default function ResourceWizardModal({
   resource,
 }: ResourceWizardModalProps) {
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState<Partial<Resource>>(
-    getDefaultFormData(),
-  );
 
-  // 이미지 파일 상태
+  // react-hook-form 훅 초기화 ---
+  // trigger 포함
+  const {
+    register,
+    handleSubmit,
+    formState: { errors }, // 'errors' 객체
+    watch,
+    setValue,
+    reset,
+    trigger, // 스텝별 유효성 검사용
+    getValues, // 현재 값 조회용
+    control, // useFormState용
+  } = useForm<FormValues>({
+    defaultValues: getDefaultFormData(),
+  });
+
+  //  datacenterId 변경 감지 (rackId 리셋용)
+  const { dirtyFields } = useFormState({ control });
+  const watchedDatacenterId = watch("datacenterId");
+
+  useEffect(() => {
+    // 폼이 dirty(사용자 수정) 상태이고, datacenterId가 변경되었을 때만 rackId, startUnit 리셋
+    if (dirtyFields.datacenterId) {
+      setValue("rackId", null, { shouldValidate: true });
+      setValue("startUnit", null, { shouldValidate: true });
+    }
+  }, [watchedDatacenterId, dirtyFields.datacenterId, setValue]);
+
   const [imageFrontFile, setImageFrontFile] = useState<File | null>(null);
   const [imageRearFile, setImageRearFile] = useState<File | null>(null);
-//  이미지 미리보기 URL 상태
   const [imageFrontPreview, setImageFrontPreview] = useState<string | null>(null);
   const [imageRearPreview, setImageRearPreview] = useState<string | null>(null);
 
@@ -570,155 +664,188 @@ export default function ResourceWizardModal({
   const isLoading =
     createResourceMutation.isPending || updateResourceMutation.isPending;
 
-  // 'Edit' 모드일 때, 기존 데이터로 폼 채우기
+  //  'Edit' 모드일 때 RHF의 reset 사용
   useEffect(() => {
-    if (resource && isOpen) {
-      setFormData({
-        ...getDefaultFormData(), // 기본값으로 먼저 채우고
-        ...resource, // 기존 데이터로 덮어쓰기
-      });
-      setStep(1); // 모달 열릴 때 항상 1단계부터
-    } else if (!resource && isOpen) {
-      // 'Add' 모드일 때 폼 초기화
-      setFormData(getDefaultFormData());
-      setStep(1);
-    }
-    // 모달 열릴 때 미리보기 초기화
-    setImageFrontFile(null); setImageRearFile(null);
-    setImageFrontPreview(null); setImageRearPreview(null); // 미리보기 URL도 초기화
-  }, [resource, isOpen]);
+    if (isOpen) {
+      if (resource) {
+        // 'Edit' 모드: 기본값 + 리소스 데이터로 폼 채우기
+        reset({
+          ...getDefaultFormData(),
+          ...resource,
+        });
+        // 'Edit' 모드 시 기존 이미지 URL을 미리보기로 설정
+        setImageFrontPreview(resource.imageUrlFront || null);
+        setImageRearPreview(resource.imageUrlRear || null);
+      } else {
+        // 'Add' 모드: 폼 기본값으로 리셋
+        reset(getDefaultFormData());
+        // 'Add' 모드 시 미리보기 초기화
+        setImageFrontPreview(null);
+        setImageRearPreview(null);
+      }
+      setStep(1); // 모달 열릴 때 항상 1단계
 
-  //  useEffect 클린업 함수 위치 및 내용 확인
-  // 컴포넌트 언마운트 시 또는 미리보기 URL 변경 시 이전 URL 해제
+      // 이미지 파일 상태는 항상 초기화
+      setImageFrontFile(null);
+      setImageRearFile(null);
+
+    } 
+  }, [resource, isOpen, reset]); // 의존성에 reset 추가
+// 모달이 닫힐 때(isOpen=false) 정리를 담당하는 useEffect
+useEffect(() => {
+    if (!isOpen) {
+      // 모달이 닫힐 때: 폼 리셋 및 미리보기 URL 해제
+      reset(getDefaultFormData());
+      
+      if (imageFrontPreview && imageFrontPreview.startsWith("blob:")) {
+        URL.revokeObjectURL(imageFrontPreview);
+      }
+      if (imageRearPreview && imageRearPreview.startsWith("blob:")) {
+        URL.revokeObjectURL(imageRearPreview);
+      }
+      
+      setImageFrontPreview(null);
+      setImageRearPreview(null);
+    }
+  }, [isOpen, reset, imageFrontPreview, imageRearPreview]);
+
+  
+  // (미리보기 URL 해제 로직 - blob URL만 해제하도록 수정)
   useEffect(() => {
     return () => {
-      if (imageFrontPreview) URL.revokeObjectURL(imageFrontPreview);
-      if (imageRearPreview) URL.revokeObjectURL(imageRearPreview);
+      if (imageFrontPreview && imageFrontPreview.startsWith("blob:")) URL.revokeObjectURL(imageFrontPreview);
+      if (imageRearPreview && imageRearPreview.startsWith("blob:")) URL.revokeObjectURL(imageRearPreview);
     };
   }, [imageFrontPreview, imageRearPreview]);
 
   if (!isOpen) return null;
 
-  // --- 핸들러 ---
-
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >,
-  ) => {
-    const { name, value, type } = e.target;
-
-    let processedValue: string | number | boolean | null = value;
-
-    if (type === "number") {
-      processedValue = value === "" ? null : Number(value);
-    }
-    if (type === "checkbox") {
-      processedValue = (e.target as HTMLInputElement).checked;
-    }
-
-    setFormData((prev) => {
-      const newState = {
-        ...prev,
-        [name]: processedValue,
-      };
-
-      // 전산실이 변경되면 랙 선택을 초기화
-      if (name === "datacenterId") {
-        newState.rackId = null;
-        newState.startUnit = null;
-      }
-
-      return newState;
-    });
-  };
-
-const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // (handleFileChange 함수는 이전과 동일하게 유지)
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, files } = e.target;
     const file = files && files.length > 0 ? files[0] : null;
 
     if (name === "imageFrontFile") {
-      // 이전 미리보기 URL 해제
-      if (imageFrontPreview) {
+      // 이전 'blob' 미리보기만 해제 (http/https URL은 해제 안 함)
+      if (imageFrontPreview && imageFrontPreview.startsWith("blob:")) {
         URL.revokeObjectURL(imageFrontPreview);
       }
-      // 새 파일 및 미리보기 URL 설정
       setImageFrontFile(file);
       setImageFrontPreview(file ? URL.createObjectURL(file) : null);
     } else if (name === "imageRearFile") {
-      // 이전 미리보기 URL 해제
-      if (imageRearPreview) {
+      if (imageRearPreview && imageRearPreview.startsWith("blob:")) {
         URL.revokeObjectURL(imageRearPreview);
       }
-      // 새 파일 및 미리보기 URL 설정
       setImageRearFile(file);
       setImageRearPreview(file ? URL.createObjectURL(file) : null);
     }
-  }
+  };
 
-  const nextStep = () => setStep((s) => Math.min(s + 1, 3));
+
+  // '다음' 버튼 클릭 시 스텝별 유효성 검사 수행
+  const nextStep = async () => {
+    let fieldsToValidate: (keyof FormValues)[] = [];
+    if (step === 1) {
+      // 1단계: 필수 필드
+      fieldsToValidate = ['equipmentName', 'equipmentType'];
+    } else if (step === 2) {
+      // 2단계: 필수 필드
+      
+      // FIX: 2단계의 모든 필수 필드를 항상 검사하도록 수정
+      fieldsToValidate.push(
+        'unitSize',
+        'datacenterId', // '전산실' 검사
+        'rackId',       // '랙' 검사
+        'startUnit'     // '시작 유닛' 검사
+      );
+
+      // ipAddress/macAddress는 필수는 아니지만, 입력했다면 패턴 검사
+      if (getValues('ipAddress')) {
+        fieldsToValidate.push('ipAddress');
+      }
+      if (getValues('macAddress')) {
+        fieldsToValidate.push('macAddress');
+      }
+    }
+    // (step 3 에서는 '다음' 버튼이 없으므로 검사 불필요)
+
+    // trigger 타입이 없었던 문제 수정됨
+    const isValid = await trigger(fieldsToValidate); // 현재 스텝 필드 유효성 검사
+
+    if (isValid) {
+      setStep((s) => Math.min(s + 1, 3));
+    }
+    // 유효하지 않으면 RHF가 자동으로 에러 메시지를 표시
+  };
+
   const prevStep = () => setStep((s) => Math.max(s - 1, 1));
 
   const handleClose = () => {
     if (isLoading) return;
     onCloseHandler();
+    // 모달 닫힐 때 폼 리셋 (useEffect [isOpen]에서 이미 처리)
   };
 
-  const submitHandler = (event: React.FormEvent) => {
-    event.preventDefault();
+  // submitHandler -> RHF의 SubmitHandler<FormValues> 타입인 'onSubmit'으로 변경
+  const onSubmit: SubmitHandler<FormValues> = (data) => {
+    // event.preventDefault() 불필요 (handleSubmit이 처리)
 
-    // FormData 생성
     const submitFormData = new FormData();
 
-    // formData의 모든 키-값 쌍을 FormData에 추가
-    for (const [key, value] of Object.entries(formData)) {
+    // RHF가 전달해준 'data' 객체(유효성 검사 통과한)를 사용
+    for (const [key, value] of Object.entries(data)) {
       if (value !== null && value !== undefined) {
         submitFormData.append(key, String(value));
       }
     }
 
-    // 파일 추가
     if (imageFrontFile) {
-      submitFormData.append("imageFrontFile", imageFrontFile); // 백엔드 키 이름
+      submitFormData.append("imageFrontFile", imageFrontFile);
     }
     if (imageRearFile) {
-      submitFormData.append("imageRearFile", imageRearFile); // 백엔드 키 이름
+      submitFormData.append("imageRearFile", imageRearFile);
     }
-
+    
     if (resource) {
-      // 'Edit' 모드
       updateResourceMutation.mutate(
         { id: resource.id, formData: submitFormData },
         { onSuccess: handleClose },
       );
     } else {
-      // 'Add' 모드
       createResourceMutation.mutate(submitFormData, { onSuccess: handleClose });
     }
   };
 
-
-
   // --- 스텝별 컨텐츠 렌더링 ---
-
   const renderStepContent = () => {
     switch (step) {
       case 1:
         return (
+          //  props 전달 (RHF 기준)
           <Step1Identity
-            formData={formData}
-            handleChange={handleChange}
+            register={register}
+            errors={errors}
             handleFileChange={handleFileChange}
-            //  미리보기 URL props 전달
             imageFrontPreview={imageFrontPreview}
             imageRearPreview={imageRearPreview}
           />
         );
       case 2:
-        return <Step2Location formData={formData} handleChange={handleChange} />;
+        return (
+          <Step2Location
+            register={register}
+            errors={errors}
+            watch={watch}
+            getValues={getValues}
+          />
+        );
       case 3:
         return (
-          <Step3Management formData={formData} handleChange={handleChange} />
+          <Step3Management
+            register={register}
+            errors={errors}
+            watch={watch}
+          />
         );
       default:
         return null;
@@ -729,7 +856,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // 모달 배경 블러
     <div className="fixed inset-0 z-40 flex justify-center items-center p-4 backdrop-blur-sm bg-black/20">
       {/* 모달창 스타일 */}
-      <div className="bg-gray-900 bg-opacity-60 backdrop-blur-lg border border-white border-opacity-20 rounded-lg shadow-xl w-full max-w-3xl z-50"> {/*  bg-white -> bg-gray-900, bg-opacity-20 -> bg-opacity-60 */}
+      <div className="bg-gray-900 bg-opacity-60 backdrop-blur-lg border border-white border-opacity-20 rounded-lg shadow-xl w-full max-w-3xl z-50">
         <div className="p-6 md:p-8">
           {/* 헤더 */}
           <div className="flex justify-between items-center mb-6">
@@ -745,9 +872,9 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             </button>
           </div>
 
-          {/* 스텝퍼 UI */}
+          {/* 스텝퍼 UI  */}
           <div className="flex justify-between items-center mb-6 px-4">
-            {/* 스텝 1 */}
+             {/* 스텝 1 */}
             <div
               className={`flex flex-col items-center ${
                 step >= 1 ? "text-blue-300" : "text-gray-400"
@@ -821,7 +948,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
           </div>
 
           {/* 폼 */}
-          <form onSubmit={submitHandler}>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <div className="mb-6 max-h-[50vh] overflow-y-auto pr-2">
               {renderStepContent()}
             </div>
@@ -855,7 +982,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                 {step < 3 && (
                   <button
                     type="button"
-                    onClick={nextStep}
+                    onClick={nextStep} // 유효성 검사가 포함된 nextStep
                     disabled={isLoading}
                     className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                   >
@@ -865,7 +992,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
                 {step === 3 && (
                   <button
-                    type="submit"
+                    type="submit" // 'submit' 타입
                     disabled={isLoading}
                     className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-blue-300"
                   >
@@ -884,3 +1011,4 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     </div>
   );
 }
+
