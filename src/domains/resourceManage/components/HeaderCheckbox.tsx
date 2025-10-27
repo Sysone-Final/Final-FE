@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import type { Table } from '@tanstack/react-table';
 import type { Resource } from '../types/resource.types';
 

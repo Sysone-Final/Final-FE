@@ -1,5 +1,4 @@
-// src/domains/resourceManage/components/ResourceWizardModal.tsx
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 // [수정] Datacenter 타입을 import 합니다.
 import type { Resource, Rack, Datacenter } from "../types/resource.types";
 import {
