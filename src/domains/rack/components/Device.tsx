@@ -35,7 +35,6 @@ function Device({
   onDelete,
 }: DeviceProps) {
   const [dragging, setIsDragging] = useState(false);
-  const [hovered, setIsHovered] = useState(false);
 
   const { unitHeight, frameThickness: baseY } = RACK_CONFIG;
   const rackHeight = UNIT_COUNT * unitHeight;
@@ -61,12 +60,6 @@ function Device({
       opacity={dragging ? 0.5 : opacity}
       draggable={!isFloating && editMode}
       dragBoundFunc={!isFloating && editMode ? handleDragBound : undefined}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onDragStart={() => {
-        setIsDragging(true);
-        setIsHovered(false);
-      }}
       onDragEnd={(e) => {
         setIsDragging(false);
         if (onDragEnd && !isFloating && editMode) {
@@ -105,7 +98,7 @@ function Device({
         fill="#fff"
       />
 
-      {editMode && hovered && !isFloating && deleteImage && (
+      {editMode && !isFloating && deleteImage && (
         <Group
           x={x + rackWidth - 30}
           y={5}
