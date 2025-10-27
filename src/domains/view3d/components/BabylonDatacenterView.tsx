@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import { Engine, Scene, ArcRotateCamera, HemisphericLight, Vector3, Color4 } from '@babylonjs/core';
 import GridFloor from './GridFloor';
 import Equipment3DModel from './Equipment3DModel';
@@ -18,6 +18,7 @@ function BabylonDatacenterView({ mode = 'edit', serverRoomId }: BabylonDatacente
   const engineRef = useRef<Engine | null>(null);
   const sceneRef = useRef<Scene | null>(null);
   const [isSceneReady, setIsSceneReady] = useState(false);
+  const renderLoopRef = useRef<boolean>(true); // 렌더링 루프 제어
 
   // Zustand
   const {
@@ -29,6 +30,8 @@ function BabylonDatacenterView({ mode = 'edit', serverRoomId }: BabylonDatacente
     // setGridConfig,
     updateEquipmentPosition,
     loadEquipment, // 장비 목록 로드 함수 추가
+    openRackModal, // 랙 모달 열기
+    isRackModalOpen, // 랙 모달 상태 추가
   } = useBabylonDatacenterStore();
 
   // 뷰어 모드일 때 서버실 데이터 로드
@@ -42,12 +45,19 @@ function BabylonDatacenterView({ mode = 'edit', serverRoomId }: BabylonDatacente
   }, [mode, serverRoomId, loadEquipment]);
 
   // 장비 추가 핸들러
-  const handleAddEquipment = (type: EquipmentType) => {
+  const handleAddEquipment = useCallback((type: EquipmentType) => {
     // 맵 중앙에 추가
     const centerX = Math.floor(gridConfig.columns / 2);
     const centerY = Math.floor(gridConfig.rows / 2);
     addEquipment(type, centerX, centerY);
-  };
+  }, [addEquipment, gridConfig.columns, gridConfig.rows]);
+
+  // Server 클릭 핸들러 (view 모드에서만)
+  const handleServerClick = useCallback((serverId: string) => {
+    if (mode === 'view') {
+      openRackModal(serverId);
+    }
+  }, [mode, openRackModal]);
 
   // 격자 설정 변경
   // const handleGridChange = (key: 'rows' | 'columns', value: number) => {
@@ -101,19 +111,24 @@ function BabylonDatacenterView({ mode = 'edit', serverRoomId }: BabylonDatacente
     const light2 = new HemisphericLight('light2', new Vector3(0, -1, 0), scene);
     light2.intensity = 0.3;
 
-    // 배경 클릭 시 선택 해제
-    scene.onPointerDown = (_evt, pickResult) => {
-      // 아무것도 선택되지 않았거나 바닥을 클릭한 경우
-      if (!pickResult.hit || pickResult.pickedMesh?.name === 'ground') {
-        setSelectedEquipment(null);
-      }
-    };
+    // 배경 클릭 시 선택 해제 (edit 모드에서만)
+    if (mode === 'edit') {
+      scene.onPointerDown = (_evt, pickResult) => {
+        // 아무것도 선택되지 않았거나 바닥을 클릭한 경우
+        if (!pickResult.hit || pickResult.pickedMesh?.name === 'ground') {
+          setSelectedEquipment(null);
+        }
+      };
+    }
 
     setIsSceneReady(true);
 
-    // 렌더링 루프
+    // 렌더링 루프 (최적화: 렌더링이 필요할 때만 실행)
+    renderLoopRef.current = true;
     engine.runRenderLoop(() => {
-      scene.render();
+      if (renderLoopRef.current) {
+        scene.render();
+      }
     });
 
     // 리사이즈 핸들러
@@ -123,11 +138,29 @@ function BabylonDatacenterView({ mode = 'edit', serverRoomId }: BabylonDatacente
     window.addEventListener('resize', handleResize);
 
     return () => {
+      // 렌더링 루프 중지
+      renderLoopRef.current = false;
+      
+      // 이벤트 리스너 제거
       window.removeEventListener('resize', handleResize);
-      scene.dispose();
-      engine.dispose();
+      
+      // 씬과 엔진 정리
+      if (scene) {
+        scene.dispose();
+      }
+      if (engine) {
+        engine.stopRenderLoop();
+        engine.dispose();
+      }
     };
-  }, [gridConfig.columns, gridConfig.rows, gridConfig.cellSize, setSelectedEquipment]);
+  }, [gridConfig.columns, gridConfig.rows, gridConfig.cellSize, setSelectedEquipment, mode]);
+
+  // 🔥 랙 모달이 열리면 Babylon 렌더링 일시정지 (성능 최적화)
+  useEffect(() => {
+    if (renderLoopRef.current !== undefined) {
+      renderLoopRef.current = !isRackModalOpen;
+    }
+  }, [isRackModalOpen]);
 
   // 뷰어 모드일 때 서버실 데이터 로드 (추후 API 연동)
   useEffect(() => {
@@ -232,6 +265,7 @@ function BabylonDatacenterView({ mode = 'edit', serverRoomId }: BabylonDatacente
                   onSelect={setSelectedEquipment}
                   onPositionChange={updateEquipmentPosition}
                   isDraggable={mode === 'edit'} // 편집 모드에서만 드래그 가능
+                  onServerClick={mode === 'view' ? handleServerClick : undefined} // view 모드에서만 클릭 핸들러 전달
                 />
               );
             })}

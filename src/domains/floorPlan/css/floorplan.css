@@ -1,0 +1,205 @@
+/* FloorPlan 기능 관련 스타일을 중앙에서 관리합니다.
+  Tailwind CSS의 @apply 지시어를 사용하여 스타일을 정의합니다.
+*/
+
+.canvas-container {
+  @apply bg-gray-50 rounded-lg shadow-inner border border-gray-200 w-full h-full overflow-hidden;
+}
+
+/* AssetLibrary.tsx에서 사용할 스타일 */
+.sidebar-subtitle {
+  @apply text-lg font-semibold mb-4 text-gray-800;
+}
+
+.asset-category {
+  @apply mt-4;
+}
+
+.category-title {
+  @apply text-sm font-bold text-gray-500 mb-2 uppercase;
+}
+
+.draggable-asset-item {
+  @apply bg-gray-100 border border-gray-300 rounded-md p-3 flex items-center gap-3 transition-colors duration-200 hover:bg-gray-200 hover:border-gray-400 mb-2;
+  touch-action: none; /* 모바일 드래그를 위해 추가 */
+}
+
+.asset-icon {
+  @apply text-lg text-gray-600;
+}
+
+.asset-name {
+  @apply font-medium text-gray-800;
+}
+
+/* PropertiesEditor.tsx에서 사용할 스타일 */
+.properties-editor-container {
+  @apply flex flex-col h-full;
+}
+
+.editor-header {
+  @apply pb-2 mb-4 border-b border-gray-200;
+}
+
+.editor-title {
+  @apply text-base font-bold text-gray-800;
+}
+
+.editor-section {
+  @apply flex flex-col gap-4;
+}
+
+.input-group {
+  @apply flex flex-col;
+}
+
+.input-label {
+  @apply text-xs font-semibold text-gray-600 mb-1;
+}
+
+.input-field {
+  @apply w-full px-3 py-2 text-sm bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow;
+}
+
+
+
+/* PropertiesEditor.tsx의 잠금 버튼 스타일 */
+.lock-toggle-button {
+  @apply text-xs font-semibold py-1 px-3 rounded-full transition-colors duration-200;
+  @apply bg-gray-200 text-gray-700 hover:bg-gray-300;
+}
+
+/* PropertiesEditor.tsx의 헤더를 flexbox로 변경하여 버튼을 오른쪽에 배치 */
+.editor-header {
+  @apply pb-2 mb-4 border-b border-gray-200 flex justify-between items-center;
+}
+
+/* 비활성화된 입력 필드 스타일 */
+.input-field:disabled {
+  @apply bg-gray-100 text-gray-500 cursor-not-allowed;
+}
+
+
+/* DisplayOptions.tsx에서 사용할 스타일 */
+.options-list {
+  @apply flex flex-col gap-2 mt-4;
+}
+
+.option-checkbox-label {
+  @apply flex items-center p-2 rounded-md transition-colors duration-200 hover:bg-gray-100 cursor-pointer;
+}
+
+.option-checkbox-input {
+  @apply h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500;
+}
+
+.option-checkbox-text {
+  @apply ml-3 text-sm font-medium text-gray-700;
+}
+
+/* DisplayOptions 컴포넌트 스타일 */
+.display-options-container {
+  @apply flex flex-col gap-4;
+}
+
+.option-section {
+  @apply flex flex-col gap-2;
+}
+
+.option-section-title {
+  @apply text-sm font-semibold text-gray-300 mb-1;
+}
+
+.option-group {
+  @apply flex flex-col gap-2;
+}
+
+.option-checkbox-label {
+  @apply flex items-center p-2 rounded-md transition-colors duration-200 hover:bg-gray-100 cursor-pointer;
+}
+
+.option-checkbox-input {
+  @apply h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500;
+}
+
+.option-checkbox-text {
+  @apply ml-3 text-sm font-medium text-gray-700;
+}
+/* 아코디언 스타일 */
+.accordion-section {
+  @apply border-b border-gray-200 mb-2;
+}
+
+.accordion-header {
+  @apply w-full text-left py-2 px-1 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2;
+}
+
+.accordion-content {
+  @apply pb-3 flex flex-col gap-3;
+}
+
+/* 2열 그리드 레이아웃 */
+.input-row {
+  @apply grid grid-cols-2 gap-2;
+}
+
+/* 범위 슬라이더 */
+.range-slider {
+  @apply w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer;
+}
+
+.range-slider::-webkit-slider-thumb {
+  @apply appearance-none w-4 h-4 bg-blue-600 rounded-full cursor-pointer;
+}
+
+/* 색상 프리셋 그리드 */
+.color-preset-grid {
+  @apply grid grid-cols-5 gap-2 mb-2;
+}
+
+.color-preset-btn {
+  @apply w-10 h-10 rounded-md border-2 border-gray-300 flex items-center justify-center text-white font-bold transition-transform hover:scale-110;
+}
+
+.color-picker {
+  @apply w-full h-10 rounded-md border border-gray-300 cursor-pointer;
+}
+
+/* 텍스트 영역 */
+.textarea-field {
+  @apply w-full px-3 py-2 text-sm bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none;
+}
+
+/* 메타 정보 */
+.meta-info {
+  @apply mt-2 p-2 bg-gray-50 rounded-md;
+}
+
+.meta-text {
+  @apply text-xs text-gray-600;
+}
+
+/* 액션 버튼 */
+.action-button {
+  @apply w-full py-2 px-4 rounded-md font-semibold text-sm transition-colors;
+}
+
+.duplicate-btn {
+  @apply bg-blue-500 text-white hover:bg-blue-600 mb-2;
+}
+
+.delete-btn {
+  @apply bg-red-500 text-white hover:bg-red-600;
+}
+/* 회전 버튼 그리드 */
+.rotation-buttons {
+  @apply grid grid-cols-4 gap-2;
+}
+
+.rotation-btn {
+  @apply py-2 px-3 bg-gray-100 border border-gray-300 rounded-md text-sm font-semibold hover:bg-gray-200 transition-colors;
+}
+
+.rotation-btn:active {
+  @apply bg-gray-300;
+}

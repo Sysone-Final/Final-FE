@@ -1,14 +1,40 @@
 // import { Logout } from "@mui/icons-material";
+import { NavLink } from "react-router-dom";
+
 function Header() {
+  const menuItems = [
+    {
+      id: "babylon",
+      label: "바빌론",
+      path: "/babylonmap",
+    },
+    {
+      id: "serverRoom",
+      label: "서버실",
+      path: "/server-room-dashboard",
+    },
+  ];
 
   return (
-    <header className="py-3 px-4 ml-10">
+    <header className="px-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          {/* <div className="text-md font-semibold text-white">
-            테스트
-            {user.name } | {user.email}
-          </div> */}
+          {/* 네비게이션 메뉴 */}
+          <nav className="flex gap-2">
+            {menuItems.map((item) => (
+              <NavLink
+                key={item.id}
+                to={item.path}
+                className={({ isActive }) =>
+                  `px-4 py-4 transition-all duration-300 text-white ${
+                    isActive ? "bg-white/40" : "hover:bg-white/10"
+                  }`
+                }
+              >
+                <span className="text-lg font-medium">{item.label}</span>
+              </NavLink>
+            ))}
+          </nav>
         </div>
         
         <div className="flex items-center gap-4">
