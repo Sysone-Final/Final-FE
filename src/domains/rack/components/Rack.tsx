@@ -17,6 +17,7 @@ interface RackProps {
   onMouseMove: (mouseY: number) => void;
   onRackClick: (position: number) => void;
   onDeviceDragEnd: (deviceId: number, newPosition: number) => void;
+  onDeviceDelete: (deviceId: number) => void;
   frontView: boolean;
   editMode: boolean;
 }
@@ -29,6 +30,7 @@ function Rack({
   onMouseMove,
   onRackClick,
   onDeviceDragEnd,
+  onDeviceDelete,
   frontView,
   editMode,
 }: RackProps) {
@@ -143,6 +145,7 @@ function Rack({
                 rackWidth={rackWidth}
                 x={rackX}
                 onDragEnd={handleDeviceDragEnd}
+                onDelete={onDeviceDelete}
                 frontView={frontView}
                 editMode={editMode}
               />

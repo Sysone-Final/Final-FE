@@ -15,7 +15,7 @@ function Button({ label, onClick, active = false }: ViewToggleButtonProps) {
         text-xs font-medium
         ${
           active
-            ? "bg-blue-600 border-blue-500 text-white"
+            ? "bg-slate-700 border-none text-white"
             : "bg-slate-800/90 backdrop-blur-sm border-slate-600 text-gray-300 hover:bg-slate-700 hover:text-white"
         }
       `}

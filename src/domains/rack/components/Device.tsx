@@ -5,6 +5,7 @@ import { deviceImageMap } from "../utils/deviceImageMap";
 import { useImageLoad } from "../hooks/useImageLoad";
 import { dragBound } from "../utils/dragBound";
 import { UNIT_COUNT, RACK_CONFIG } from "../constants/rackConstants";
+import deleteIcon from "../assets/delete.svg";
 
 interface DeviceProps {
   device: RackDevice;
@@ -17,6 +18,7 @@ interface DeviceProps {
   frontView: boolean;
   editMode: boolean;
   onDragEnd?: (deviceId: number, newY: number) => void;
+  onDelete?: (deviceId: number) => void;
 }
 
 function Device({
@@ -30,8 +32,10 @@ function Device({
   onDragEnd,
   frontView,
   editMode,
+  onDelete,
 }: DeviceProps) {
   const [dragging, setIsDragging] = useState(false);
+  const [hovered, setIsHovered] = useState(false);
 
   const { unitHeight, frameThickness: baseY } = RACK_CONFIG;
   const rackHeight = UNIT_COUNT * unitHeight;
@@ -39,6 +43,8 @@ function Device({
   const imageUrls = deviceImageMap[device.type] || deviceImageMap.server;
   const imageUrl = frontView ? imageUrls.front : imageUrls.back;
   const image = useImageLoad(imageUrl);
+
+  const deleteImage = useImageLoad(deleteIcon);
 
   const handleDragBound = (pos: { x: number; y: number }) => {
     return dragBound(pos, {
@@ -55,7 +61,12 @@ function Device({
       opacity={dragging ? 0.5 : opacity}
       draggable={!isFloating && editMode}
       dragBoundFunc={!isFloating && editMode ? handleDragBound : undefined}
-      onDragStart={() => setIsDragging(true)}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onDragStart={() => {
+        setIsDragging(true);
+        setIsHovered(false);
+      }}
       onDragEnd={(e) => {
         setIsDragging(false);
         if (onDragEnd && !isFloating && editMode) {
@@ -93,6 +104,31 @@ function Device({
         fontSize={12}
         fill="#fff"
       />
+
+      {editMode && hovered && !isFloating && deleteImage && (
+        <Group
+          x={x + rackWidth - 30}
+          y={5}
+          onClick={(e) => {
+            e.cancelBubble = true;
+            onDelete?.(device.id);
+          }}
+          onMouseEnter={(e) => {
+            const container = e.target.getStage()?.container();
+            if (container) {
+              container.style.cursor = "pointer";
+            }
+          }}
+          onMouseLeave={(e) => {
+            const container = e.target.getStage()?.container();
+            if (container) {
+              container.style.cursor = "default";
+            }
+          }}
+        >
+          <Image image={deleteImage} x={0} y={0} width={24} height={24} />
+        </Group>
+      )}
     </Group>
   );
 }

@@ -52,6 +52,7 @@ function RackView() {
               onMouseMove={rackManager.handleMouseMove}
               onRackClick={rackManager.handleRackClick}
               onDeviceDragEnd={rackManager.handleDeviceDragEnd}
+              onDeviceDelete={rackManager.removeDevice}
               frontView={!frontView}
               editMode={editMode}
             />
