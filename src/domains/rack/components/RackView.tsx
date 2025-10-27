@@ -10,30 +10,59 @@ interface RackViewProps {
   rackName?: string;
 }
 
-function RackView({ onClose, rackName }: RackViewProps = {}) {
+function RackView({rackName }: RackViewProps = {}) {
   const rackManager = useRackManager();
   const [frontView, setFrontView] = useState(true);
   const [editMode, setEditMode] = useState(false);
 
   return (
-    <div className="h-full w-full flex flex-col text-white overflow-hidden">
-      <main className="flex-1 flex justify-center items-center p-6 overflow-hidden">
-        <div className="flex flex-col rounded-xl backdrop-blur-md bg-white/20 max-h-full max-w-full overflow-hidden">
-          <div className="flex-shrink-0">
-            <RackHeader rackName={rackName} onClose={onClose} />
+    <div className="min-h-dvh flex justify-center items-center text-white p-6">
+      <div className="flex flex-col bg-[#1a1f35] rounded-xl shadow-lg overflow-hidden">
+        {/* 상단바 */}
+        <header className="flex justify-between items-center px-6 py-4 border-b border-slate-700">
+          {/* 왼쪽: RackHeader (전체 너비 차지) */}
+          <div className="flex-1">
+            <RackHeader rackName={rackName} />
           </div>
-          <div className="flex flex-1 overflow-y-auto overflow-x-hidden">
-            <Sidebar onCardClick={rackManager.handleCardClick} />
-            <div className="flex justify-center items-start py-4">
-              <Rack
-                key={rackManager.resetKey}
-                devices={rackManager.installedDevices}
-                floatingDevice={rackManager.floatingDevice}
-                onMouseMove={rackManager.handleMouseMove}
-                onRackClick={rackManager.handleRackClick}
-                onDeviceDragEnd={rackManager.handleDeviceDragEnd}
-              />
-            </div>
+
+          {/* 오른쪽: 버튼 그룹 */}
+          <div className="flex items-center gap-4 ml-4">
+            {/* 편집/뷰어 토글 */}
+            <Button
+              label={editMode ? "편집" : "보기"}
+              onClick={() => setEditMode(!editMode)}
+              active={editMode}
+            />
+
+            {/* 앞/뒤 전환 버튼 */}
+            <Button
+              label={frontView ? "뒷면" : "앞면"}
+              onClick={() => setFrontView(!frontView)}
+              active={frontView}
+            />
+          </div>
+        </header>
+
+        {/* 메인 컨텐츠 영역 */}
+        <div className="flex">
+          {/* 사이드바 */}
+          <Sidebar
+            onCardClick={rackManager.handleCardClick}
+            isOpen={editMode}
+          />
+
+          {/* 랙 영역 */}
+          <div className="flex justify-center items-center p-8">
+            <Rack
+              key={rackManager.resetKey}
+              devices={rackManager.installedDevices}
+              floatingDevice={rackManager.floatingDevice}
+              onMouseMove={rackManager.handleMouseMove}
+              onRackClick={rackManager.handleRackClick}
+              onDeviceDragEnd={rackManager.handleDeviceDragEnd}
+              frontView={!frontView}
+              editMode={editMode}
+            />
           </div>
         </div>
       </div>
