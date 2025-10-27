@@ -97,7 +97,7 @@ export interface ResourceListFilters {
   location?: string; // TODO(user): 실제 위치 필터 구현 시 사용
 }
 
-// [수정] 3.1 접근 가능한 전산실 목록 조회 (GET /datacenters) - 전체 필드
+//  3.1 접근 가능한 전산실 목록 조회 (GET /datacenters) - 전체 필드
 export interface Datacenter {
   id: string; // Sticking with string based on mocks
   name: string;
@@ -108,7 +108,7 @@ export interface Datacenter {
   managerName: string;
 }
 
-// [수정] 5.1 전산실별 랙 목록 조회 (GET /racks/datacenter/{dataCenterId}) - 전체 필드
+//  5.1 전산실별 랙 목록 조회 (GET /racks/datacenter/{dataCenterId}) - 전체 필드
 export interface Rack {
   id: string; // Sticking with string
   rackName: string;
