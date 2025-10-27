@@ -32,7 +32,7 @@ function ServerRoomDetailView() {
           </button>
           <div className="h-6 w-px bg-gray-600" />
           <h1 className="text-xl font-bold text-white">
-            서버실 3D 뷰 - {id}
+            서버실 {id}
           </h1>
         </div>
         <div className="text-sm text-gray-100">

@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import { Engine, Scene, ArcRotateCamera, HemisphericLight, Vector3, Color4 } from '@babylonjs/core';
 import GridFloor from './GridFloor';
 import Equipment3DModel from './Equipment3DModel';
@@ -32,6 +32,7 @@ function BabylonDatacenterView({ mode = 'edit', serverRoomId }: BabylonDatacente
     loadEquipment, // 장비 목록 로드 함수 추가
     openRackModal, // 랙 모달 열기
     isRackModalOpen, // 랙 모달 상태 추가
+    rotateEquipment90,
   } = useBabylonDatacenterStore();
 
   // 뷰어 모드일 때 서버실 데이터 로드
@@ -45,19 +46,24 @@ function BabylonDatacenterView({ mode = 'edit', serverRoomId }: BabylonDatacente
   }, [mode, serverRoomId, loadEquipment]);
 
   // 장비 추가 핸들러
-  const handleAddEquipment = (type: EquipmentType) => {
+  const handleAddEquipment = useCallback((type: EquipmentType) => {
     // 맵 중앙에 추가
     const centerX = Math.floor(gridConfig.columns / 2);
     const centerY = Math.floor(gridConfig.rows / 2);
     addEquipment(type, centerX, centerY);
-  };
+  }, [addEquipment, gridConfig.columns, gridConfig.rows]);
+
+  const handleRotateEquipment = useCallback((clockwise: boolean) => {
+    if (!selectedEquipmentId) return;
+    rotateEquipment90(selectedEquipmentId, clockwise);
+  }, [rotateEquipment90, selectedEquipmentId]);
 
   // Server 클릭 핸들러 (view 모드에서만)
-  const handleServerClick = (serverId: string) => {
+  const handleServerClick = useCallback((serverId: string) => {
     if (mode === 'view') {
       openRackModal(serverId);
     }
-  };
+  }, [mode, openRackModal]);
 
   // 격자 설정 변경
   // const handleGridChange = (key: 'rows' | 'columns', value: number) => {
@@ -235,6 +241,26 @@ function BabylonDatacenterView({ mode = 'edit', serverRoomId }: BabylonDatacente
             <li>• 마우스 휠: 줌 인/아웃</li>
           </ul>
         </div>
+
+        {mode === 'edit' && selectedEquipmentId && (
+          <div className="absolute bottom-4 right-4 bg-black/50 backdrop-blur-md rounded-lg p-3 text-white text-xs flex items-center gap-2">
+            <span className="font-semibold">회전</span>
+            <button
+              type="button"
+              onClick={() => handleRotateEquipment(false)}
+              className="bg-gray-700 hover:bg-gray-600 text-white rounded-md px-3 py-1 text-sm"
+            >
+              ⟲ 90°
+            </button>
+            <button
+              type="button"
+              onClick={() => handleRotateEquipment(true)}
+              className="bg-gray-700 hover:bg-gray-600 text-white rounded-md px-3 py-1 text-sm"
+            >
+              ⟳ 90°
+            </button>
+          </div>
+        )}
 
         {/* 뷰어 모드 */}
         {/* {mode === 'view' && (

@@ -9,14 +9,14 @@ interface HeaderCheckboxProps {
 // NOTE(user): 'indeterminate' prop은 React 컴포넌트에서 직접 사용
 export default function HeaderCheckbox({ table }: HeaderCheckboxProps) {
   const ref = useRef<HTMLInputElement>(null);
-
   const isSomeRowsSelected = table.getIsSomeRowsSelected();
+
 
   useEffect(() => {
     if (ref.current) {
       ref.current.indeterminate = isSomeRowsSelected;
     }
-  }, [isSomeRowsSelected]); 
+  }, [isSomeRowsSelected]);
 
   return (
     <input

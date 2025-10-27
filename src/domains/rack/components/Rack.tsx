@@ -1,18 +1,14 @@
 import { Stage, Layer, Rect, Line, Text } from "react-konva";
 import { useMemo, Fragment } from "react";
+import type { KonvaEventObject } from "konva/lib/Node";
 import type { RackDevice, FloatingDevice } from "../types";
 import Device from "./Device";
-import {
-  RACK_CONFIG,
-  UNIT_COUNT,
-  RACK_COLORS,
-} from "../constants/rackConstants";
+import { RACK_CONFIG, UNIT_COUNT } from "../constants/rackConstants";
 import {
   getFloatingDeviceInfo,
   calculateDraggedPosition,
   calculateDeviceY,
 } from "../utils/rackCalculation";
-import type { KonvaEventObject } from "konva/lib/Node";
 import { rackLayout } from "../utils/rackLayout";
 
 interface RackProps {
@@ -21,15 +17,11 @@ interface RackProps {
   onMouseMove: (mouseY: number) => void;
   onRackClick: (position: number) => void;
   onDeviceDragEnd: (deviceId: number, newPosition: number) => void;
+  frontView: boolean;
+  editMode: boolean;
 }
 
-// 상수 정의
 const FLOATING_DEVICE_ID = -1;
-const FLOATING_DEVICE_OPACITY = 0.2;
-const UNIT_TEXT_OFFSET = { x: 8, y: 12 };
-const UNIT_TEXT_SIZE = 12;
-const RACK_STROKE_WIDTH = 1;
-const LINE_STROKE_WIDTH = 0.5;
 
 function Rack({
   devices,
@@ -37,17 +29,14 @@ function Rack({
   onMouseMove,
   onRackClick,
   onDeviceDragEnd,
+  frontView,
+  editMode,
 }: RackProps) {
-  // 랙 설정
   const { width: rackWidth, unitHeight } = RACK_CONFIG;
 
-  const { border, rackBody, line, unitText } = RACK_COLORS;
-
-  // 레이아웃 계산
   const layout = useMemo(() => rackLayout(RACK_CONFIG), []);
   const { rackHeight, baseY, fullWidth, fullHeight, rackX } = layout;
 
-  // 떠있는 장비 정보 계산
   const floatingInfo = useMemo(
     () =>
       getFloatingDeviceInfo(floatingDevice, {
@@ -58,7 +47,6 @@ function Rack({
     [floatingDevice, rackHeight, baseY, unitHeight]
   );
 
-  // 장비 드래그 종료 처리
   const handleDeviceDragEnd = (deviceId: number, newY: number) => {
     const draggedDevice = devices.find((d) => d.id === deviceId);
     if (!draggedDevice) return;
@@ -72,7 +60,6 @@ function Rack({
     onDeviceDragEnd(deviceId, newPosition);
   };
 
-  // 마우스 이동 처리
   const handleMouseMove = (e: KonvaEventObject<MouseEvent>) => {
     const stage = e.target.getStage();
     if (!stage) return;
@@ -81,7 +68,6 @@ function Rack({
     if (pos) onMouseMove(pos.y);
   };
 
-  // 랙 클릭 처리
   const handleRackClick = () => {
     if (floatingDevice && floatingInfo) {
       onRackClick(floatingInfo.position);
@@ -90,18 +76,13 @@ function Rack({
 
   return (
     <div
-      className="overflow-y-auto overflow-x-hidden"
-      style={{
-        height: "670px",
-        width: `${fullWidth}px`,
-        scrollbarWidth: "none",
-        msOverflowStyle: "none",
-      }}
+      className="overflow-y-auto overflow-x-hidden h-[670px] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+      style={{ width: `${fullWidth}px` }}
     >
       <Stage
         width={fullWidth}
         height={fullHeight}
-        style={{ display: "block", margin: 0, padding: 0 }}
+        className="block m-0 p-0"
         onMouseMove={handleMouseMove}
         onClick={handleRackClick}
       >
@@ -112,10 +93,11 @@ function Rack({
             y={baseY}
             width={rackWidth}
             height={rackHeight}
-            fill={rackBody}
-            stroke={border}
-            strokeWidth={RACK_STROKE_WIDTH}
+            fill="#000000"
+            stroke="#374151"
+            strokeWidth={1}
           />
+
           {/* U 단위 구분선 및 번호 */}
           {Array.from({ length: UNIT_COUNT + 1 }).map((_, i) => {
             const unitNumber = UNIT_COUNT - i;
@@ -125,21 +107,22 @@ function Rack({
               <Fragment key={i}>
                 <Line
                   points={[rackX, yPos, rackX + rackWidth, yPos]}
-                  stroke={line}
-                  strokeWidth={LINE_STROKE_WIDTH}
+                  stroke="#4b5563"
+                  strokeWidth={0.5}
                 />
                 {i < UNIT_COUNT && (
                   <Text
-                    x={rackX + UNIT_TEXT_OFFSET.x}
-                    y={yPos + UNIT_TEXT_OFFSET.y}
+                    x={rackX + 8}
+                    y={yPos + 12}
                     text={`${unitNumber}U`}
-                    fontSize={UNIT_TEXT_SIZE}
-                    fill={unitText}
+                    fontSize={12}
+                    fill="#6b7280"
                   />
                 )}
               </Fragment>
             );
           })}
+
           {/* 설치된 장비들 */}
           {devices.map((device) => {
             const y = calculateDeviceY(
@@ -160,10 +143,13 @@ function Rack({
                 rackWidth={rackWidth}
                 x={rackX}
                 onDragEnd={handleDeviceDragEnd}
+                frontView={frontView}
+                editMode={editMode}
               />
             );
           })}
 
+          {/* 떠있는 장비 */}
           {floatingDevice && floatingInfo && (
             <Device
               device={{
@@ -178,7 +164,9 @@ function Rack({
               rackWidth={rackWidth}
               x={rackX}
               isFloating={true}
-              opacity={FLOATING_DEVICE_OPACITY}
+              opacity={0.2}
+              frontView={frontView}
+              editMode={editMode}
             />
           )}
         </Layer>

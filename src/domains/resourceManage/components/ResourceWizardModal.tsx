@@ -1,5 +1,11 @@
+<<<<<<< HEAD
 import React, { useState, useEffect, useMemo } from "react";
 import type { Resource, Rack } from "../types/resource.types";
+=======
+import { useState, useEffect, useMemo } from "react";
+// [수정] Datacenter 타입을 import 합니다.
+import type { Resource, Rack, Datacenter } from "../types/resource.types";
+>>>>>>> origin/main
 import {
   useCreateResource,
   useUpdateResource,

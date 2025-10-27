@@ -2,6 +2,10 @@ import serverImg from "../assets/server.svg";
 import storageImg from "../assets/storage.svg";
 import switchImg from "../assets/switch.svg";
 import routerImg from "../assets/router.svg";
+import kvmImg from "../assets/kvm.svg";
+import firewallImg from "../assets/firewall.svg";
+import loadBalanceImg from "../assets/loadbalance.svg";
+
 import type { DeviceCard } from "../types";
 import { typeColorMap } from "../utils/colorMap";
 
@@ -42,6 +46,30 @@ function Tools({ onCardClick }: ToolsProps) {
       img: routerImg,
       height: 1,
       type: "router",
+    },
+    {
+      key: "kvm",
+      label: "kvm",
+      size: "1U",
+      img: kvmImg,
+      height: 1,
+      type: "kvm",
+    },
+    {
+      key: "firewall",
+      label: "방화벽",
+      size: "1U",
+      img: firewallImg,
+      height: 1,
+      type: "firewall",
+    },
+    {
+      key: "loadbalancer",
+      label: "로드발란스",
+      size: "1U",
+      img: loadBalanceImg,
+      height: 1,
+      type: "loadbalancer",
     },
   ];
 
