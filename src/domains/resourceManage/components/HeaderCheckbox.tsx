@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import type { Table } from '@tanstack/react-table';
 import type { Resource } from '../types/resource.types';
 
@@ -10,11 +10,13 @@ interface HeaderCheckboxProps {
 export default function HeaderCheckbox({ table }: HeaderCheckboxProps) {
   const ref = useRef<HTMLInputElement>(null);
 
+  const isSomeRowsSelected = table.getIsSomeRowsSelected();
+
   useEffect(() => {
     if (ref.current) {
-      ref.current.indeterminate = table.getIsSomeRowsSelected();
+      ref.current.indeterminate = isSomeRowsSelected;
     }
-  }, [table.getIsSomeRowsSelected()]);
+  }, [isSomeRowsSelected]); 
 
   return (
     <input

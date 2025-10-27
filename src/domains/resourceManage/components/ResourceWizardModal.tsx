@@ -1,7 +1,5 @@
-// src/domains/resourceManage/components/ResourceWizardModal.tsx
 import React, { useState, useEffect, useMemo } from "react";
-// [수정] Datacenter 타입을 import 합니다.
-import type { Resource, Rack, Datacenter } from "../types/resource.types";
+import type { Resource, Rack } from "../types/resource.types";
 import {
   useCreateResource,
   useUpdateResource,
@@ -10,9 +8,9 @@ import {
 } from "../hooks/useResourceQueries";
 import { X, ArrowLeft } from "lucide-react";
 
-// --- [수정] 공통 폼 필드 스타일 (글래스모피즘 버전) ---
+// ---  공통 폼 필드 스타일 ---
 const inputStyle =
-  "bg-white bg-opacity-10 border border-white border-opacity-30 text-white p-2 rounded w-full placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:bg-gray-500 disabled:bg-opacity-20";
+  "bg-gray-900/20 border border-white border-opacity-30 text-white p-2 rounded w-full placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:bg-gray-700 disabled:bg-opacity-30 disabled:placeholder-gray-500"; //  배경 약간 어둡게(bg-black/20), placeholder 진하게(placeholder-gray-400), disabled 스타일 추가
 const labelStyle = "block text-sm font-medium text-white mb-1";
 const gridContainerStyle = "grid grid-cols-1 md:grid-cols-2 gap-4";
 const gridSpanFullStyle = "md:col-span-2";
@@ -20,7 +18,7 @@ const fieldGroupStyle = "mb-6 p-4 border-t border-white border-opacity-20";
 const fieldGroupTitleStyle = "text-lg font-semibold mb-3 text-white";
 const helperTextStyle = "text-xs text-white text-opacity-70 mt-1 pl-1";
 
-// --- [수정] Step 컴포넌트들의 prop 타입을 명시적으로 변경 ---
+// ---  Step 컴포넌트들의 prop 타입을 명시적으로 변경 ---
 type ChangeHandler = (
   e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
 ) => void;
@@ -30,6 +28,9 @@ interface Step1Props {
   formData: Partial<Resource>;
   handleChange: ChangeHandler;
   handleFileChange: FileChangeHandler;
+  // [추가] 미리보기 URL props
+  imageFrontPreview: string | null;
+  imageRearPreview: string | null;
 }
 
 interface Step2Props {
@@ -47,6 +48,9 @@ const Step1Identity = ({
   formData,
   handleChange,
   handleFileChange,
+  // [추가] 미리보기 URL props 받기
+  imageFrontPreview,
+  imageRearPreview,
 }: Step1Props) => (
   <div className={gridContainerStyle}>
     {/* --- 필수 --- */}
@@ -134,7 +138,16 @@ const Step1Identity = ({
         onChange={handleFileChange}
         className={`${inputStyle} text-sm`}
       />
-      {/* TODO: 이미지 미리보기 */}
+      {/* [추가] 앞면 이미지 미리보기 */}
+      {imageFrontPreview && (
+        <div className="mt-2 border border-white border-opacity-30 rounded p-1 inline-block">
+          <img
+            src={imageFrontPreview}
+            alt="앞면 미리보기"
+            className="max-h-32 max-w-full object-contain rounded" // 크기 제한 및 스타일
+          />
+        </div>
+      )}
     </div>
     <div className={gridSpanFullStyle}>
       <label className={labelStyle}>장비 이미지 (뒷면)</label>
@@ -145,7 +158,16 @@ const Step1Identity = ({
         onChange={handleFileChange}
         className={`${inputStyle} text-sm`}
       />
-      {/* TODO: 이미지 미리보기 */}
+      {/* [추가] 뒷면 이미지 미리보기 */}
+      {imageRearPreview && (
+        <div className="mt-2 border border-white border-opacity-30 rounded p-1 inline-block">
+          <img
+            src={imageRearPreview}
+            alt="뒷면 미리보기"
+            className="max-h-32 max-w-full object-contain rounded" // 크기 제한 및 스타일
+          />
+        </div>
+      )}
     </div>
   </div>
 );
@@ -153,45 +175,41 @@ const Step1Identity = ({
 // --- 스텝 2 컴포넌트 (API 연동) ---
 const Step2Location = ({ formData, handleChange }: Step2Props) => {
   // API 훅 호출 (훅의 반환값은 이미 배열)
-  const { data: datacenters, isLoading: isLoadingDatacenters } = // [수정] 변수명 datacenters 로 변경
+  const { data: datacenters, isLoading: isLoadingDatacenters, isError: isErrorDatacenters } =
     useGetDatacenters();
-  const { data: racks, isLoading: isLoadingRacks } = // [수정] 변수명 racks 로 변경
+  const { data: racks, isLoading: isLoadingRacks, isError: isErrorRacks } =
     useGetRacksByDatacenter(formData.datacenterId || null);
 
-  // [삭제] 불필요한 result 추출 제거
-  // const datacenters = datacentersData?.result;
-  // const racks = racksData?.result;
 
-  // 선택된 랙의 총 유닛 수 계산 (racks 변수 직접 사용)
-  const maxUnits = useMemo(() => {
-    if (!formData.rackId || !racks) return 48;
-    const selectedRack = racks.find((r: Rack) => r.id === formData.rackId); // racks 변수 사용
-    return selectedRack?.totalUnits || 48;
-  }, [formData.rackId, racks]); // racks 변수 의존
 
-  return (
+// 선택된 랙 정보 찾기 (maxUnits 계산용)
+  const selectedRack = useMemo(() => {
+    if (!formData.rackId || !racks || !Array.isArray(racks)) return null;
+    return racks.find((r: Rack) => r.id === formData.rackId);
+  }, [formData.rackId, racks]);
+
+  const maxUnits = selectedRack?.totalUnits || 48; // 선택된 랙의 totalUnits 사용, 없으면 기본값
+
+ return (
     <div>
       {/* 2-1. 물리적 위치 */}
       <fieldset className={fieldGroupStyle}>
-        <legend className={fieldGroupTitleStyle}>
-          물리적 위치 (Physical Location)
-        </legend>
+        <legend className={fieldGroupTitleStyle}>물리적 위치</legend>
         <div className={gridContainerStyle}>
           <div>
-            <label className={labelStyle}>전산실 (Datacenter)</label>
+            <label className={labelStyle}>전산실</label>
             <select
               name="datacenterId"
               value={formData.datacenterId || ""}
               onChange={handleChange}
               className={inputStyle}
-              disabled={isLoadingDatacenters} // 로딩 중 비활성화
+              disabled={isLoadingDatacenters || isErrorDatacenters}
             >
               <option value="">
-                {isLoadingDatacenters
-                  ? "불러오는 중..."
-                  : "-- 전산실 선택 --"}
+                {isLoadingDatacenters ? "불러오는 중..." : isErrorDatacenters ? "오류 발생" : "-- 전산실 선택 --"}
               </option>
-              {datacenters?.map((dc: Datacenter) => (
+              {/*  Array.isArray 체크 추가 */}
+              {Array.isArray(datacenters) && datacenters.map((dc) => (
                 <option key={dc.id} value={dc.id}>
                   {dc.name}
                 </option>
@@ -199,22 +217,19 @@ const Step2Location = ({ formData, handleChange }: Step2Props) => {
             </select>
           </div>
           <div>
-            <label className={labelStyle}>랙 (Rack)</label>
+            <label className={labelStyle}>랙</label>
             <select
               name="rackId"
               value={formData.rackId || ""}
               onChange={handleChange}
               className={inputStyle}
-              disabled={!formData.datacenterId || isLoadingRacks}
+              disabled={!formData.datacenterId || isLoadingRacks || isErrorRacks}
             >
               <option value="">
-                {isLoadingRacks
-                  ? "불러오는 중..."
-                  : !formData.datacenterId
-                    ? "-- 전산실을 먼저 선택 --"
-                    : "-- 랙 선택 --"}
+                {isLoadingRacks ? "불러오는 중..." : !formData.datacenterId ? "-- 전산실 먼저 선택 --" : isErrorRacks ? "오류 발생" : "-- 랙 선택 --"}
               </option>
-              {racks?.map((rack: Rack) => (
+              {/*  Array.isArray 체크 추가 */}
+              {Array.isArray(racks) && racks.map((rack) => (
                 <option key={rack.id} value={rack.id}>
                   {rack.rackName} ({rack.availableUnits}U / {rack.totalUnits}U)
                 </option>
@@ -222,7 +237,7 @@ const Step2Location = ({ formData, handleChange }: Step2Props) => {
             </select>
           </div>
           <div>
-            <label className={labelStyle}>시작 유닛 (Start Unit)</label>
+            <label className={labelStyle}>시작 유닛</label>
             <input
               type="number"
               name="startUnit"
@@ -233,41 +248,30 @@ const Step2Location = ({ formData, handleChange }: Step2Props) => {
               className={inputStyle}
               disabled={!formData.rackId}
             />
-            <p className={helperTextStyle}>
-              랙의 몇 번째 U부터 장착되나요? (최대: {maxUnits}U)
-            </p>
+            <p className={helperTextStyle}>랙의 몇 번째 U부터? (최대: {maxUnits}U)</p>
           </div>
           <div>
-            <label className={labelStyle}>
-              유닛 크기 (Unit Size) <span className="text-red-500">*</span>
-            </label>
+            <label className={labelStyle}>유닛 크기 <span className="text-red-500">*</span></label>
             <input
               type="number"
               name="unitSize"
               value={formData.unitSize}
               min="1"
-              max={maxUnits}
+              max={maxUnits} // 시작 유닛 + 크기 - 1 <= maxUnits 검증 필요
               onChange={handleChange}
               className={inputStyle}
               required
               disabled={!formData.rackId}
             />
-            <p className={helperTextStyle}>
-              장비가 차지하는 U 크기 (예: 2U)
-            </p>
+            <p className={helperTextStyle}>장비가 차지하는 U 크기 (예: 2U)</p>
           </div>
           <div className={gridSpanFullStyle}>
-            <label className={labelStyle}>설치 방향 (Position Type)</label>
-            <select
-              name="positionType"
-              value={formData.positionType || ""}
-              onChange={handleChange}
-              className={inputStyle}
-            >
+            <label className={labelStyle}>설치 방향</label>
+            <select name="positionType" value={formData.positionType || ""} onChange={handleChange} className={inputStyle}>
               <option value="">-- 방향 선택 --</option>
-              <option value="FRONT">FRONT - 전면 실장</option>
-              <option value="REAR">REAR - 후면 실장</option>
-              <option value="NORMAL">NORMAL (기타)</option>
+              <option value="FRONT">FRONT</option>
+              <option value="REAR">REAR</option>
+              <option value="NORMAL">NORMAL</option>
             </select>
           </div>
         </div>
@@ -426,7 +430,7 @@ const Step3Management = ({ formData, handleChange }: Step3Props) => (
         />
         <label
           htmlFor="monitoringEnabled"
-          className="font-medium text-white" // [수정] text-white
+          className="font-medium text-white" //  text-white
         >
           실시간 모니터링 활성화
         </label>
@@ -557,6 +561,9 @@ export default function ResourceWizardModal({
   // 이미지 파일 상태
   const [imageFrontFile, setImageFrontFile] = useState<File | null>(null);
   const [imageRearFile, setImageRearFile] = useState<File | null>(null);
+//  이미지 미리보기 URL 상태
+  const [imageFrontPreview, setImageFrontPreview] = useState<string | null>(null);
+  const [imageRearPreview, setImageRearPreview] = useState<string | null>(null);
 
   const createResourceMutation = useCreateResource();
   const updateResourceMutation = useUpdateResource();
@@ -576,14 +583,21 @@ export default function ResourceWizardModal({
       setFormData(getDefaultFormData());
       setStep(1);
     }
-    // 모달 열릴 때마다 파일 선택 초기화
-    setImageFrontFile(null);
-    setImageRearFile(null);
+    // 모달 열릴 때 미리보기 초기화
+    setImageFrontFile(null); setImageRearFile(null);
+    setImageFrontPreview(null); setImageRearPreview(null); // 미리보기 URL도 초기화
   }, [resource, isOpen]);
 
-  if (!isOpen) {
-    return null;
-  }
+  //  useEffect 클린업 함수 위치 및 내용 확인
+  // 컴포넌트 언마운트 시 또는 미리보기 URL 변경 시 이전 URL 해제
+  useEffect(() => {
+    return () => {
+      if (imageFrontPreview) URL.revokeObjectURL(imageFrontPreview);
+      if (imageRearPreview) URL.revokeObjectURL(imageRearPreview);
+    };
+  }, [imageFrontPreview, imageRearPreview]);
+
+  if (!isOpen) return null;
 
   // --- 핸들러 ---
 
@@ -619,16 +633,28 @@ export default function ResourceWizardModal({
     });
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, files } = e.target;
-    if (files && files.length > 0) {
-      if (name === "imageFrontFile") {
-        setImageFrontFile(files[0]);
-      } else if (name === "imageRearFile") {
-        setImageRearFile(files[0]);
+    const file = files && files.length > 0 ? files[0] : null;
+
+    if (name === "imageFrontFile") {
+      // 이전 미리보기 URL 해제
+      if (imageFrontPreview) {
+        URL.revokeObjectURL(imageFrontPreview);
       }
+      // 새 파일 및 미리보기 URL 설정
+      setImageFrontFile(file);
+      setImageFrontPreview(file ? URL.createObjectURL(file) : null);
+    } else if (name === "imageRearFile") {
+      // 이전 미리보기 URL 해제
+      if (imageRearPreview) {
+        URL.revokeObjectURL(imageRearPreview);
+      }
+      // 새 파일 및 미리보기 URL 설정
+      setImageRearFile(file);
+      setImageRearPreview(file ? URL.createObjectURL(file) : null);
     }
-  };
+  }
 
   const nextStep = () => setStep((s) => Math.min(s + 1, 3));
   const prevStep = () => setStep((s) => Math.max(s - 1, 1));
@@ -671,6 +697,8 @@ export default function ResourceWizardModal({
     }
   };
 
+
+
   // --- 스텝별 컨텐츠 렌더링 ---
 
   const renderStepContent = () => {
@@ -681,6 +709,9 @@ export default function ResourceWizardModal({
             formData={formData}
             handleChange={handleChange}
             handleFileChange={handleFileChange}
+            // [추가] 미리보기 URL props 전달
+            imageFrontPreview={imageFrontPreview}
+            imageRearPreview={imageRearPreview}
           />
         );
       case 2:
@@ -697,8 +728,8 @@ export default function ResourceWizardModal({
   return (
     // 모달 배경 블러
     <div className="fixed inset-0 z-40 flex justify-center items-center p-4 backdrop-blur-sm bg-black/20">
-      {/* 글래스모피즘 스타일 */}
-      <div className="bg-white bg-opacity-20 backdrop-blur-lg border border-white border-opacity-30 rounded-lg shadow-xl w-full max-w-3xl z-50">
+      {/* 모달창 스타일 */}
+      <div className="bg-gray-900 bg-opacity-60 backdrop-blur-lg border border-white border-opacity-20 rounded-lg shadow-xl w-full max-w-3xl z-50"> {/*  bg-white -> bg-gray-900, bg-opacity-20 -> bg-opacity-60 */}
         <div className="p-6 md:p-8">
           {/* 헤더 */}
           <div className="flex justify-between items-center mb-6">
