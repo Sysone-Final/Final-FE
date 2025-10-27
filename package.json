@@ -36,6 +36,7 @@
     "react": "^18.3.1",
     "react-babylonjs": "^3.2.4",
     "react-dom": "^18.3.1",
+    "react-hook-form": "^7.65.0",
     "react-icons": "^5.5.0",
     "react-konva": "^18.2.14",
     "react-router-dom": "^7.9.3",
