@@ -12,18 +12,17 @@ const RightSidebar: React.FC = () => {
  const mode = useFloorPlanStore((state) => state.mode);
 
  return (
-  <aside className="bg-white rounded-lg shadow-lg flex flex-col">
-   <div className="p-4 border-b">
-    <h2 className="text-lg font-semibold text-gray-700">
-     {mode === 'view' ? '속성 정보' : '속성 편집'}
-    </h2>
-   </div>
-   <div className="flex-grow p-4">
-    {mode === 'view' ? <PropertiesViewer /> : <PropertiesEditor />}
-   </div>
+  <aside className="rounded-lg shadow-lg flex flex-col">
+    <div className="p-4 border-b">
+     <h2 className="text-title-sidebar">
+      {mode === 'view' ? '속성 정보' : '속성 편집'}
+     </h2>
+    </div>
+    <div className="flex-grow p-4">
+     {mode === 'view' ? <PropertiesViewer /> : <PropertiesEditor />}
+    </div>
   </aside>
  );
 };
 
 export default RightSidebar;
-
