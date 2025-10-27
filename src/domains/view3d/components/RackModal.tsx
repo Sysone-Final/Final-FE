@@ -32,42 +32,12 @@ function RackModal() {
       
       {/* 우측 슬라이드 패널 */}
       <div
-        className="fixed top-0 right-0 h-full w-[30vw] z-50 animate-slideInRight"
+        className="fixed top-0 right-3 h-full w-full max-w-[670px] sm:w-[30vw] sm:max-w-[560px] z-50 animate-slideInRight overflow-hidden"
       >
-        {/* 헤더 */}
-        {/* <div className="flex items-center justify-between px-6 py-3 backdrop-blur-md">
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            <h2 className="text-xl font-bold text-gray-50">
-              Server Rack - {selectedServerId || 'N/A'}
-            </h2>
-          </div>
-          <button
-            onClick={closeRackModal}
-            className="flex items-center gap-2 px-4 py-2 text-gray-300 hover:text-white rounded-lg transition-all"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="white"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </div> */}
-
-        <div>
-          <RackView 
-            onClose={closeRackModal} 
-            rackName={selectedServerId || 'N/A'} 
-          />
-        </div>
+        <RackView 
+          onClose={closeRackModal} 
+          rackName={selectedServerId || 'N/A'} 
+        />
       </div>
     </div>
   );
