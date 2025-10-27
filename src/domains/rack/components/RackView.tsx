@@ -1,10 +1,16 @@
 import Rack from "../components/Rack";
 import { useRackManager } from "../hooks/useRackManager";
 import Sidebar from "./Sidebar";
+import RackHeader from "./RackHeader";
 import Button from "./Button";
 import { useState } from "react";
 
-function RackView() {
+interface RackViewProps {
+  onClose?: () => void;
+  rackName?: string;
+}
+
+function RackView({rackName }: RackViewProps = {}) {
   const rackManager = useRackManager();
   const [frontView, setFrontView] = useState(true);
   const [editMode, setEditMode] = useState(false);
@@ -14,11 +20,13 @@ function RackView() {
       <div className="flex flex-col bg-[#1a1f35] rounded-xl shadow-lg overflow-hidden">
         {/* 상단바 */}
         <header className="flex justify-between items-center px-6 py-4 border-b border-slate-700">
-          {/* 왼쪽: 타이틀 */}
-          <h1 className="text-lg font-bold">랙 상세보기</h1>
+          {/* 왼쪽: RackHeader (전체 너비 차지) */}
+          <div className="flex-1">
+            <RackHeader rackName={rackName} />
+          </div>
 
           {/* 오른쪽: 버튼 그룹 */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 ml-4">
             {/* 편집/뷰어 토글 */}
             <Button
               label={editMode ? "편집" : "보기"}

@@ -26,19 +26,19 @@ function RackModal() {
     <div>
       {/* 배경 오버레이 - 패널이 열릴 때만 표시 */}
       <div
-        className="fixed inset-0 bg-black/50 z-40 animate-fadeIn"
+        className="fixed inset-0 bg-black/30 z-40 animate-fadeIn"
         onClick={closeRackModal}
       />
       
       {/* 우측 슬라이드 패널 */}
       <div
-        className="fixed top-0 right-0 h-full w-[30vw] shadow-2xl z-50 animate-slideInRight"
+        className="fixed top-0 right-0 h-full w-[30vw] z-50 animate-slideInRight"
       >
         {/* 헤더 */}
-        <div className="flex items-center justify-between px-6 py-4 backdrop-blur-md border-b border-gray-700">
+        {/* <div className="flex items-center justify-between px-6 py-3 backdrop-blur-md">
           <div className="flex items-center gap-3">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            <h2 className="text-xl font-bold text-white">
+            <h2 className="text-xl font-bold text-gray-50">
               Server Rack - {selectedServerId || 'N/A'}
             </h2>
           </div>
@@ -60,10 +60,13 @@ function RackModal() {
               />
             </svg>
           </button>
-        </div>
+        </div> */}
 
-        <div className="">
-          <RackView />
+        <div>
+          <RackView 
+            onClose={closeRackModal} 
+            rackName={selectedServerId || 'N/A'} 
+          />
         </div>
       </div>
     </div>
