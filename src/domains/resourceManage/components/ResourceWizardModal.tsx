@@ -17,8 +17,9 @@ import {
   useUpdateResource,
   useGetDatacenters,
   useGetRacksByDatacenter,
+  useGetResourceById,
 } from "../hooks/useResourceQueries";
-import { X, ArrowLeft } from "lucide-react";
+import { X, ArrowLeft, Loader2 } from "lucide-react";
 
 // --- 공통 폼 필드 스타일 ---
 const inputStyle =
@@ -616,13 +617,15 @@ const getDefaultFormData = (): Partial<Resource> => ({
 interface ResourceWizardModalProps {
   isOpen: boolean;
   onCloseHandler: () => void;
-  resource: Resource | null; // null이면 'Add', 객체면 'Edit'
+  // resource: Resource | null; // null이면 'Add', 객체면 'Edit'
+  resourceId: string | null;// null이면 'Add', ID가 있으면 'Edit'
 }
 
 export default function ResourceWizardModal({
   isOpen,
   onCloseHandler,
-  resource,
+  // resource,
+  resourceId,
 }: ResourceWizardModalProps) {
   const [step, setStep] = useState(1);
 
@@ -661,36 +664,49 @@ export default function ResourceWizardModal({
 
   const createResourceMutation = useCreateResource();
   const updateResourceMutation = useUpdateResource();
-  const isLoading =
-    createResourceMutation.isPending || updateResourceMutation.isPending;
+  const {
+  data: resourceDetailData,
+  isLoading: isLoadingDetail,
+  isError: isErrorDetail,
+ } = useGetResourceById(resourceId);
+
+const isLoadingMutation =
+  createResourceMutation.isPending || updateResourceMutation.isPending;
+
+  const isLoading = isLoadingDetail || isLoadingMutation;
 
   //  'Edit' 모드일 때 RHF의 reset 사용
   useEffect(() => {
-    if (isOpen) {
-      if (resource) {
-        // 'Edit' 모드: 기본값 + 리소스 데이터로 폼 채우기
-        reset({
-          ...getDefaultFormData(),
-          ...resource,
-        });
-        // 'Edit' 모드 시 기존 이미지 URL을 미리보기로 설정
-        setImageFrontPreview(resource.imageUrlFront || null);
-        setImageRearPreview(resource.imageUrlRear || null);
-      } else {
-        // 'Add' 모드: 폼 기본값으로 리셋
-        reset(getDefaultFormData());
-        // 'Add' 모드 시 미리보기 초기화
-        setImageFrontPreview(null);
-        setImageRearPreview(null);
-      }
-      setStep(1); // 모달 열릴 때 항상 1단계
+  if (isOpen) {
+      // 1. 'Add' 모드 (resourceId가 null)
+   if (!resourceId) {
+    // 'Add' 모드: 폼 기본값으로 리셋
+    reset(getDefaultFormData());
+    setImageFrontPreview(null);
+    setImageRearPreview(null);
+        setImageFrontFile(null); // 파일 상태도 초기화
+        setImageRearFile(null);
+    setStep(1); // 모달 열릴 때 항상 1단계
+   } 
+      
+      // 2. 'Edit' 모드 (resourceId가 있고, 데이터 로드 완료)
+      else if (resourceId && resourceDetailData) {
+    // 'Edit' 모드: API로 받은 상세 데이터로 폼 채우기
+    reset({
+     ...getDefaultFormData(),
+     ...resourceDetailData,
+    });
+    // 'Edit' 모드 시 기존 이미지 URL을 미리보기로 설정
+    setImageFrontPreview(resourceDetailData.imageUrlFront || null);
+    setImageRearPreview(resourceDetailData.imageUrlRear || null);
+        setImageFrontFile(null); // 파일 상태는 초기화
+        setImageRearFile(null);
+    setStep(1); 
+   }
+      // 'Edit' 모드 (로딩 중)일 때는 아무것도 하지 않음 (로딩 스피너 표시)
 
-      // 이미지 파일 상태는 항상 초기화
-      setImageFrontFile(null);
-      setImageRearFile(null);
-
-    } 
-  }, [resource, isOpen, reset]); // 의존성에 reset 추가
+  }
+ }, [resourceId, resourceDetailData, isOpen, reset]);
 // 모달이 닫힐 때(isOpen=false) 정리를 담당하는 useEffect
 useEffect(() => {
     if (!isOpen) {
@@ -806,11 +822,11 @@ useEffect(() => {
       submitFormData.append("imageRearFile", imageRearFile);
     }
     
-    if (resource) {
-      updateResourceMutation.mutate(
-        { id: resource.id, formData: submitFormData },
-        { onSuccess: handleClose },
-      );
+    if (resourceId) {
+   updateResourceMutation.mutate(
+    { id: resourceId, formData: submitFormData }, // resource.id -> resourceId
+    { onSuccess: handleClose },
+   );
     } else {
       createResourceMutation.mutate(submitFormData, { onSuccess: handleClose });
     }
@@ -861,7 +877,7 @@ useEffect(() => {
           {/* 헤더 */}
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-white">
-              {resource ? "장비 수정" : "새 장비 등록"}
+              {resourceId ? "장비 수정" : "새 장비 등록"}
             </h2>
             <button
               onClick={handleClose}
@@ -949,9 +965,20 @@ useEffect(() => {
 
           {/* 폼 */}
           <form onSubmit={handleSubmit(onSubmit)}>
-            <div className="mb-6 max-h-[50vh] overflow-y-auto pr-2">
-              {renderStepContent()}
-            </div>
+            {isLoadingDetail ? (
+              <div className="flex justify-center items-center min-h-[200px] text-white opacity-80">
+                <Loader2 size={32} className="animate-spin mr-2" />
+                상세 정보를 불러오는 중...
+              </div>
+            ) : isErrorDetail ? (
+              <div className="flex justify-center items-center min-h-[200px] text-red-400">
+                오류: 상세 정보를 불러오지 못했습니다.
+              </div>
+            ) : (
+              <div className="mb-6 max-h-[50vh] overflow-y-auto pr-2">
+                {renderStepContent()}
+              </div>
+            )}
 
             {/* 네비게이션 버튼 */}
             <div className="flex justify-between items-center mt-8">
@@ -992,16 +1019,19 @@ useEffect(() => {
 
                 {step === 3 && (
                   <button
-                    type="submit" // 'submit' 타입
-                    disabled={isLoading}
-                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-blue-300"
-                  >
-                    {isLoading
-                      ? "저장 중..."
-                      : resource
-                        ? "수정 완료"
-                        : "등록 완료"}
-                  </button>
+          type="submit"
+                      // 💡 상세 로딩/에러 시 '완료' 버튼 비활성화
+          disabled={isLoading || isErrorDetail}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-blue-300"
+         >
+                        {/* ▼▼▼ [11] 수정: 로딩 텍스트 분리 ▼▼▼ */}
+          {isLoadingMutation // 저장/수정 중일 때
+           ? "저장 중..."
+           : resourceId // 수정 모드일 때
+            ? "수정 완료"
+            : "등록 완료"}
+                        {/* ▲▲▲ [11] 수정 ▲▲▲ */}
+         </button>
                 )}
               </div>
             </div>

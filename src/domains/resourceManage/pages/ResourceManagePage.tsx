@@ -29,7 +29,8 @@ export default function ResourceManagePage() {
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
+  // const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
+  const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
   
   // 검색/필터 상태
@@ -63,12 +64,14 @@ export default function ResourceManagePage() {
 
   // --- 이벤트 핸들러 ---
   const addResourceHandler = () => {
-    setSelectedResource(null);
+    // setSelectedResource(null);
+    setSelectedResourceId(null);
     setIsModalOpen(true);
   };
 
   const editResourceHandler = (resource: Resource) => {
-    setSelectedResource(resource);
+    // setSelectedResource(resource);
+    setSelectedResourceId(resource.id);
     setIsModalOpen(true);
   };
 
@@ -102,6 +105,7 @@ export default function ResourceManagePage() {
 
   const closeModalHandler = () => {
     setIsModalOpen(false);
+    setSelectedResourceId(null);
   };
 
   // --- 테이블 인스턴스 ---
@@ -163,7 +167,8 @@ export default function ResourceManagePage() {
       <ResourceWizardModal
         isOpen={isModalOpen}
         onCloseHandler={closeModalHandler}
-        resource={selectedResource}
+        // resource={selectedResource}
+        resourceId={selectedResourceId}
       />
     </div>
   );
