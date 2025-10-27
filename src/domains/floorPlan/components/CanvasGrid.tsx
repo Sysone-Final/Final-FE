@@ -1,4 +1,5 @@
 import React from 'react';
+// 빌드 및 타입스크립트 오류를 해결하기 위해 표준 import 경로로 되돌립니다.
 import { Group, Line, Text, Rect } from 'react-konva';
 
 interface CanvasGridProps {
@@ -12,6 +13,19 @@ const CanvasGrid: React.FC<CanvasGridProps> = ({ gridSize, cols, rows }) => {
   const headerPadding = 40; // 헤더를 위한 여백
 
   // --- 배경 ---
+
+  // 그리드 영역 배경 (흰색)
+  lines.push(
+    <Rect
+      key="grid-bg"
+      x={headerPadding}
+      y={headerPadding}
+      width={cols * gridSize}
+      height={rows * gridSize}
+      fill="#FFFFFF" // 흰색 배경
+    />
+  );
+
   // 위쪽 열 헤더 배경
   lines.push(
     <Rect
@@ -34,7 +48,7 @@ const CanvasGrid: React.FC<CanvasGridProps> = ({ gridSize, cols, rows }) => {
       fill="#f8f9fa"
     />
   );
-  // [신규] 아래쪽 열 헤더 배경
+  // 아래쪽 열 헤더 배경
   lines.push(
     <Rect
       key="bottom-header-bg"
@@ -45,7 +59,7 @@ const CanvasGrid: React.FC<CanvasGridProps> = ({ gridSize, cols, rows }) => {
       fill="#f8f9fa"
     />
   );
-  // [신규] 오른쪽 행 헤더 배경
+  // 오른쪽 행 헤더 배경
   lines.push(
     <Rect
       key="right-header-bg"
@@ -65,7 +79,7 @@ const CanvasGrid: React.FC<CanvasGridProps> = ({ gridSize, cols, rows }) => {
     { x: headerPadding + cols * gridSize, y: headerPadding + rows * gridSize },
   ];
   corners.forEach((key, i) => {
-     lines.push(
+      lines.push(
       <Rect
         key={key}
         x={cornerPositions[i].x}
@@ -113,7 +127,7 @@ const CanvasGrid: React.FC<CanvasGridProps> = ({ gridSize, cols, rows }) => {
   }
   // 왼쪽 & 오른쪽 행 헤더
   for (let j = 0; j < rows; j++) {
-     const textProps = {
+      const textProps = {
         y: headerPadding + j * gridSize,
         height: gridSize,
         text: `${j + 1} (${j + 1})`,

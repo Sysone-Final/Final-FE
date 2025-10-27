@@ -5,7 +5,7 @@ import Babylonmap from "./domains/view3d/pages/Babylonmap";
 import ServerRoomDashboard from "./domains/serverRoom/pages/ServerRoomDashboard";
 import ServerRoomDetailView from "./domains/view3d/pages/ServerRoomDetailView";
 import FloorPlanPage from "./domains/floorPlan/pages/FloorPlanPage";
-
+import ResourceManagePage from "./domains/resourceManage/pages/ResourceManagePage";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -33,7 +33,11 @@ const router = createBrowserRouter([
       },
       {
         path: "floor-plan", 
-        element: <FloorPlanPage />,
+        element: <FloorPlanPage />, 
+      },
+       {
+        path: "assets", 
+        element: <ResourceManagePage />, 
       },
     ],
   },

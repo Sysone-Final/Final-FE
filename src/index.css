@@ -33,3 +33,35 @@ body {
 .animate-fadeIn {
   animation: fadeIn 0.3s ease-out;
 }
+
+/*  제목  */
+  .text-title-page {
+    @apply text-xl font-bold text-gray-50; /* <h1> */
+  }
+  .text-title-sidebar {
+    @apply text-lg font-semibold text-gray-50; /* <h2> */
+  }
+  .text-title-section {
+    @apply text-base font-semibold text-gray-50; /* <h3>, <h4> */
+  }
+
+  /*  본문 */
+  .text-body-primary {
+    @apply text-sm font-medium text-gray-50; /* <span>, <p> */
+  }
+  .text-placeholder {
+    @apply text-sm font-normal text-gray-400; /* 안내 문구 */
+  }
+
+  /*  작은 글씨 */
+  .text-label-form {
+    @apply text-xs font-semibold text-gray-300; /* <label> */
+  }
+  .text-meta {
+    @apply text-xs font-normal text-gray-500; /* 메타데이터 */
+  }
+
+  /* 4. 버튼 */
+  .text-button {
+    @apply text-sm font-semibold text-gray-50; /* <button> */
+  }
