@@ -11,7 +11,7 @@ import {
 } from "../api/resourceManageApi";
 import type {
   ResourceListFilters,
-  // [추가] 타입 임포트
+  //  타입 임포트
   Datacenter,
   Rack,
 } from "../types/resource.types";
@@ -34,7 +34,7 @@ export const useGetResourceList = (
 
 // --- 전산실 목록 조회 훅 ---
 export const useGetDatacenters = () => {
-  // [수정] 반환 데이터 타입은 Datacenter[] 입니다.
+  //  반환 데이터 타입은 Datacenter[] 입니다.
   return useQuery<Datacenter[], Error>({
     queryKey: [DATACENTER_QUERY_KEY],
     queryFn: getDatacenters,
@@ -44,7 +44,7 @@ export const useGetDatacenters = () => {
 
 // --- 랙 목록 조회 훅 ---
 export const useGetRacksByDatacenter = (datacenterId: string | null) => {
-  // [수정] 반환 데이터 타입은 Rack[] 입니다.
+  //  반환 데이터 타입은 Rack[] 입니다.
   return useQuery<Rack[], Error>({
     queryKey: [RACK_QUERY_KEY, datacenterId],
     queryFn: () => {

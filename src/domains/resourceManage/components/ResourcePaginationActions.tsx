@@ -1,5 +1,4 @@
 import type { Table } from '@tanstack/react-table';
-// 사용하지 않는 ResourceStatus 임포트 삭제
 import type { Resource } from '../types/resource.types';
 import {
   ChevronLeft,

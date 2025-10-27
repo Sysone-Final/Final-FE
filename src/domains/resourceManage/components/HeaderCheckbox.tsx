@@ -11,6 +11,7 @@ export default function HeaderCheckbox({ table }: HeaderCheckboxProps) {
   const ref = useRef<HTMLInputElement>(null);
   const isSomeRowsSelected = table.getIsSomeRowsSelected();
 
+
   useEffect(() => {
     if (ref.current) {
       ref.current.indeterminate = isSomeRowsSelected;

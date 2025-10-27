@@ -30,7 +30,7 @@ const MOCK_DATACENTERS: Datacenter[] = [
   },
 ];
 
-// --- [수정] Rack 목 데이터 (API 5.1 기준) ---
+// ---  Rack 목 데이터 (API 5.1 기준) ---
 const MOCK_RACKS: Rack[] = [
   {
     id: "rack1",
@@ -135,10 +135,10 @@ let MOCK_DATA: Resource[] = [
   },
 ];
 
-const API_BASE_URL = "https://api.yserverway.shop/api";
+const API_BASE_URL = "https://api.serverway.shop/api";
 
 export const handlers = [
-  // --- [추가] GET /datacenters ---
+  // ---  GET /datacenters ---
   http.get(`${API_BASE_URL}/datacenters`, async () => {
     await delay(300);
     // API 3.1의 응답 형식(result 키)에 맞게 수정
@@ -149,7 +149,7 @@ export const handlers = [
     });
   }),
 
-  // --- [추가] GET /racks/datacenter/:datacenterId ---
+  // ---  GET /racks/datacenter/:datacenterId ---
   http.get(
     `${API_BASE_URL}/racks/datacenter/:datacenterId`,
     async ({ params }) => {
@@ -182,7 +182,7 @@ export const handlers = [
     if (searchTerm) {
       filteredData = filteredData.filter(
         (r) =>
-          // [수정] 필드명 변경
+          //  필드명 변경
           r.equipmentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
           (r.modelName &&
             r.modelName.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -226,7 +226,7 @@ export const handlers = [
     await delay(500);
     const formData = await request.formData();
 
-    // [수정] 3단계 폼의 모든 필드를 받도록 수정
+    //  3단계 폼의 모든 필드를 받도록 수정
     const newResource: Resource = {
       id: `new-${Date.now()}`,
       // 1단계

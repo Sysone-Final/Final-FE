@@ -35,13 +35,16 @@ body {
 }
 
 /*  제목  */
-  .text-title-page {
-    @apply text-xl font-bold text-gray-50; /* <h1> */
+  .text-main-title {
+    @apply text-3xl font-bold text-gray-50; /* <h1>(메인타이틀) 앱 전체의 가장 큰 제목 탭 제목 */
   }
-  .text-title-sidebar {
-    @apply text-lg font-semibold text-gray-50; /* <h2> */
+  .text-title {
+    @apply text-xl font-bold text-gray-50; /* <h1> (타이틀) 페이지 제목 */
   }
-  .text-title-section {
+  .text-subtitle {
+    @apply text-lg font-semibold text-gray-50; /* <h2>  크기 골라 쓰기*/
+  }
+  .text-heading {
     @apply text-base font-semibold text-gray-50; /* <h3>, <h4> */
   }
 
