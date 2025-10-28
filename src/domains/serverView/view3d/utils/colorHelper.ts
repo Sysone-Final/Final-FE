@@ -6,7 +6,6 @@ import { Color3 } from "@babylonjs/core";
  * @returns Color3 객체
  */
 export const rgbStringToColor3 = (rgbString: string): Color3 => {
-  // "rgb(37 99 235)" -> [37, 99, 235]
   const match = rgbString.match(/rgb\((\d+)\s+(\d+)\s+(\d+)\)/);
 
   if (!match) {

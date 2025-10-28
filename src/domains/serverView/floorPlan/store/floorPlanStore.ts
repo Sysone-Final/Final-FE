@@ -168,8 +168,8 @@ const storeCreator: StateCreator<FloorPlanState> = (set, get) => ({
       name: "항온항습기-02",
       gridX: 45,
       gridY: 12,
-      widthInCells: 2,
-      heightInCells: 4,
+      widthInCells: 1,
+      heightInCells: 1,
       customColor: "#a7d8de",
     },
     {

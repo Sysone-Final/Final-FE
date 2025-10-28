@@ -2,9 +2,16 @@
 import { NavLink } from "react-router-dom";
 import { LiaCubesSolid } from "react-icons/lia";
 import { GrResources } from "react-icons/gr";
+import { LuLayoutDashboard } from "react-icons/lu";
 
 function Header() {
   const menuItems = [
+    {
+      id: "dashboard",
+      label: "대시보드",
+      path: "/",
+      icon: <LuLayoutDashboard className="text-2xl text-sky-500"/>,
+    },
     {
       id: "babylon",
       label: "바빌론",
@@ -21,7 +28,7 @@ function Header() {
       id: "assets",
       label: "자원관리",
       path: "/assets",
-      icon: <GrResources className="text-2xl text-green-600" />
+      icon: <GrResources className="text-2xl text-green-500" />,
     },
   ];
 
