@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from 'zustand';
 import { useFloorPlanStore } from '../floorPlan/store/floorPlanStore';
@@ -10,14 +9,14 @@ interface ServerViewHeaderProps {
   onViewDimensionChange: (dimension: '2D' | '3D') => void;
 }
 
-const ServerViewHeader: React.FC<ServerViewHeaderProps> = ({
+function ServerViewHeader({
   serverRoomId,
   viewDimension,
   onViewDimensionChange,
-}) => {
+}: ServerViewHeaderProps) {
   const navigate = useNavigate();
 
-  // FloorPlan store 상태들 (2D 뷰에서만 사용)
+  // FloorPlan store 상태들 
   const mode = useFloorPlanStore((state) => state.mode);
   const toggleMode = useFloorPlanStore((state) => state.toggleMode);
   const selectedAssetIds = useFloorPlanStore((state) => state.selectedAssetIds);
@@ -49,7 +48,6 @@ const ServerViewHeader: React.FC<ServerViewHeaderProps> = ({
 
   return (
     <header className="bg-gray-800/50 backdrop-blur-sm border-b border-gray-700 px-6 py-4 flex items-center justify-between flex-shrink-0">
-      {/* 왼쪽: 뒤로가기 & 타이틀 */}
       <div className="flex items-center gap-4">
         <button
           onClick={() => navigate('/server-room-dashboard')}
@@ -174,6 +172,6 @@ const ServerViewHeader: React.FC<ServerViewHeaderProps> = ({
       </div>
     </header>
   );
-};
+}
 
 export default ServerViewHeader;
