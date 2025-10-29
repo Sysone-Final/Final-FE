@@ -79,22 +79,22 @@ export const EQUIPMENT_SCALE: Record<string, number> = {
 
 // 장비별 Y축 오프셋 (바닥 높이 조정)
 export const EQUIPMENT_Y_OFFSET: Record<string, number> = {
-  server: 0, // 서버 랙 - 바닥보다 약간 아래
+  server: 0, // 서버 랙
   door: 0, // 문 - 바닥에 정확히
-  climatic_chamber: 0, // 항온항습기 - 바닥에 정확히
-  fire_extinguisher: 0, // 소화기 - 바닥에 정확히
-  thermometer: 2, // 온도계 - 위로 올림
-  aircon: 0.5, // 에어컨 - 바닥에 정확히
+  climatic_chamber: 0, // 항온항습기
+  fire_extinguisher: 0, // 소화기
+  thermometer: 2, // 온도계
+  aircon: 0.5, // 에어컨
 };
 
 // 장비별 기본 회전 각도 (라디안)
 export const EQUIPMENT_DEFAULT_ROTATION: Record<string, number> = {
-  server: 0, // 서버 랙 - 회전 없음
-  door: Math.PI / 2, // 문 - 90도 회전 (격자에 맞게)
-  climatic_chamber: 0, // 항온항습기 - 회전 없음
-  fire_extinguisher: 0, // 소화기 - 회전 없음
-  thermometer: 0, // 온도계 - 회전 없음
-  aircon: 0, // 에어컨 - 회전 없음
+  server: 0, // 서버 랙
+  door: 0, // 문
+  climatic_chamber: 0, // 항온항습기
+  fire_extinguisher: 0, // 소화기
+  thermometer: 0, // 온도계
+  aircon: 0, // 에어컨
 };
 
 // 장비별 위치 오프셋 (격자 중심에서 이동, X와 Z 방향)
@@ -103,7 +103,7 @@ export const EQUIPMENT_POSITION_OFFSET: Record<
   { x: number; z: number }
 > = {
   server: { x: 0, z: 0 }, // 서버 랙 - 중앙
-  door: { x: -0.4, z: 0.5 }, // 문 - 왼쪽으로 이동
+  door: { x: 0.5, z: -0.5 }, // 문 - 왼쪽으로 이동
   climatic_chamber: { x: 0, z: 0 }, // 항온항습기 - 중앙
   fire_extinguisher: { x: 0, z: 0 }, // 소화기 - 중앙
   thermometer: { x: 0, z: 0 }, // 온도계 - 중앙

@@ -120,6 +120,11 @@ export function useRackManager() {
     });
   }, []);
 
+  //장비 삭제 함수 추가
+  const removeDevice = (deviceId: number) => {
+    setInstalledDevices((prev) => prev.filter((d) => d.id !== deviceId));
+  };
+
   return {
     installedDevices,
     floatingDevice,
@@ -128,5 +133,6 @@ export function useRackManager() {
     handleMouseMove,
     handleDeviceDragEnd,
     handleRackClick,
+    removeDevice,
   };
 }
