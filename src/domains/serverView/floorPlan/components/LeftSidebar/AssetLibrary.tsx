@@ -74,16 +74,15 @@ const DraggableAsset = ({ template, isCompact }: { template: LibraryAssetTemplat
     cursor: 'grab',
   };
 
-  return (
-  <div ref={setNodeRef} style={style} {...listeners} {...attributes} 
-   className={`draggable-asset-item ${isCompact ? 'p-2' : 'p-3'}`}
-  >
-   <span className={`asset-icon ${isCompact ? 'text-base' : 'text-lg'}`}>{icon}</span>
-   <span className={`asset-name ${isCompact ? 'text-xs' : 'text-sm'} text-body-primary`}>{template.name}</span>
-  </div>
- );
+return (
+    <div ref={setNodeRef} style={style} {...listeners} {...attributes} 
+      className={`draggable-asset-item ${isCompact ? 'p-2' : 'p-3'}`}
+    >
+      <span className={`asset-icon ${isCompact ? 'text-base' : 'text-lg'}`}>{icon}</span>
+      <span className={`asset-name ${isCompact ? 'text-xs' : 'text-sm'} text-body-primary`}>{template.name}</span>
+    </div>
+  );
 };
-
 const AccordionCategory = ({ category, assets, isOpen, onToggle }: {
   category: string;
   assets: LibraryAssetTemplate[];
@@ -91,20 +90,18 @@ const AccordionCategory = ({ category, assets, isOpen, onToggle }: {
   onToggle: () => void;
 }) => {
   return (
-  <div>
-   <button onClick={onToggle} className="category-title-button">
-    <span className="font-bold text-body-primary">{category}</span>
-    <ChevronDown className={`w-5 h-5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-   </button>
+    <div>
+      <button onClick={onToggle} className="category-title-button">
+        <span className="font-bold text-body-primary">{category}</span>
+        <ChevronDown className={`w-5 h-5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
       {isOpen && (
         <div className="accordion-content">
-          {/*  모든 카테고리에 항상 2행 그리드 레이아웃을 적용합니다. */}
           <div className={'grid grid-cols-2 gap-2'}>
             {assets.map((template) => (
               <DraggableAsset
                 key={`${template.assetType}-${template.name}`}
                 template={template}
-                //  모든 아이템을 Compact 모드로 표시하여 그리드에 맞춥니다.
                 isCompact={true}
               />
             ))}
@@ -125,8 +122,8 @@ const AssetLibrary: React.FC = () => {
 
   return (
     <div className="asset-library-container">
-   <h3 className="sidebar-subtitle text-title-section">자산 라이브러리</h3>
-   <div className="asset-list-scroll-container">
+      <h3 className="sidebar-subtitle text-heading">자산 라이브러리</h3>
+      <div className="asset-list-scroll-container">
         <div className="flex flex-col gap-2">
           {LIBRARY_CATEGORIES.map(({ category, assets }) => (
             <AccordionCategory

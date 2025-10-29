@@ -48,8 +48,8 @@ const AssetRenderer: React.FC<AssetRendererProps> = ({ asset, gridSize, headerPa
   const pixelHeight = asset.heightInCells * gridSize;
 
   const rackFillColor = displayMode === 'customColor'
-    ? (asset.customColor || '#ecf0f1')
-    : (asset.status ? STATUS_COLORS[asset.status] : '#ecf0f1');
+    ? (asset.customColor || '#4b5563')
+    : (asset.status ? STATUS_COLORS[asset.status] : '#4b5563');
   
   const strokeColor = isSelected ? STATUS_COLORS.selected : '#bdc3c7';
 
@@ -152,9 +152,9 @@ const AssetRenderer: React.FC<AssetRendererProps> = ({ asset, gridSize, headerPa
       
       {/* 자산 내부 정보가 올바르게 표시되도록 좌표 계산 수정 */}
       <Group listening={false}>
-        {displayOptions.showName && <Text text={asset.name} x={5} y={5} fontSize={12} />}
+        {displayOptions.showName && <Text text={asset.name} x={5} y={5} fontSize={12} fill="#FFFFFF" />}
         {displayOptions.showStatusIndicator && asset.status && <Circle x={pixelWidth - 10} y={10} radius={5} fill={STATUS_COLORS[asset.status]} stroke="#fff" strokeWidth={1}/>}
-        {displayOptions.showTemperature && asset.data?.temperature && <Text text={`T: ${asset.data.temperature}°C`} x={5} y={20} fontSize={10} />}
+        {displayOptions.showTemperature && asset.data?.temperature && <Text text={`T: ${asset.data.temperature}°C`} x={5} y={20} fontSize={10} fill="#FFFFFF" />}
         {asset.isLocked && <Text text="🔒" x={5} y={pixelHeight - 18} fontSize={14} opacity={0.7} />}
       </Group>
     </Group>

@@ -14,7 +14,7 @@ const CanvasGrid: React.FC<CanvasGridProps> = ({ gridSize, cols, rows }) => {
 
   // --- 배경 ---
 
-  // 그리드 영역 배경 (흰색)
+  // 그리드 영역 배경 (어두운 색으로 변경)
   lines.push(
     <Rect
       key="grid-bg"
@@ -22,11 +22,12 @@ const CanvasGrid: React.FC<CanvasGridProps> = ({ gridSize, cols, rows }) => {
       y={headerPadding}
       width={cols * gridSize}
       height={rows * gridSize}
-      fill="#FFFFFF" // 흰색 배경
+      fill="#1f2937" // (gray-800)
     />
   );
 
-  // 위쪽 열 헤더 배경
+  // 헤더 배경 (더 어두운 색으로 변경)
+  const headerFill = "#111827"; // (gray-900)
   lines.push(
     <Rect
       key="top-header-bg"
@@ -34,10 +35,9 @@ const CanvasGrid: React.FC<CanvasGridProps> = ({ gridSize, cols, rows }) => {
       y={0}
       width={cols * gridSize}
       height={headerPadding}
-      fill="#f8f9fa"
+      fill={headerFill}
     />
   );
-  // 왼쪽 행 헤더 배경
   lines.push(
     <Rect
       key="left-header-bg"
@@ -45,10 +45,9 @@ const CanvasGrid: React.FC<CanvasGridProps> = ({ gridSize, cols, rows }) => {
       y={headerPadding}
       width={headerPadding}
       height={rows * gridSize}
-      fill="#f8f9fa"
+      fill={headerFill}
     />
   );
-  // 아래쪽 열 헤더 배경
   lines.push(
     <Rect
       key="bottom-header-bg"
@@ -56,10 +55,9 @@ const CanvasGrid: React.FC<CanvasGridProps> = ({ gridSize, cols, rows }) => {
       y={headerPadding + rows * gridSize}
       width={cols * gridSize}
       height={headerPadding}
-      fill="#f8f9fa"
+      fill={headerFill}
     />
   );
-  // 오른쪽 행 헤더 배경
   lines.push(
     <Rect
       key="right-header-bg"
@@ -67,10 +65,12 @@ const CanvasGrid: React.FC<CanvasGridProps> = ({ gridSize, cols, rows }) => {
       y={headerPadding}
       width={headerPadding}
       height={rows * gridSize}
-      fill="#f8f9fa"
+      fill={headerFill}
     />
   );
-  // 4개의 코너 배경
+  
+  // 코너 배경 (가장 어두운 색으로 변경)
+  const cornerFill = "#030712"; // (gray-950)
   const corners = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
   const cornerPositions = [
     { x: 0, y: 0 },
@@ -86,30 +86,32 @@ const CanvasGrid: React.FC<CanvasGridProps> = ({ gridSize, cols, rows }) => {
         y={cornerPositions[i].y}
         width={headerPadding}
         height={headerPadding}
-        fill="#f1f3f5"
+        fill={cornerFill}
       />
     );
   });
 
-  // --- 그리드 선 ---
+  // --- 그리드 선 --- (어두운 테마의 선 색상으로 변경)
+  const gridLineStroke = "#374151"; // (gray-700)
   const gridWidth = cols * gridSize;
   const gridHeight = rows * gridSize;
   // 세로선
   for (let i = 0; i <= cols; i++) {
     const x = headerPadding + i * gridSize;
     lines.push(
-      <Line key={`v-${i}`} points={[x, 0, x, gridHeight + headerPadding * 2]} stroke="#e9ecef" strokeWidth={1} />
+      <Line key={`v-${i}`} points={[x, 0, x, gridHeight + headerPadding * 2]} stroke={gridLineStroke} strokeWidth={1} />
     );
   }
   // 가로선
   for (let j = 0; j <= rows; j++) {
     const y = headerPadding + j * gridSize;
     lines.push(
-      <Line key={`h-${j}`} points={[0, y, gridWidth + headerPadding * 2, y]} stroke="#e9ecef" strokeWidth={1} />
+      <Line key={`h-${j}`} points={[0, y, gridWidth + headerPadding * 2, y]} stroke={gridLineStroke} strokeWidth={1} />
     );
   }
 
-  // --- 헤더 텍스트 ---
+  // --- 헤더 텍스트 --- (밝은 색상으로 변경)
+  const textFill = "#9ca3af"; // (gray-400)
   // 위쪽 & 아래쪽 열 헤더
   for (let i = 0; i < cols; i++) {
     const textProps = {
@@ -120,7 +122,7 @@ const CanvasGrid: React.FC<CanvasGridProps> = ({ gridSize, cols, rows }) => {
         verticalAlign: 'middle' as const,
         fontSize: 10,
         fontStyle: 'bold',
-        fill: '#868e96',
+        fill: textFill,
     };
     lines.push(<Text key={`top-col-header-${i}`} {...textProps} y={0} height={headerPadding} />);
     lines.push(<Text key={`bottom-col-header-${i}`} {...textProps} y={headerPadding + gridHeight} height={headerPadding} />);
@@ -135,7 +137,7 @@ const CanvasGrid: React.FC<CanvasGridProps> = ({ gridSize, cols, rows }) => {
         verticalAlign: 'middle' as const,
         fontSize: 10,
         fontStyle: 'bold',
-        fill: '#868e96',
+        fill: textFill,
     };
     lines.push(<Text key={`left-row-header-${j}`} {...textProps} x={0} width={headerPadding} />);
     lines.push(<Text key={`right-row-header-${j}`} {...textProps} x={headerPadding + gridWidth} width={headerPadding} />);
@@ -145,4 +147,3 @@ const CanvasGrid: React.FC<CanvasGridProps> = ({ gridSize, cols, rows }) => {
 };
 
 export default CanvasGrid;
-

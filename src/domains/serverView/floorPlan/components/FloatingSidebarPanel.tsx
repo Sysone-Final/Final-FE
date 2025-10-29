@@ -25,14 +25,18 @@ const FloatingSidebarPanel: React.FC<FloatingSidebarPanelProps> = ({
   const buttonClasses = `
     sidebar-toggle-button
     ${position === 'left' ? '-right-8' : '-left-8'}
+    /* 반투명 다크 버튼 스타일 추가 */
+    @apply absolute top-1/2 -translate-y-1/2 p-2 rounded-full
+    bg-gray-700/80 text-gray-50 backdrop-blur-sm
+    hover:bg-gray-600 transition-colors;
   `;
 
-  return (
+return (
     <div className={panelClasses}>
-      {/* 사이드바 패널 */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg flex flex-col h-full w-full">
-        <div className="p-4 border-b border-gray-200/80">
-          <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
+      {/* 사이드바 패널 (반투명 다크 스타일 적용) */}
+      <div className="bg-gray-800/80 backdrop-blur-sm rounded-lg shadow-lg flex flex-col h-full w-full border border-gray-700">
+        <div className="p-4 border-b border-gray-600/80">
+          <h2 className="text-subtitle">{title}</h2>
         </div>
         <div className="flex-grow p-4 overflow-y-auto">
           {children}

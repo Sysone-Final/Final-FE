@@ -44,19 +44,19 @@ const PropertiesEditor: React.FC = () => {
   };
 
   if (selectedAssets.length === 0) {
-    return <div className="properties-placeholder"><p className="placeholder-text">편집할 자산을 선택하세요.</p></div>;
+    return <div className="properties-placeholder"><p className="placeholder-text text-placeholder">편집할 자산을 선택하세요.</p></div>;
   }
 
   if (!isSingleSelection) {
     return (
-   <div className="properties-editor-container">
-    <div className="editor-header"><h3 className="editor-title text-title-section">{selectedAssetIds.length}개 자산 선택됨</h3></div>
-    <div className="p-2 flex flex-col gap-2">
-     <button onClick={groupSelectedAssets} className="action-button group-btn text-button">🔗 그룹 만들기</button>
-     <button onClick={ungroupSelectedAssets} className="action-button group-btn text-button">✂️ 그룹 해제</button>
-     <button onClick={handleDeleteSelected} className="action-button delete-btn text-button">🗑️ 선택 자산 모두 삭제</button>
-    </div>
-   </div>
+      <div className="properties-editor-container">
+        <div className="editor-header"><h3 className="editor-title text-heading">{selectedAssetIds.length}개 자산 선택됨</h3></div>
+        <div className="p-2 flex flex-col gap-2">
+          <button onClick={groupSelectedAssets} className="action-button group-btn text-button">🔗 그룹 만들기</button>
+          <button onClick={ungroupSelectedAssets} className="action-button group-btn text-button">✂️ 그룹 해제</button>
+          <button onClick={handleDeleteSelected} className="action-button delete-btn text-button">🗑️ 선택 자산 모두 삭제</button>
+        </div>
+      </div>
     );
   }
 
@@ -72,63 +72,62 @@ const PropertiesEditor: React.FC = () => {
       </div>
 
       <div className="accordion-section">
-        <button onClick={() => toggleSection('basic')} className="accordion-header"><span>{openSections.basic ? '▼' : '▶'} 기본</span></button>
+        <button onClick={() => toggleSection('basic')} className="accordion-header text-heading"><span>{openSections.basic ? '▼' : '▶'} 기본</span></button>
         {openSections.basic && <div className="accordion-content">
-          <div className="input-group"><label className="input-label">이름</label><input type="text" name="name" className="input-field" value={editableAsset.name || ''} onChange={handleChange} disabled={selectedAsset.isLocked} /></div>
+          <div className="input-group"><label className="input-label text-label-form">이름</label><input type="text" name="name" className="input-field" value={editableAsset.name || ''} onChange={handleChange} disabled={selectedAsset.isLocked} /></div>
           <div className="input-row">
-            <div className="input-group"><label className="input-label">X</label><input type="number" name="gridX" className="input-field" value={editableAsset.gridX ?? ''} onChange={handleChange} disabled={selectedAsset.isLocked} /></div>
-            <div className="input-group"><label className="input-label">Y</label><input type="number" name="gridY" className="input-field" value={editableAsset.gridY ?? ''} onChange={handleChange} disabled={selectedAsset.isLocked} /></div>
+            <div className="input-group"><label className="input-label text-label-form">X</label><input type="number" name="gridX" className="input-field" value={editableAsset.gridX ?? ''} onChange={handleChange} disabled={selectedAsset.isLocked} /></div>
+            <div className="input-group"><label className="input-label text-label-form">Y</label><input type="number" name="gridY" className="input-field" value={editableAsset.gridY ?? ''} onChange={handleChange} disabled={selectedAsset.isLocked} /></div>
           </div>
           <div className="input-row">
-            <div className="input-group"><label className="input-label">너비 (칸)</label><input type="number" name="widthInCells" className="input-field" min="1" value={editableAsset.widthInCells ?? 1} onChange={handleChange} disabled={selectedAsset.isLocked} /></div>
-            <div className="input-group"><label className="input-label">높이 (칸)</label><input type="number" name="heightInCells" className="input-field" min="1" value={editableAsset.heightInCells ?? 1} onChange={handleChange} disabled={selectedAsset.isLocked} /></div>
+            <div className="input-group"><label className="input-label text-label-form">너비 (칸)</label><input type="number" name="widthInCells" className="input-field" min="1" value={editableAsset.widthInCells ?? 1} onChange={handleChange} disabled={selectedAsset.isLocked} /></div>
+            <div className="input-group"><label className="input-label text-label-form">높이 (칸)</label><input type="number" name="heightInCells" className="input-field" min="1" value={editableAsset.heightInCells ?? 1} onChange={handleChange} disabled={selectedAsset.isLocked} /></div>
           </div>
-              {selectedAsset.assetType === 'rack' && (
-                <div className="input-group">
-                  <label className="input-label">랙 높이 (U)</label>
-                  <select name="uHeight" className="input-field" value={editableAsset.uHeight || ''} onChange={handleChange} disabled={selectedAsset.isLocked}>
-                    <option value="">선택 안 함</option>
-                    {U_HEIGHT_OPTIONS.map(u => <option key={u} value={u}>{u}U</option>)}
-                  </select>
-                </div>
-              )}
-          <div className="input-group"><label className="input-label">회전: {editableAsset.rotation || 0}°</label>
+            {selectedAsset.assetType === 'rack' && (
+              <div className="input-group">
+                <label className="input-label text-label-form">랙 높이 (U)</label>
+                <select name="uHeight" className="input-field" value={editableAsset.uHeight || ''} onChange={handleChange} disabled={selectedAsset.isLocked}>
+                  <option value="">선택 안 함</option>
+                  {U_HEIGHT_OPTIONS.map(u => <option key={u} value={u}>{u}U</option>)}
+                </select>
+              </div>
+            )}
+          <div className="input-group"><label className="input-label text-label-form">회전: {editableAsset.rotation || 0}°</label>
             <div className="rotation-buttons">
-              <button onClick={() => handleRotate('ccw')} className="rotation-btn" disabled={selectedAsset.isLocked}>↺ -45°</button>
-              <button onClick={() => handleRotate('cw')} className="rotation-btn" disabled={selectedAsset.isLocked}>↻ +45°</button>
+              <button onClick={() => handleRotate('ccw')} className="rotation-btn text-button" disabled={selectedAsset.isLocked}>↺ -45°</button>
+              <button onClick={() => handleRotate('cw')} className="rotation-btn text-button" disabled={selectedAsset.isLocked}>↻ +45°</button>
             </div>
           </div>
-              {/*  'rack' 또는 'door'로 시작하는 모든 자산 타입에 대해 문 방향 옵션 표시 */}
-          {(selectedAsset.assetType === 'rack' || selectedAsset.assetType.startsWith('door')) && <div className="input-group"><label className="input-label">문 방향</label><select name="doorDirection" className="input-field" value={editableAsset.doorDirection || 'north'} onChange={handleChange} disabled={selectedAsset.isLocked}><option value="north">북</option><option value="south">남</option><option value="east">동</option><option value="west">서</option></select></div>}
+          {(selectedAsset.assetType === 'rack' || selectedAsset.assetType.startsWith('door')) && <div className="input-group"><label className="input-label text-label-form">문 방향</label><select name="doorDirection" className="input-field" value={editableAsset.doorDirection || 'north'} onChange={handleChange} disabled={selectedAsset.isLocked}><option value="north">북</option><option value="south">남</option><option value="east">동</option><option value="west">서</option></select></div>}
         </div>}
       </div>
 
       <div className="accordion-section">
-        <button onClick={() => toggleSection('visual')} className="accordion-header"><span>{openSections.visual ? '▼' : '▶'} 시각</span></button>
+        <button onClick={() => toggleSection('visual')} className="accordion-header text-heading"><span>{openSections.visual ? '▼' : '▶'} 시각</span></button>
         {openSections.visual && <div className="accordion-content">
-          <div className="input-group"><label className="input-label">색상</label>
+          <div className="input-group"><label className="input-label text-label-form">색상</label>
             <div className="color-preset-grid">
               {COLOR_PRESETS.map(color => <button key={color} className="color-preset-btn" style={{ backgroundColor: color }} onClick={() => updateAsset(selectedAsset.id, { customColor: color })} disabled={selectedAsset.isLocked}>{editableAsset.customColor === color && '✓'}</button>)}
             </div>
             <input type="color" name="customColor" className="color-picker" value={editableAsset.customColor || '#ecf0f1'} onChange={handleChange} disabled={selectedAsset.isLocked} />
           </div>
-          <div className="input-group"><label className="input-label">투명도: {Math.round((editableAsset.opacity ?? 1) * 100)}%</label><input type="range" name="opacity" className="range-slider" min="0" max="1" step="0.1" value={editableAsset.opacity ?? 1} onChange={handleChange} disabled={selectedAsset.isLocked} /></div>
+          <div className="input-group"><label className="input-label text-label-form">투명도: {Math.round((editableAsset.opacity ?? 1) * 100)}%</label><input type="range" name="opacity" className="range-slider" min="0" max="1" step="0.1" value={editableAsset.opacity ?? 1} onChange={handleChange} disabled={selectedAsset.isLocked} /></div>
         </div>}
       </div>
       
       <div className="accordion-section">
-        <button onClick={() => toggleSection('metadata')} className="accordion-header"><span>{openSections.metadata ? '▼' : '▶'} 메타데이터</span></button>
+        <button onClick={() => toggleSection('metadata')} className="accordion-header text-heading"><span>{openSections.metadata ? '▼' : '▶'} 메타데이터</span></button>
         {openSections.metadata && <div className="accordion-content">
-          <div className="input-group"><label className="input-label">설명</label><textarea name="description" className="textarea-field" rows={3} value={editableAsset.description || ''} onChange={handleChange} disabled={selectedAsset.isLocked} /></div>
-          {selectedAsset.createdAt && <div className="meta-info"><p className="meta-text">생성: {new Date(selectedAsset.createdAt).toLocaleString('ko-KR')}</p>{selectedAsset.updatedAt && <p className="meta-text">수정: {new Date(selectedAsset.updatedAt).toLocaleString('ko-KR')}</p>}</div>}
+          <div className="input-group"><label className="input-label text-label-form">설명</label><textarea name="description" className="textarea-field" rows={3} value={editableAsset.description || ''} onChange={handleChange} disabled={selectedAsset.isLocked} /></div>
+          {selectedAsset.createdAt && <div className="meta-info"><p className="meta-text text-meta">생성: {new Date(selectedAsset.createdAt).toLocaleString('ko-KR')}</p>{selectedAsset.updatedAt && <p className="meta-text text-meta">수정: {new Date(selectedAsset.updatedAt).toLocaleString('ko-KR')}</p>}</div>}
         </div>}
       </div>
 
       <div className="accordion-section">
-        <button onClick={() => toggleSection('advanced')} className="accordion-header"><span>{openSections.advanced ? '▼' : '▶'} 고급</span></button>
+        <button onClick={() => toggleSection('advanced')} className="accordion-header text-heading"><span>{openSections.advanced ? '▼' : '▶'} 고급</span></button>
         {openSections.advanced && <div className="accordion-content">
-          <button className="action-button duplicate-btn" onClick={() => duplicateAsset(selectedAsset.id)}>📋 복제</button>
-          <button className="action-button delete-btn" onClick={() => { if(window.confirm(`"${selectedAsset.name}" 자산을 삭제하시겠습니까?`)) deleteAsset(selectedAsset.id)}}>🗑️ 삭제</button>
+          <button className="action-button duplicate-btn text-button" onClick={() => duplicateAsset(selectedAsset.id)}>📋 복제</button>
+          <button className="action-button delete-btn text-button" onClick={() => { if(window.confirm(`"${selectedAsset.name}" 자산을 삭제하시겠습니까?`)) deleteAsset(selectedAsset.id)}}>🗑️ 삭제</button>
         </div>}
       </div>
     </div>
