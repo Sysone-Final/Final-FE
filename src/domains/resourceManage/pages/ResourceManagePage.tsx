@@ -5,31 +5,31 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
 } from '@tanstack/react-table';
-import type { 
-  PaginationState, 
-  RowSelectionState, 
-  SortingState 
+import type {
+  PaginationState,
+  RowSelectionState,
+  SortingState
 } from '@tanstack/react-table';
+import { Plus } from 'lucide-react'; 
 
 import ResourceFilters from '../components/ResourceFilters';
 import ResourceTable from '../components/ResourceTable';
 import ResourcePaginationActions from '../components/ResourcePaginationActions';
 import ResourceWizardModal from '../components/ResourceWizardModal';
 import { columns } from '../components/resourceTable.config';
-import { 
-  useGetResourceList, 
+import {
+  useGetResourceList,
   useDeleteResource,
   useDeleteMultipleResources
 } from '../hooks/useResourceQueries';
 import type { ResourceListFilters, Resource, ResourceTableMeta } from '../types/resource.types';
-import { useDebounce } from '../hooks/useDebounce'; // Debounce 훅 임포트 확인
+import { useDebounce } from '../hooks/useDebounce';
 
 export default function ResourceManagePage() {
   // --- 상태 관리 ---
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
-  // const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
   const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
   
@@ -39,7 +39,7 @@ export default function ResourceManagePage() {
   // TODO(user): typeFilter, locationFilter 상태 추가
   
   // API 호출 지연을 위한 Debounce
-  const debouncedSearchTerm = useDebounce(searchTerm, 300); // 300ms 지연
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   // API에 전달할 필터 객체 (Memoize)
   const filters = useMemo((): ResourceListFilters => ({
@@ -64,14 +64,12 @@ export default function ResourceManagePage() {
 
   // --- 이벤트 핸들러 ---
   const addResourceHandler = () => {
-    // setSelectedResource(null);
-    setSelectedResourceId(null);
+    setSelectedResourceId(null); // 추가 모드
     setIsModalOpen(true);
   };
 
   const editResourceHandler = (resource: Resource) => {
-    // setSelectedResource(resource);
-    setSelectedResourceId(resource.id);
+    setSelectedResourceId(resource.id); // 수정 모드
     setIsModalOpen(true);
   };
 
@@ -83,7 +81,6 @@ export default function ResourceManagePage() {
   
   const deleteSelectedHandler = () => {
     const selectedIds = table.getSelectedRowModel().rows.map(row => row.original.id);
-    // getSelectedRowModel().flatRows 대신 위 방법 사용 권장
     
     if (selectedIds.length === 0) {
       alert("삭제할 자산을 선택해주세요.");
@@ -94,7 +91,7 @@ export default function ResourceManagePage() {
       deleteMultipleResourcesMutation.mutate(selectedIds, {
         onSuccess: () => {
           setRowSelection({}); // 성공 시 선택 상태 초기화
-          table.resetRowSelection(); // TanStack Table v8+ 권장 방식
+          table.resetRowSelection();
         } 
       });
     }
@@ -112,62 +109,80 @@ export default function ResourceManagePage() {
   const table = useReactTable({
     data: resourceData,
     columns,
-    state: {
-      pagination,
-      rowSelection,
-      sorting,
-    },
-    // 핸들러 연결
+    state: { pagination, rowSelection, sorting },
     onPaginationChange: setPagination,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
-    // 모델 연결
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    // 페이지 카운트 및 수동 페이지네이션 설정
     pageCount: totalPageCount,
     manualPagination: true,
-    // 기타 옵션
-    enableRowSelection: true, // 행 선택 활성화 (기본값)
-    // manualSorting: false, // 서버 사이드 정렬 시 true로 설정
+    enableRowSelection: true,
     meta: {
       editResourceHandler,
       deleteResourceHandler,
     } as ResourceTableMeta,
   });
 
-  // 로딩 상태 결정 (데이터 로딩 중 또는 대량 삭제 진행 중)
+  // 로딩 상태 결정
   const isProcessing = isLoading || isFetching || deleteMultipleResourcesMutation.isPending;
 
   return (
-    <div className="p-4 md:p-8 space-y-4">
-      <ResourceFilters 
-        onAddResourceHandler={addResourceHandler}
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        statusFilter={statusFilter}
-        onStatusChange={setStatusFilter}
-        // TODO: type, location 필터 props 전달
-      />
-      {/* TODO(user): 공통 스켈레톤 UI 컴포넌트 적용 */}
-      {/* <ResourceTable table={table} isLoading={isProcessing} /> */}
-      {isProcessing ? (
-          <div className="text-center py-10 text-gray-500">데이터 처리 중...</div>
-      ) : (
-          <ResourceTable table={table} isLoading={false} />
-      )}
+    // 전체 레이아웃 (ServerRoomDashboard와 동일)
+    <div className="h-full w-full flex flex-col overflow-hidden">
 
-      <ResourcePaginationActions 
-        table={table} 
-        onDeleteSelectedHandler={deleteSelectedHandler}
-        // TODO: onStatusChangeSelectedHandler 전달
-      />
-      
+      {/* 헤더 스타일 적용 (ServerRoomDashboard와 동일) */}
+<header className="flex justify-between items-center px-8 py-6 flex-shrink-0 border-b border-white/10 backdrop-blur-sm bg-gray-900">        <div>
+          {/* 제목 */}
+          <h1 className="text-main-title">자원 관리 목록</h1>
+          {/* 부제목  */}
+          <p className="text-body-primary text-gray-400">데이터 센터의 모든 하드웨어 자산을 효율적으로 관리하세요.</p>
+        </div>
+        {/* "자산 추가" 버튼 */}
+        <button
+          onClick={addResourceHandler} // 핸들러 연결
+          className="bg-blue-600 text-white border-none px-6 py-3 rounded-lg text-base font-semibold cursor-pointer transition-colors hover:bg-blue-700 text-button"
+        >
+          <Plus size={18} className="inline mr-1" /> {/* 아이콘 추가 */}
+          자산 추가
+        </button>
+      </header>
+
+      {/* 메인 컨텐츠 영역 */}
+      <main className="flex-1 overflow-y-auto p-8">
+        {/* 필터 (제목과 버튼 없음) */}
+        <ResourceFilters
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          statusFilter={statusFilter}
+          onStatusChange={setStatusFilter}
+          // TODO: type, location 필터 props 전달
+        />
+
+        {/* 테이블 (위아래 간격 추가) */}
+        <div className="mt-6">
+          {isProcessing ? (
+            <div className="text-center py-10 text-gray-400 text-placeholder">데이터 처리 중...</div>
+          ) : (
+            <ResourceTable table={table} isLoading={false} />
+          )}
+        </div>
+
+        {/* 페이지네이션 및 액션 (위아래 간격 추가) */}
+        <div className="mt-6">
+          <ResourcePaginationActions
+            table={table}
+            onDeleteSelectedHandler={deleteSelectedHandler}
+            // TODO: onStatusChangeSelectedHandler 전달
+          />
+        </div>
+      </main>
+
+      {/* 모달 */}
       <ResourceWizardModal
         isOpen={isModalOpen}
         onCloseHandler={closeModalHandler}
-        // resource={selectedResource}
         resourceId={selectedResourceId}
       />
     </div>
