@@ -23,11 +23,11 @@ const storeCreator: StateCreator<FloorPlanState> = (set, get) => ({
     useLOD: true,
     showGridLine: true,
   },
-  //  그리드 크기를 목업 데이터에 맞게 확장
-  gridCols: 50,
-  gridRows: 25,
+  // 30x16 그리드 크기 유지
+  gridCols: 30,
+  gridRows: 16,
   stage: { scale: 1, x: 0, y: 0 },
-  //  현실적인 데이터센터 레이아웃을 반영한 새로운 목업 데이터
+  // 벽 크기(widthInCells)를 겹치지 않게 수정
   assets: [
     // --- Walls and Structure ---
     {
@@ -35,9 +35,9 @@ const storeCreator: StateCreator<FloorPlanState> = (set, get) => ({
       assetType: "wall",
       layer: "floor",
       name: "상단 벽",
-      gridX: 1,
-      gridY: 1,
-      widthInCells: 48,
+      gridX: 0,
+      gridY: 0,
+      widthInCells: 30, // 0~29 (30칸)
       heightInCells: 1,
       customColor: "#868e96",
       isLocked: true,
@@ -47,9 +47,9 @@ const storeCreator: StateCreator<FloorPlanState> = (set, get) => ({
       assetType: "wall",
       layer: "floor",
       name: "하단 벽",
-      gridX: 1,
-      gridY: 23,
-      widthInCells: 48,
+      gridX: 0,
+      gridY: 15,
+      widthInCells: 30, // 0~29 (30칸)
       heightInCells: 1,
       customColor: "#868e96",
       isLocked: true,
@@ -59,10 +59,10 @@ const storeCreator: StateCreator<FloorPlanState> = (set, get) => ({
       assetType: "wall",
       layer: "floor",
       name: "좌측 벽",
-      gridX: 1,
-      gridY: 2,
+      gridX: 0,
+      gridY: 1, // 상단 벽(0) 제외
       widthInCells: 1,
-      heightInCells: 21,
+      heightInCells: 14, // 1~14 (14칸)
       customColor: "#868e96",
       isLocked: true,
     },
@@ -71,10 +71,10 @@ const storeCreator: StateCreator<FloorPlanState> = (set, get) => ({
       assetType: "wall",
       layer: "floor",
       name: "우측 벽",
-      gridX: 48,
-      gridY: 2,
+      gridX: 29,
+      gridY: 1, // 상단 벽(0) 제외
       widthInCells: 1,
-      heightInCells: 21,
+      heightInCells: 14, // 1~14 (14칸)
       customColor: "#868e96",
       isLocked: true,
     },
@@ -83,16 +83,16 @@ const storeCreator: StateCreator<FloorPlanState> = (set, get) => ({
       assetType: "door_double",
       layer: "wall",
       name: "주 출입문",
-      gridX: 24,
-      gridY: 23,
-      widthInCells: 4,
+      gridX: 14,
+      gridY: 15, // 하단 벽에 위치
+      widthInCells: 2,
       heightInCells: 1,
       customColor: "#ced4da",
       doorDirection: "south",
       isLocked: true,
     },
 
-    // --- Rack Row A (Hot Aisle) ---
+    // --- Rack Row A (Hot Aisle) --- (벽 안쪽(gridX: 1)에서 1칸 띄움)
     ...Array.from({ length: 10 }).map((_, i) => ({
       id: `A-${String(i + 1).padStart(2, "0")}`,
       assetType: "rack" as const,
@@ -100,8 +100,8 @@ const storeCreator: StateCreator<FloorPlanState> = (set, get) => ({
       name: `A-${String(i + 1).padStart(2, "0")}`,
       status: "normal" as const,
       data: { temperature: 22 + i * 0.2, uUsage: 60 + i },
-      gridX: 4 + i * 2,
-      gridY: 4,
+      gridX: 2 + i, // X: 2~11
+      gridY: 2, // Y: 2,3
       widthInCells: 1,
       heightInCells: 2,
       customColor: "#dbe4ff",
@@ -110,7 +110,7 @@ const storeCreator: StateCreator<FloorPlanState> = (set, get) => ({
       uHeight: 42 as const,
     })),
 
-    // --- Rack Row B (Hot Aisle) ---
+    // --- Rack Row B (Hot Aisle) --- (A열과 1칸 통로 확보)
     ...Array.from({ length: 10 }).map((_, i) => ({
       id: `B-${String(i + 1).padStart(2, "0")}`,
       assetType: "rack" as const,
@@ -118,8 +118,8 @@ const storeCreator: StateCreator<FloorPlanState> = (set, get) => ({
       name: `B-${String(i + 1).padStart(2, "0")}`,
       status: "normal" as const,
       data: { temperature: 23 + i * 0.1, uUsage: 55 + i * 2 },
-      gridX: 4 + i * 2,
-      gridY: 7,
+      gridX: 2 + i, // X: 2~11
+      gridY: 5, // Y: 5,6 (Y: 4가 통로)
       widthInCells: 1,
       heightInCells: 2,
       customColor: "#dbe4ff",
@@ -139,8 +139,8 @@ const storeCreator: StateCreator<FloorPlanState> = (set, get) => ({
         temperature: i === 5 ? 28 : i === 8 ? 32 : 24,
         uUsage: 70 + i * 2,
       },
-      gridX: 25 + i * 2,
-      gridY: 4,
+      gridX: 15 + i, // X: 15~26
+      gridY: 2, // Y: 2,3
       widthInCells: 1,
       heightInCells: 2,
       customColor: "#dbe4ff",
@@ -155,8 +155,8 @@ const storeCreator: StateCreator<FloorPlanState> = (set, get) => ({
       assetType: "crac",
       layer: "floor",
       name: "항온항습기-01",
-      gridX: 4,
-      gridY: 12,
+      gridX: 2,
+      gridY: 9, // Y: 9,10,11,12
       widthInCells: 2,
       heightInCells: 4,
       customColor: "#a7d8de",
@@ -166,8 +166,8 @@ const storeCreator: StateCreator<FloorPlanState> = (set, get) => ({
       assetType: "crac",
       layer: "floor",
       name: "항온항습기-02",
-      gridX: 45,
-      gridY: 12,
+      gridX: 25, // X: 25,26
+      gridY: 9, // Y: 9,10,11,12
       widthInCells: 2,
       heightInCells: 4,
       customColor: "#a7d8de",
@@ -177,8 +177,8 @@ const storeCreator: StateCreator<FloorPlanState> = (set, get) => ({
       assetType: "ups_battery",
       layer: "floor",
       name: "UPS-01",
-      gridX: 4,
-      gridY: 18,
+      gridX: 5, // X: 5,6,7,8
+      gridY: 9, // Y: 9,10
       widthInCells: 4,
       heightInCells: 2,
       customColor: "#f9dcc4",
@@ -188,8 +188,8 @@ const storeCreator: StateCreator<FloorPlanState> = (set, get) => ({
       assetType: "power_panel",
       layer: "floor",
       name: "RPP-A",
-      gridX: 25,
-      gridY: 8,
+      gridX: 15, // X: 15,16
+      gridY: 5, // Y: 5 (C열 뒤)
       widthInCells: 2,
       heightInCells: 1,
       customColor: "#f3d9e3",
@@ -199,8 +199,8 @@ const storeCreator: StateCreator<FloorPlanState> = (set, get) => ({
       assetType: "power_panel",
       layer: "floor",
       name: "RPP-B",
-      gridX: 28,
-      gridY: 8,
+      gridX: 18, // X: 18,19
+      gridY: 5, // Y: 5 (C열 뒤)
       widthInCells: 2,
       heightInCells: 1,
       customColor: "#f3d9e3",
@@ -212,8 +212,8 @@ const storeCreator: StateCreator<FloorPlanState> = (set, get) => ({
       assetType: "cctv",
       layer: "overhead",
       name: "CCTV-코너-좌상",
-      gridX: 2,
-      gridY: 2,
+      gridX: 1, // 좌측 벽 안
+      gridY: 1, // 상단 벽 안
       widthInCells: 1,
       heightInCells: 1,
       customColor: "#e0e0e0",
@@ -223,8 +223,8 @@ const storeCreator: StateCreator<FloorPlanState> = (set, get) => ({
       assetType: "cctv",
       layer: "overhead",
       name: "CCTV-코너-우상",
-      gridX: 47,
-      gridY: 2,
+      gridX: 28, // 우측 벽 안
+      gridY: 1, // 상단 벽 안
       widthInCells: 1,
       heightInCells: 1,
       customColor: "#e0e0e0",
@@ -234,8 +234,8 @@ const storeCreator: StateCreator<FloorPlanState> = (set, get) => ({
       assetType: "cctv",
       layer: "overhead",
       name: "CCTV-중앙",
-      gridX: 26,
-      gridY: 12,
+      gridX: 14,
+      gridY: 8,
       widthInCells: 1,
       heightInCells: 1,
       customColor: "#e0e0e0",
@@ -245,8 +245,8 @@ const storeCreator: StateCreator<FloorPlanState> = (set, get) => ({
       assetType: "epo",
       layer: "wall",
       name: "EPO",
-      gridX: 29,
-      gridY: 23,
+      gridX: 17,
+      gridY: 15, // 하단 벽에 위치
       widthInCells: 1,
       heightInCells: 1,
       customColor: "#ffadad",
@@ -319,6 +319,7 @@ const storeCreator: StateCreator<FloorPlanState> = (set, get) => ({
 
   groupSelectedAssets: () => {
     const { selectedAssetIds } = get();
+    // 's' 오타 수정
     if (selectedAssetIds.length < 2) return;
     const groupId = `group_${crypto.randomUUID()}`;
     set((state) => ({
