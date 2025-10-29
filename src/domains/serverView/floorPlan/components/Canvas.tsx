@@ -25,16 +25,59 @@ const Canvas: React.FC = () => {
   const [stageSize, setStageSize] = useState({ width: 0, height: 0 });
   const { setNodeRef } = useDroppable({ id: 'canvas-drop-area' });
 
-  useLayoutEffect(() => {
-    const checkSize = () => {
-      if (containerRef.current) {
-        setStageSize({ width: containerRef.current.clientWidth, height: containerRef.current.clientHeight });
-      }
-    };
-    checkSize();
-    window.addEventListener('resize', checkSize);
-    return () => window.removeEventListener('resize', checkSize);
-  }, []);
+  const [isInitialZoomSet, setIsInitialZoomSet] = useState(false);
+
+useLayoutEffect(() => {
+  const checkSize = (isInitialLoad: boolean) => {
+   if (containerRef.current) {
+    const containerWidth = containerRef.current.clientWidth;
+    const containerHeight = containerRef.current.clientHeight;
+
+    // 1. 캔버스 크기는 항상 업데이트
+    setStageSize({ width: containerWidth, height: containerHeight });
+
+    // 2. "처음 로드 시" 그리고 "아직 줌 설정이 안됐을 때"만 실행
+    if (isInitialLoad && !isInitialZoomSet && containerWidth > 0) {
+     const { CELL_SIZE, HEADER_PADDING } = CANVAS_VIEW_CONFIG;
+
+     // 3. 전체 평면도의 실제 픽셀 크기 계산
+     const totalPlanWidth = gridCols * CELL_SIZE + HEADER_PADDING * 2;
+     const totalPlanHeight = gridRows * CELL_SIZE + HEADER_PADDING * 2;
+
+     // 4. 컨테이너에 맞추기 위한 줌 스케일 계산 (약간의 여백 둠)
+     const padding = 0.95; // 95%
+     const scaleX = (containerWidth * padding) / totalPlanWidth;
+     const scaleY = (containerHeight * padding) / totalPlanHeight;
+     const newScale = Math.min(scaleX, scaleY); // 가로/세로 중 더 작은 값
+     
+     // 5. 중앙 정렬을 위한 x, y 위치 계산
+     const newX = (containerWidth - totalPlanWidth * newScale) / 2;
+     const newY = (containerHeight - totalPlanHeight * newScale) / 2;
+    
+     // 6. 스토어(Zustand)의 stage 상태 업데이트
+     setStage({
+      scale: newScale,
+      x: newX,
+      y: newY,
+     });
+          
+          // 7. 플래그를 true로 설정해 다시 실행되지 않도록 함
+     setIsInitialZoomSet(true);
+    }
+   }
+  };
+    
+    // 처음 마운트될 때 isInitialLoad = true로 호출
+  checkSize(true);
+    
+    // 리사이즈 이벤트 리스너 (isInitialLoad = false로 호출)
+  const handleResize = () => checkSize(false);
+  window.addEventListener('resize', handleResize);
+    
+  return () => window.removeEventListener('resize', handleResize);
+    
+    // --- [수정] 의존성 배열에 추가 ---
+ }, [isInitialZoomSet, gridCols, gridRows, setStage]);
 
   const handleWheel = (e: KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault();
