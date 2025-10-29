@@ -23,16 +23,19 @@ import { X, ArrowLeft, Loader2 } from "lucide-react";
 
 // --- 공통 폼 필드 스타일 ---
 const inputStyle =
-  "bg-gray-900/20 border border-white border-opacity-30 text-white p-2 rounded w-full placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:bg-gray-700 disabled:bg-opacity-30 disabled:placeholder-gray-500";
-const labelStyle = "block text-sm font-medium text-white mb-1";
+  // "bg-gray-900/20 border-white border-opacity-30 text-white ..."; -> 배경/테두리 조정
+  "bg-gray-800 border border-gray-700 text-gray-50 p-2 rounded w-full placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:bg-gray-700 disabled:placeholder-gray-500";
+// 텍스트 클래스
+const labelStyle = "block mb-1 text-label-form"; 
 const gridContainerStyle = "grid grid-cols-1 md:grid-cols-2 gap-4";
 const gridSpanFullStyle = "md:col-span-2";
-const fieldGroupStyle = "mb-6 p-4 border-t border-white border-opacity-20";
-const fieldGroupTitleStyle = "text-lg font-semibold mb-3 text-white";
-const helperTextStyle = "text-xs text-white text-opacity-70 mt-1 pl-1";
+const fieldGroupStyle = "mb-6 p-4 border-t border-gray-700"; // 테두리 색상
+// 텍스트 클래스 
+const fieldGroupTitleStyle = "mb-3 text-heading"; 
+const helperTextStyle = "text-xs text-gray-400 mt-1 pl-1"; // 색상 조정
 const errorTextStyle = "text-xs text-red-400 mt-1";
 
-// (기존 Resource 타입과 거의 동일하지만, 명시적으로 사용)
+
 type FormValues = Partial<Resource>;
 
 // --- Step 컴포넌트들의 prop 타입을 react-hook-form 기준으로 변경 ---
@@ -77,14 +80,10 @@ const Step1Identity = ({
       </label>
       <input
         type="text"
-        {...register("equipmentName", {
-          required: "장비명은 필수 입력 항목입니다.",
-        })}
+        {...register("equipmentName", { required: "장비명은 필수 입력 항목입니다." })}
         className={`${inputStyle} ${errors.equipmentName ? "border-red-500 ring-red-500" : ""}`}
       />
-      {errors.equipmentName && (
-        <p className={errorTextStyle}>{errors.equipmentName.message}</p>
-      )}
+      {errors.equipmentName && <p className={errorTextStyle}>{errors.equipmentName.message}</p>}
     </div>
 
     <div>
@@ -92,9 +91,7 @@ const Step1Identity = ({
         장비 유형 (Equipment Type) <span className="text-red-500">*</span>
       </label>
       <select
-        {...register("equipmentType", {
-          required: "장비 유형을 선택하세요.",
-        })}
+        {...register("equipmentType", { required: "장비 유형을 선택하세요." })}
         className={`${inputStyle} ${errors.equipmentType ? "border-red-500 ring-red-500" : ""}`}
       >
         <option value="SERVER">SERVER</option>
@@ -103,9 +100,7 @@ const Step1Identity = ({
         <option value="PDU">PDU</option>
         <option value="UPS">UPS</option>
       </select>
-      {errors.equipmentType && (
-        <p className={errorTextStyle}>{errors.equipmentType.message}</p>
-      )}
+      {errors.equipmentType && <p className={errorTextStyle}>{errors.equipmentType.message}</p>}
     </div>
 
     {/* --- 선택 (모두 register 적용) --- */}
@@ -150,10 +145,11 @@ const Step1Identity = ({
         name="imageFrontFile"
         accept="image/*"
         onChange={handleFileChange} // RHF register 사용 안 함
-        className={`${inputStyle} text-sm`}
+        className={`${inputStyle} text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-blue-50 hover:file:bg-blue-700`}
       />
       {imageFrontPreview && (
-        <div className="mt-2 border border-white border-opacity-30 rounded p-1 inline-block">
+          // 이미지 미리보기 테두리
+        <div className="mt-2 border border-gray-700 rounded p-1 inline-block">
           <img
             src={imageFrontPreview}
             alt="앞면 미리보기"
@@ -169,11 +165,12 @@ const Step1Identity = ({
         name="imageRearFile"
         accept="image/*"
         onChange={handleFileChange} // RHF register 사용 안 함
-        className={`${inputStyle} text-sm`}
+        className={`${inputStyle} text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-blue-50 hover:file:bg-blue-700`}
       />
       {imageRearPreview && (
-        <div className="mt-2 border border-white border-opacity-30 rounded p-1 inline-block">
-          <img
+// 이미지 미리보기 테두리
+        <div className="mt-2 border border-gray-700 rounded p-1 inline-block">          
+        <img
             src={imageRearPreview}
             alt="뒷면 미리보기"
             className="max-h-32 max-w-full object-contain rounded"
