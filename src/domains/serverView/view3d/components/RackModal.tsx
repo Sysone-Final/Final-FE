@@ -32,7 +32,7 @@ function RackModal() {
       
       {/* 우측 슬라이드 패널 */}
       <div
-        className="fixed top-0 right-3 h-full w-full max-w-[670px] sm:w-[30vw] sm:max-w-[560px] z-50 animate-slideInRight overflow-hidden"
+        className="fixed top-0 right-0 h-full w-full max-w-[700px] sm:w-[30vw] sm:max-w-[600px] z-50 animate-slideInRight overflow-hidden"
       >
         <RackView 
           onClose={closeRackModal} 
