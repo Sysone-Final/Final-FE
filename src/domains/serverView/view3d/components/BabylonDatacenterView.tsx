@@ -221,9 +221,9 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
         </ul>
       </div>
 
-      {/* 회전 버튼 - 편집 모드에서 장비 선택 시 */}
+      {/* 회전 버튼 */}
       {mode === 'edit' && selectedEquipmentId && (
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 backdrop-blur-md rounded-lg p-3 text-white text-xs flex items-center gap-2">
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 border border-slate-300/40 backdrop-blur-sm rounded-lg p-3 text-white text-xs flex items-center gap-2">
           <span className="font-semibold">회전</span>
           <button
             type="button"
