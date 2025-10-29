@@ -78,7 +78,7 @@ function Rack({
 
   return (
     <div
-      className="flex justify-center items-center overflow-y-auto overflow-x-hidden h-[670px] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden mx-auto"
+      className="flex justify-center items-center overflow-y-auto overflow-x-hidden h-[550px] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden mx-auto"
       style={{ width: `${fullWidth}px` }}
     >
       <Stage
