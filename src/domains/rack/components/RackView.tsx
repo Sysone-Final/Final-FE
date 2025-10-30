@@ -17,13 +17,13 @@ function RackView({ rackName }: RackViewProps = {}) {
   const [editMode, setEditMode] = useState(false);
 
   const deviceLegend = [
-    { type: "server", label: "서버" },
-    { type: "switch", label: "스위치" },
-    { type: "router", label: "라우터" },
-    { type: "storage", label: "스토리지" },
-    { type: "firewall", label: "방화벽" },
-    { type: "loadbalancer", label: "로드밸런서" },
-    { type: "kvm", label: "KVM" },
+    { type: "SERVER", label: "서버" },
+    { type: "SWITCH", label: "스위치" },
+    { type: "ROUTER", label: "라우터" },
+    { type: "STORAGE", label: "스토리지" },
+    { type: "FIREWALL", label: "방화벽" },
+    { type: "LOAD_BALANCER", label: "로드밸런서" },
+    { type: "KVM", label: "KVM" },
   ];
 
   return (
@@ -86,7 +86,10 @@ function RackView({ rackName }: RackViewProps = {}) {
               <footer className="px-2 py-2 border-t border-slate-700 bg-slate-800/30 flex justify-center items-center">
                 <div className="flex items-center gap-2 justify-center">
                   {deviceLegend.map((item) => (
-                    <div key={item.type} className="flex items-center gap-1 whitespace-nowrap">
+                    <div
+                      key={item.type}
+                      className="flex items-center gap-1 whitespace-nowrap"
+                    >
                       <div
                         className="w-2 h-2 rounded-sm flex-shrink-0"
                         style={{ backgroundColor: typeColorMap[item.type] }}
