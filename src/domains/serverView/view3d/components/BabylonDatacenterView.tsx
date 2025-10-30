@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
-import { Engine, Scene, ArcRotateCamera, HemisphericLight, Vector3, Color4 } from '@babylonjs/core';
+import { Engine, Scene, ArcRotateCamera, HemisphericLight, Vector3, Color4, type IPointerEvent, type PickingInfo } from '@babylonjs/core';
 import GridFloor from './GridFloor';
 import Equipment3DModel from './Equipment3DModel';
 import EquipmentPalette3D from './EquipmentPalette3D';
@@ -9,16 +9,17 @@ import { getServerRoomEquipment } from '../data/mockServerRoomEquipment';
 import type { EquipmentType } from '../types';
 
 interface BabylonDatacenterViewProps {
-  mode?: 'edit' | 'view'; // 편집 모드 or 뷰어 모드
-  serverRoomId?: string; // 뷰어 모드일 때 서버실 ID
+  mode?: 'edit' | 'view'; // 초기 모드 (기본값: view)
+  serverRoomId?: string; // 서버실 ID
 }
 
-function BabylonDatacenterView({ mode = 'edit', serverRoomId }: BabylonDatacenterViewProps = {}) {
+function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: BabylonDatacenterViewProps = {}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<Engine | null>(null);
   const sceneRef = useRef<Scene | null>(null);
   const [isSceneReady, setIsSceneReady] = useState(false);
   const renderLoopRef = useRef<boolean>(true); // 렌더링 루프 제어
+  const hasAppliedInitialModeRef = useRef(false);
 
   // Zustand
   const {
@@ -27,23 +28,32 @@ function BabylonDatacenterView({ mode = 'edit', serverRoomId }: BabylonDatacente
     selectedEquipmentId,
     addEquipment,
     setSelectedEquipment,
-    // setGridConfig,
     updateEquipmentPosition,
-    loadEquipment, // 장비 목록 로드 함수 추가
     openRackModal, // 랙 모달 열기
     isRackModalOpen, // 랙 모달 상태 추가
     rotateEquipment90,
+    mode,
+    setMode,
+    currentServerRoomId,
+    initializeServerRoom,
   } = useBabylonDatacenterStore();
 
-  // 뷰어 모드일 때 서버실 데이터 로드
+  // 초기 모드 적용 (최초 한 번)
   useEffect(() => {
-    if (mode === 'view' && serverRoomId) {
-      // 목 데이터에서 서버실 장비 로드
-      const equipmentData = getServerRoomEquipment(serverRoomId);
-      loadEquipment(equipmentData);
-      console.log(`✅ Loaded ${equipmentData.length} equipment for server room: ${serverRoomId}`);
-    }
-  }, [mode, serverRoomId, loadEquipment]);
+    if (hasAppliedInitialModeRef.current) return;
+    setMode(initialMode);
+    hasAppliedInitialModeRef.current = true;
+  }, [initialMode, setMode]);
+
+  // 서버실 데이터 로드
+  useEffect(() => {
+    if (!serverRoomId) return;
+    if (currentServerRoomId === serverRoomId) return;
+
+    const equipmentData = getServerRoomEquipment(serverRoomId);
+    initializeServerRoom(serverRoomId, equipmentData);
+    console.log(`✅ Loaded ${equipmentData.length} equipment for server room: ${serverRoomId}`);
+  }, [serverRoomId, currentServerRoomId, initializeServerRoom]);
 
   // 장비 추가 핸들러
   const handleAddEquipment = useCallback((type: EquipmentType) => {
@@ -117,16 +127,6 @@ function BabylonDatacenterView({ mode = 'edit', serverRoomId }: BabylonDatacente
     const light2 = new HemisphericLight('light2', new Vector3(0, -1, 0), scene);
     light2.intensity = 0.3;
 
-    // 배경 클릭 시 선택 해제 (edit 모드에서만)
-    if (mode === 'edit') {
-      scene.onPointerDown = (_evt, pickResult) => {
-        // 아무것도 선택되지 않았거나 바닥을 클릭한 경우
-        if (!pickResult.hit || pickResult.pickedMesh?.name === 'ground') {
-          setSelectedEquipment(null);
-        }
-      };
-    }
-
     setIsSceneReady(true);
 
     // 렌더링 루프 (최적화: 렌더링이 필요할 때만 실행)
@@ -159,7 +159,32 @@ function BabylonDatacenterView({ mode = 'edit', serverRoomId }: BabylonDatacente
         engine.dispose();
       }
     };
-  }, [gridConfig.columns, gridConfig.rows, gridConfig.cellSize, setSelectedEquipment, mode]);
+  }, [gridConfig.columns, gridConfig.rows, gridConfig.cellSize]);
+
+  // 모드 변경에 따른 포인터 상호작용 업데이트
+  useEffect(() => {
+    const scene = sceneRef.current;
+    if (!scene) return;
+
+    if (mode === 'edit') {
+      const pointerHandler: NonNullable<typeof scene.onPointerDown> = (_evt: IPointerEvent, pickResult: PickingInfo) => {
+        if (!pickResult.hit || pickResult.pickedMesh?.name === 'ground') {
+          setSelectedEquipment(null);
+        }
+      };
+      scene.onPointerDown = pointerHandler;
+
+      return () => {
+        if (scene.onPointerDown === pointerHandler) {
+          scene.onPointerDown = undefined;
+        }
+      };
+    }
+
+    // 보기 모드로 전환 시 선택 해제 및 포인터 이벤트 제거
+    setSelectedEquipment(null);
+    scene.onPointerDown = undefined;
+  }, [mode, setSelectedEquipment]);
 
   // 🔥 랙 모달이 열리면 Babylon 렌더링 일시정지 (성능 최적화)
   useEffect(() => {
@@ -178,132 +203,79 @@ function BabylonDatacenterView({ mode = 'edit', serverRoomId }: BabylonDatacente
   }, [mode, serverRoomId]);
 
   return (
-    <div className="flex h-full w-full overflow-hidden">
-      {/* 메인 3D 뷰 영역 */}
-      <div className="flex-1 relative">
-        {/* 헤더 */}
-        {/* <div className="absolute top-0 left-0 right-0 backdrop-blur-sm p-4 z-10">
-          <div className="flex gap-4 items-center text-white text-sm">
-            <div className="flex items-center gap-2">
-              <label>행:</label>
-              <button
-                onClick={() => handleGridChange('rows', gridConfig.rows - 1)}
-                className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded"
-              >
-                -
-              </button>
-              <span className="w-8 text-center">{gridConfig.rows}</span>
-              <button
-                onClick={() => handleGridChange('rows', gridConfig.rows + 1)}
-                className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded"
-              >
-                +
-              </button>
-            </div>
+    <div className="h-full w-full overflow-hidden relative">
+      <canvas
+        ref={canvasRef}
+        className="w-full h-full outline-none"
+        style={{ touchAction: 'none' }}
+      />
 
-            <div className="flex items-center gap-2">
-              <label>열:</label>
-              <button
-                onClick={() => handleGridChange('columns', gridConfig.columns - 1)}
-                className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded"
-              >
-                -
-              </button>
-              <span className="w-8 text-center">{gridConfig.columns}</span>
-              <button
-                onClick={() => handleGridChange('columns', gridConfig.columns + 1)}
-                className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded"
-              >
-                +
-              </button>
-            </div>
-
-            <div className="ml-auto text-white">
-              배치된 장비: {equipment.length}개
-            </div>
-          </div>
-        </div> */}
-
-        {/* Canvas */}
-        <canvas
-          ref={canvasRef}
-          className="w-full h-full outline-none"
-          style={{ touchAction: 'none' }}
-        />
-
-        {/* 컨트롤 가이드 */}
-        <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-md rounded-lg p-3 text-white text-xs max-w-xs">
-          <div className="font-semibold mb-2">⌨️ 컨트롤</div>
-          <ul className="space-y-1">
-            <li>• 좌클릭 드래그 (배경): 카메라 회전</li>
-            {mode === 'edit' && <li>• 좌클릭 드래그 (장비): 장비 이동</li>}
-            <li>• 우클릭 드래그: 카메라 이동</li>
-            <li>• 마우스 휠: 줌 인/아웃</li>
-          </ul>
-        </div>
-
-        {mode === 'edit' && selectedEquipmentId && (
-          <div className="absolute bottom-4 right-4 bg-black/50 backdrop-blur-md rounded-lg p-3 text-white text-xs flex items-center gap-2">
-            <span className="font-semibold">회전</span>
-            <button
-              type="button"
-              onClick={() => handleRotateEquipment(false)}
-              className="bg-gray-700 hover:bg-gray-600 text-white rounded-md px-3 py-1 text-sm"
-            >
-              ⟲ 90°
-            </button>
-            <button
-              type="button"
-              onClick={() => handleRotateEquipment(true)}
-              className="bg-gray-700 hover:bg-gray-600 text-white rounded-md px-3 py-1 text-sm"
-            >
-              ⟳ 90°
-            </button>
-          </div>
-        )}
-
-        {/* 뷰어 모드 */}
-        {/* {mode === 'view' && (
-          <div className="absolute top-4 left-4 bg-blue-500/30 backdrop-blur-md rounded-lg px-4 py-2 text-white text-sm">
-            <span className="font-semibold">뷰어 모드</span>
-          </div>
-        )} */}
-
-        {/* 3D 객체들 렌더링 */}
-        {isSceneReady && sceneRef.current && (
-          <>
-            {/* 격자 바닥 */}
-            <GridFloor scene={sceneRef.current} gridConfig={gridConfig} />
-
-            {/* 장비들 */}
-            {equipment.map((eq) => {
-              const paletteItem = EQUIPMENT_PALETTE.find((p) => p.type === eq.type);
-              if (!paletteItem) return null;
-
-              return (
-                <Equipment3DModel
-                  key={eq.id}
-                  scene={sceneRef.current!}
-                  equipment={eq}
-                  cellSize={gridConfig.cellSize}
-                  modelPath={paletteItem.modelPath}
-                  isSelected={eq.id === selectedEquipmentId}
-                  onSelect={setSelectedEquipment}
-                  onPositionChange={updateEquipmentPosition}
-                  isDraggable={mode === 'edit'} // 편집 모드에서만 드래그 가능
-                  onServerClick={mode === 'view' ? handleServerClick : undefined} // view 모드에서만 클릭 핸들러 전달
-                />
-              );
-            })}
-          </>
-        )}
+      {/* 컨트롤 가이드 */}
+      <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-md rounded-lg p-3 text-white text-xs max-w-xs z-10">
+        <div className="font-semibold mb-2">⌨️ 컨트롤</div>
+        <ul className="space-y-1">
+          <li>• 좌클릭 드래그 (배경): 카메라 회전</li>
+          {mode === 'edit' && <li>• 좌클릭 드래그 (장비): 장비 이동</li>}
+          <li>• 우클릭 드래그: 카메라 이동</li>
+          <li>• 마우스 휠: 줌 인/아웃</li>
+        </ul>
       </div>
 
-      {/* 편집 모드에서만 표시 */}
+      {/* 회전 버튼 */}
+      {mode === 'edit' && selectedEquipmentId && (
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 border border-slate-300/40 backdrop-blur-sm rounded-lg p-3 text-white text-xs flex items-center gap-2">
+          <span className="font-semibold">회전</span>
+          <button
+            type="button"
+            onClick={() => handleRotateEquipment(false)}
+            className="bg-gray-700 hover:bg-gray-600 text-white rounded-md px-3 py-1 text-sm"
+          >
+            ⟲ 90°
+          </button>
+          <button
+            type="button"
+            onClick={() => handleRotateEquipment(true)}
+            className="bg-gray-700 hover:bg-gray-600 text-white rounded-md px-3 py-1 text-sm"
+          >
+            ⟳ 90°
+          </button>
+        </div>
+      )}
+
+      {/* 장비 목록 패널 - 편집 모드에서만 표시 (오른쪽 상단에 플로팅) */}
       {mode === 'edit' && (
-        <div className="w-70 h-full flex-shrink-0">
+        <div className="absolute top-4 right-4 w-60 max-h-[calc(100vh-10rem)] z-20">
           <EquipmentPalette3D onAddEquipment={handleAddEquipment} />
         </div>
+      )}
+
+      {/* 3D 객체들 렌더링 */}
+      {isSceneReady && sceneRef.current && (
+        <>
+          {/* 격자 바닥 */}
+          <GridFloor scene={sceneRef.current} gridConfig={gridConfig} />
+
+          {/* 장비들 */}
+          {equipment.map((eq) => {
+            const paletteItem = EQUIPMENT_PALETTE.find((p) => p.type === eq.type);
+            if (!paletteItem) return null;
+
+            return (
+              <Equipment3DModel
+                key={eq.id}
+                scene={sceneRef.current!}
+                equipment={eq}
+                cellSize={gridConfig.cellSize}
+                modelPath={paletteItem.modelPath}
+                isSelected={eq.id === selectedEquipmentId}
+                onSelect={setSelectedEquipment}
+                onPositionChange={updateEquipmentPosition}
+                isDraggable={mode === 'edit'} // 편집 모드에서만 드래그 가능
+                onServerClick={mode === 'view' ? handleServerClick : undefined} // view 모드에서만 클릭 핸들러 전달
+              />
+            );
+          })}
+        </>
       )}
     </div>
   );
