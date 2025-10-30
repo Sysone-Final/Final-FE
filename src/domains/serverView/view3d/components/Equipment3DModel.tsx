@@ -60,6 +60,8 @@ function Equipment3DModel({
 
     console.log(` [${equipment.id}] 메시 로드 시작 - rotation: ${equipment.rotation}`);
 
+    setIsLoaded(false);
+
     let rootMesh: AbstractMesh | null = null;
     let isLoadingCancelled = false; // 로딩 취소 플래그
     // cleanup을 위해 현재 originalEmissiveColors Map 참조 저장

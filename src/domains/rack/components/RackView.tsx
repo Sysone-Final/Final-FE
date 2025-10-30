@@ -65,7 +65,7 @@ function RackView({ rackName }: RackViewProps = {}) {
           {/* 랙 + 범례 영역 */}
           <div className="flex flex-col flex-1 min-h-0">
             {/* 랙 영역 - 패딩 줄임 */}
-            <div className="flex-1 flex justify-center items-center pt-8 pb-2 overflow-hidden min-h-0">
+            <div className="flex-1 flex justify-center items-start pt-4 pb-2 overflow-y-auto min-h-0">
               <div className="w-full h-full min-h-0">
                 <Rack
                   key={rackManager.resetKey}

@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useStore } from 'zustand';
 import { useFloorPlanStore } from '../floorPlan/store/floorPlanStore';
+import { useBabylonDatacenterStore } from '../view3d/stores/useBabylonDatacenterStore';
 import { Settings, Eye, Undo2, Redo2, ZoomIn, ZoomOut, Palette } from 'lucide-react';
 
 interface ServerViewHeaderProps {
@@ -29,7 +30,10 @@ function ServerViewHeader({
   const redo = useStore(useFloorPlanStore.temporal, (state) => state.redo);
 
   // 편집/보기 모드 전환 핸들러
-  const handleToggleMode = () => {
+  const mode3d = useBabylonDatacenterStore((state) => state.mode);
+  const toggleMode3d = useBabylonDatacenterStore((state) => state.toggleMode);
+
+  const handleToggleMode2D = () => {
     if (mode === 'view' && selectedAssetIds.length > 1) {
       if (
         window.confirm(
@@ -42,12 +46,16 @@ function ServerViewHeader({
     toggleMode();
   };
 
+  const handleToggleMode3D = () => {
+    toggleMode3d();
+  };
+
   const handleDisplayModeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setDisplayMode(e.target.value as 'status' | 'customColor');
   };
 
   return (
-    <header className="bg-gray-800/50 backdrop-blur-sm border-b border-gray-700 px-6 py-4 flex items-center justify-between flex-shrink-0">
+    <header className="bg-gray-800/50 backdrop-blur-sm border-b border-gray-700 px-6 py-2 flex items-center justify-between flex-shrink-0">
       <div className="flex items-center gap-4">
         <button
           onClick={() => navigate('/server-room-dashboard')}
@@ -76,7 +84,7 @@ function ServerViewHeader({
 
       <div className="flex items-center gap-4">
         {/* 2D 뷰일 때만 표시되는 컨트롤들 */}
-        {viewDimension === '2D' && (
+        {viewDimension === '2D' ? (
           <>
             {/* 보기 모드 컨트롤 */}
             {mode === 'view' && (
@@ -133,7 +141,7 @@ function ServerViewHeader({
 
             {/* 편집/보기 모드 전환 버튼 */}
             <button
-              onClick={handleToggleMode}
+              onClick={handleToggleMode2D}
               className="py-2 px-4 rounded-lg flex items-center gap-2 transition-colors bg-gray-700/50 text-gray-100 hover:bg-gray-600 border border-gray-600"
             >
               {mode === 'view' ? (
@@ -144,6 +152,14 @@ function ServerViewHeader({
               {mode === 'view' ? '편집 모드' : '보기 모드'}
             </button>
           </>
+        ) : (
+          <button
+            onClick={handleToggleMode3D}
+            className="py-2 px-4 rounded-lg flex items-center gap-2 transition-colors bg-gray-700/50 text-gray-100 hover:bg-gray-600 border border-gray-600"
+          >
+            {mode3d === 'view' ? <Settings className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            {mode3d === 'view' ? '편집 모드' : '보기 모드'}
+          </button>
         )}
 
         {/* 2D/3D 토글 버튼 */}

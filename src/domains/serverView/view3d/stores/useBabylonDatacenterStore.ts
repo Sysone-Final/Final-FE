@@ -13,6 +13,14 @@ interface BabylonDatacenterStore {
   // 장비 목록
   equipment: Equipment3D[];
   selectedEquipmentId: string | null;
+  mode: "view" | "edit";
+  setMode: (mode: "view" | "edit") => void;
+  toggleMode: () => void;
+  currentServerRoomId: string | null;
+  initializeServerRoom: (
+    serverRoomId: string,
+    equipmentList: Equipment3D[],
+  ) => void;
 
   // 랙 모달 상태
   isRackModalOpen: boolean;
@@ -57,6 +65,46 @@ export const useBabylonDatacenterStore = create<BabylonDatacenterStore>(
     // 초기 장비 목록
     equipment: [],
     selectedEquipmentId: null,
+    mode: "view",
+    currentServerRoomId: null,
+
+    setMode: (nextMode) =>
+      set((state) => {
+        if (state.mode === nextMode) {
+          return {};
+        }
+
+        return {
+          mode: nextMode,
+          selectedEquipmentId:
+            nextMode === "view" ? null : state.selectedEquipmentId,
+          isRackModalOpen: nextMode === "view" ? false : state.isRackModalOpen,
+          selectedServerId: nextMode === "view" ? null : state.selectedServerId,
+        };
+      }),
+
+    toggleMode: () =>
+      set((state) => {
+        const nextMode = state.mode === "view" ? "edit" : "view";
+        return {
+          mode: nextMode,
+          selectedEquipmentId:
+            nextMode === "view" ? null : state.selectedEquipmentId,
+          isRackModalOpen: nextMode === "view" ? false : state.isRackModalOpen,
+          selectedServerId: nextMode === "view" ? null : state.selectedServerId,
+        };
+      }),
+
+    initializeServerRoom: (serverRoomId, equipmentList) => {
+      set({
+        currentServerRoomId: serverRoomId,
+        equipment: equipmentList,
+        selectedEquipmentId: null,
+        isRackModalOpen: false,
+        selectedServerId: null,
+        mode: "view",
+      });
+    },
 
     // 랙 모달 상태
     isRackModalOpen: false,
