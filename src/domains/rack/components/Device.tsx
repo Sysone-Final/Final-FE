@@ -39,7 +39,8 @@ function Device({
   const { unitHeight, frameThickness: baseY } = RACK_CONFIG;
   const rackHeight = UNIT_COUNT * unitHeight;
 
-  const imageUrls = deviceImageMap[device.type] || deviceImageMap.server;
+  const imageUrls =
+    deviceImageMap[device.equipmentType] || deviceImageMap.SERVER;
   const imageUrl = frontView ? imageUrls.front : imageUrls.back;
   const image = useImageLoad(imageUrl);
 
@@ -63,7 +64,7 @@ function Device({
       onDragEnd={(e) => {
         setIsDragging(false);
         if (onDragEnd && !isFloating && editMode) {
-          onDragEnd(device.id, e.target.y());
+          onDragEnd(device.equipmentId, e.target.y());
         }
       }}
       onDragMove={(e) => {
@@ -93,7 +94,7 @@ function Device({
       <Text
         x={x + 10}
         y={height / 2 - 6}
-        text={device.name}
+        text={device.equipmentType}
         fontSize={12}
         fill="#fff"
       />
@@ -104,7 +105,7 @@ function Device({
           y={5}
           onClick={(e) => {
             e.cancelBubble = true;
-            onDelete?.(device.id);
+            onDelete?.(device.equipmentId);
           }}
           onMouseEnter={(e) => {
             const container = e.target.getStage()?.container();

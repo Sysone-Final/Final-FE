@@ -14,11 +14,11 @@ import routerBackImg from "../assets/routerBack.png";
 import StorageBackImg from "../assets/storageBack.png";
 
 export const deviceImageMap: Record<string, { front: string; back: string }> = {
-  server: { front: serverFrontImg, back: serverBackImg },
-  storage: { front: storageFrontImg, back: StorageBackImg },
-  switch: { front: switchFrontImg, back: switchBackImg },
-  router: { front: routerFrontImg, back: routerBackImg },
-  kvm: { front: kvmFrontImg, back: kvmBackImg },
-  firewall: { front: firewallFrontImg, back: firewallBackImg },
-  loadbalancer: { front: loadBalanceFrontImg, back: loadBalanceBackImg },
+  SERVER: { front: serverFrontImg, back: serverBackImg },
+  STORAGE: { front: storageFrontImg, back: StorageBackImg },
+  SWITCH: { front: switchFrontImg, back: switchBackImg },
+  ROUTER: { front: routerFrontImg, back: routerBackImg },
+  KVM: { front: kvmFrontImg, back: kvmBackImg },
+  FIREWALL: { front: firewallFrontImg, back: firewallBackImg },
+  LOAD_BALANCER: { front: loadBalanceFrontImg, back: loadBalanceBackImg },
 };

@@ -23,13 +23,16 @@ export function checkCollision(
   };
 
   return existingDevices.some((device) => {
-    if (excludeDeviceId !== undefined && device.id === excludeDeviceId) {
+    if (
+      excludeDeviceId !== undefined &&
+      device.equipmentId === excludeDeviceId
+    ) {
       return false;
     }
 
     const existingRange = {
-      bottom: device.position,
-      top: device.position + device.height - 1,
+      bottom: device.startUnit,
+      top: device.startUnit + device.unitSize - 1,
     };
 
     return Overlapping(newRange, existingRange);
@@ -50,12 +53,15 @@ export function findCollidingDevice(
     top: newDevice.position + newDevice.height - 1,
   };
   const collidingDevice = existingDevices.find((device) => {
-    if (excludeDeviceId !== undefined && device.id == excludeDeviceId) {
+    if (
+      excludeDeviceId !== undefined &&
+      device.equipmentId == excludeDeviceId
+    ) {
       return false;
     }
     const existingRange = {
-      bottom: device.position,
-      top: device.position + device.height - 1,
+      bottom: device.startUnit,
+      top: device.startUnit + device.unitSize - 1,
     };
     return Overlapping(newRange, existingRange);
   });
