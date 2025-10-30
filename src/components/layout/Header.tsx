@@ -13,12 +13,6 @@ function Header() {
       icon: <LuLayoutDashboard className="text-2xl text-sky-500"/>,
     },
     {
-      id: "babylon",
-      label: "바빌론",
-      path: "/babylonmap",
-      icon: null,
-    },
-    {
       id: "serverRoom",
       label: "서버실",
       path: "/server-room-dashboard",

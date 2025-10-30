@@ -7,7 +7,7 @@ interface EquipmentPalette3DProps {
 
 function EquipmentPalette3D({ onAddEquipment }: EquipmentPalette3DProps) {
   return (
-    <div className="h-full rounded-2xl p-6 overflow-y-auto">
+    <div className="h-full bg-gray-800/50 backdrop-blur-md rounded-2xl p-6 overflow-y-auto shadow-2xl border border-slate-300/40">
       <h2 className="text-white text-xl font-bold mb-6 flex items-center gap-2">
         장비 목록
       </h2>
@@ -17,7 +17,7 @@ function EquipmentPalette3D({ onAddEquipment }: EquipmentPalette3DProps) {
           <button
             key={item.type}
             onClick={() => onAddEquipment(item.type)}
-            className="w-full bg-gray-700 hover:bg-gray-600 text-white rounded-lg p-4 
+            className="w-full bg-gray-700/80 hover:bg-gray-600 text-white rounded-lg p-4 
                      transition-all duration-200 hover:scale-105 hover:shadow-lg
                      border border-gray-600 hover:border-blue-500
                      flex items-center gap-3 group"
@@ -36,18 +36,6 @@ function EquipmentPalette3D({ onAddEquipment }: EquipmentPalette3DProps) {
             </span>
           </button>
         ))}
-      </div>
-
-      <div className="mt-8 p-4 bg-gray-700/50 rounded-lg border border-gray-600">
-        <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-          사용법
-        </h3>
-        <ul className="text-gray-300 text-sm space-y-2">
-          <li>• 장비를 클릭하여 중앙에 추가</li>
-          <li>• 마우스로 카메라 회전</li>
-          <li>• 스크롤로 줌 인/아웃</li>
-          <li>• 우클릭 드래그로 이동</li>
-        </ul>
       </div>
     </div>
   );

@@ -27,7 +27,7 @@ function RackView({ rackName }: RackViewProps = {}) {
   ];
 
   return (
-    <div className="h-full flex justify-center items-center text-white p-6 overflow-auto">
+    <div className="h-full flex justify-center items-center text-white p-2 overflow-auto">
       <div className="flex flex-col bg-[#404452]/90 backdrop-blur-sm border border-slate-300/40 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.5)] max-h-full w-full overflow-hidden">
         {/* 상단바 */}
         <header className="flex justify-between items-center px-6 py-4 border-b border-slate-300/40">
@@ -65,7 +65,7 @@ function RackView({ rackName }: RackViewProps = {}) {
           {/* 랙 + 범례 영역 */}
           <div className="flex flex-col flex-1 min-h-0">
             {/* 랙 영역 - 패딩 줄임 */}
-            <div className="flex-1 flex justify-center items-center px-4 pt-8 pb-2 overflow-hidden min-h-0">
+            <div className="flex-1 flex justify-center items-start pt-4 pb-2 overflow-y-auto min-h-0">
               <div className="w-full h-full min-h-0">
                 <Rack
                   key={rackManager.resetKey}
@@ -83,12 +83,12 @@ function RackView({ rackName }: RackViewProps = {}) {
 
             {/* Footer - 범례 */}
             {editMode && (
-              <footer className="px-3 py-3 border-t border-slate-700 bg-slate-800/30 flex justify-center items-center">
-                <div className="flex items-center gap-3 flex-wrap justify-center">
+              <footer className="px-2 py-2 border-t border-slate-700 bg-slate-800/30 flex justify-center items-center">
+                <div className="flex items-center gap-2 justify-center">
                   {deviceLegend.map((item) => (
-                    <div key={item.type} className="flex items-center gap-1.5">
+                    <div key={item.type} className="flex items-center gap-1 whitespace-nowrap">
                       <div
-                        className="w-2 h-2 rounded-sm"
+                        className="w-2 h-2 rounded-sm flex-shrink-0"
                         style={{ backgroundColor: typeColorMap[item.type] }}
                       />
                       <span className="text-xs text-slate-300">
