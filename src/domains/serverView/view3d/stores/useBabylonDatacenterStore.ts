@@ -23,6 +23,23 @@ interface BabylonDatacenterStore {
     equipmentList: Equipment3D[],
   ) => void;
 
+  // 다중 선택 영역
+  selectionArea: {
+    startX: number;
+    startY: number;
+    endX: number;
+    endY: number;
+  } | null;
+  setSelectionArea: (
+    area: { startX: number; startY: number; endX: number; endY: number } | null,
+  ) => void;
+  selectEquipmentInArea: (
+    startGridX: number,
+    startGridY: number,
+    endGridX: number,
+    endGridY: number,
+  ) => void;
+
   // 랙 모달 상태
   isRackModalOpen: boolean;
   selectedServerId: string | null;
@@ -75,6 +92,7 @@ export const useBabylonDatacenterStore = create<BabylonDatacenterStore>(
     selectedEquipmentIds: [],
     mode: "view",
     currentServerRoomId: null,
+    selectionArea: null,
 
     setMode: (nextMode) =>
       set((state) => {
@@ -157,14 +175,26 @@ export const useBabylonDatacenterStore = create<BabylonDatacenterStore>(
     updateEquipmentPosition: (id, gridX, gridY, gridZ = 0) => {
       const { isValidPosition, isPositionOccupied } = get();
 
+      console.log(
+        `🔧 [Store] updateEquipmentPosition 호출 - id: ${id}, pos: (${gridX}, ${gridY})`,
+      );
+
       // 유효성 검사 (자기 자신은 제외)
-      if (
-        !isValidPosition(gridX, gridY) ||
-        isPositionOccupied(gridX, gridY, id)
-      ) {
+      const valid = isValidPosition(gridX, gridY);
+      const occupied = isPositionOccupied(gridX, gridY, id);
+
+      console.log(
+        `🔧 [Store] isValidPosition: ${valid}, isPositionOccupied: ${occupied}`,
+      );
+
+      if (!valid || occupied) {
+        console.log(
+          `❌ [Store] 위치 업데이트 거부 - valid: ${valid}, occupied: ${occupied}`,
+        );
         return;
       }
 
+      console.log(`✅ [Store] 위치 업데이트 승인`);
       set((state) => ({
         equipment: state.equipment.map((eq) =>
           eq.id === id ? { ...eq, gridX, gridY, gridZ } : eq,
@@ -257,7 +287,11 @@ export const useBabylonDatacenterStore = create<BabylonDatacenterStore>(
 
     // 선택 해제
     clearSelection: () => {
-      set({ selectedEquipmentIds: [], selectedEquipmentId: null });
+      set({
+        selectedEquipmentIds: [],
+        selectedEquipmentId: null,
+        selectionArea: null,
+      });
     },
 
     // 장비 목록 일괄 로드 (뷰어 모드에서 사용)
@@ -266,6 +300,39 @@ export const useBabylonDatacenterStore = create<BabylonDatacenterStore>(
         equipment: equipmentList,
         selectedEquipmentId: null,
         selectedEquipmentIds: [],
+        selectionArea: null,
+      });
+    },
+
+    // 선택 영역 설정
+    setSelectionArea: (area) => {
+      set({ selectionArea: area });
+    },
+
+    // 영역 내의 장비 선택
+    selectEquipmentInArea: (startGridX, startGridY, endGridX, endGridY) => {
+      const { equipment } = get();
+
+      // 시작과 끝 좌표 정규화 (최소/최대값 정렬)
+      const minX = Math.min(startGridX, endGridX);
+      const maxX = Math.max(startGridX, endGridX);
+      const minY = Math.min(startGridY, endGridY);
+      const maxY = Math.max(startGridY, endGridY);
+
+      // 영역 내에 있는 장비 찾기
+      const equipmentInArea = equipment.filter(
+        (eq) =>
+          eq.gridX >= minX &&
+          eq.gridX <= maxX &&
+          eq.gridY >= minY &&
+          eq.gridY <= maxY,
+      );
+
+      const selectedIds = equipmentInArea.map((eq) => eq.id);
+
+      set({
+        selectedEquipmentIds: selectedIds,
+        selectedEquipmentId: selectedIds.length === 1 ? selectedIds[0] : null,
       });
     },
 
