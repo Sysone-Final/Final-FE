@@ -31,7 +31,7 @@ const ServerRoomDashboard: React.FC = () => {
           <h1 className="dashboard-title">서버실 관리</h1>
           <p className="dashboard-subtitle">데이터 센터 인프라를 모니터링하고 관리하세요</p>
         </div>
-        <button className="add-room-button">
+        <button className="btn-create px-6 py-3">
           + 새 서버실 추가
         </button>
       </header>
