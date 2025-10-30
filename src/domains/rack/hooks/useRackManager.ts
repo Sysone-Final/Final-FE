@@ -1,33 +1,50 @@
 import { useState, useCallback } from "react";
 import type { RackDevice, FloatingDevice, DeviceCard } from "../types";
-import { typeColorMap } from "../utils/colorMap";
 import { checkCollision } from "../utils/rackCollisionDetection";
 
 export function useRackManager() {
   const [installedDevices, setInstalledDevices] = useState<RackDevice[]>([
     {
-      id: 1,
-      name: "Server_1",
-      type: "server",
-      position: 1,
-      height: 2,
-      color: typeColorMap["server"],
+      equipmentId: 1,
+      equipmentName: "Dell PowerEdge R740",
+      equipmentCode: "EQ-001",
+      equipmentType: "SERVER",
+      status: "NORMAL",
+      startUnit: 1,
+      unitSize: 2,
+      rackName: "RACK-A01",
+      modelName: "R740",
+      manufacturer: "Dell",
+      ipAddress: "192.168.1.10",
+      powerConsumption: 500.0,
     },
     {
-      id: 2,
-      name: "Server_2",
-      type: "server",
-      position: 3,
-      height: 2,
-      color: typeColorMap["firewall"],
+      equipmentId: 2,
+      equipmentName: "HP ProLiant DL380",
+      equipmentCode: "EQ-002",
+      equipmentType: "SERVER",
+      status: "WARNING",
+      startUnit: 3,
+      unitSize: 2,
+      rackName: "RACK-A01",
+      modelName: "DL380",
+      manufacturer: "HP",
+      ipAddress: "192.168.1.11",
+      powerConsumption: 450.0,
     },
     {
-      id: 3,
-      name: "Router",
-      type: "router",
-      position: 5,
-      height: 1,
-      color: typeColorMap["router"],
+      equipmentId: 3,
+      equipmentName: "Cisco Catalyst 9300",
+      equipmentCode: "EQ-003",
+      equipmentType: "SWITCH",
+      status: "NORMAL",
+      startUnit: 5,
+      unitSize: 1,
+      rackName: "RACK-A01",
+      modelName: "Catalyst 9300",
+      manufacturer: "Cisco",
+      ipAddress: "192.168.1.20",
+      powerConsumption: 200.0,
     },
   ]);
 
@@ -53,17 +70,19 @@ export function useRackManager() {
   const handleDeviceDragEnd = useCallback(
     (deviceId: number, newPosition: number) => {
       setInstalledDevices((prevDevices) => {
-        const draggedDevice = prevDevices.find((d) => d.id === deviceId);
+        const draggedDevice = prevDevices.find(
+          (d) => d.equipmentId === deviceId,
+        );
         if (!draggedDevice) return prevDevices;
 
-        if (draggedDevice.position === newPosition) {
+        if (draggedDevice.startUnit === newPosition) {
           return prevDevices;
         }
 
         const hasCollision = checkCollision(
           {
             position: newPosition,
-            height: draggedDevice.height,
+            height: draggedDevice.unitSize,
           },
           prevDevices,
           deviceId,
@@ -76,7 +95,7 @@ export function useRackManager() {
         }
 
         return prevDevices.map((device) =>
-          device.id === deviceId
+          device.equipmentId === deviceId
             ? { ...device, position: newPosition }
             : device,
         );
@@ -90,14 +109,19 @@ export function useRackManager() {
     setFloatingDevice((prevFloating) => {
       if (!prevFloating) return null;
 
-      const color = typeColorMap[prevFloating.card.type] || "#334155";
       const newDevice: RackDevice = {
-        id: Date.now(),
-        name: prevFloating.card.label,
-        type: prevFloating.card.type,
-        position,
-        height: prevFloating.card.height,
-        color,
+        equipmentId: Date.now(),
+        equipmentName: prevFloating.card.label,
+        equipmentCode: `EQ-${Date.now()}`,
+        equipmentType: prevFloating.card.type,
+        status: "NORMAL",
+        startUnit: position,
+        unitSize: prevFloating.card.height,
+        rackName: "RACK-A01",
+        modelName: "Unknown",
+        manufacturer: "Unknown",
+        ipAddress: "0.0.0.0",
+        powerConsumption: 0,
       };
 
       setInstalledDevices((prevDevices) => {
@@ -122,7 +146,9 @@ export function useRackManager() {
 
   //장비 삭제 함수 추가
   const removeDevice = (deviceId: number) => {
-    setInstalledDevices((prev) => prev.filter((d) => d.id !== deviceId));
+    setInstalledDevices((prev) =>
+      prev.filter((d) => d.equipmentId !== deviceId),
+    );
   };
 
   return {

@@ -21,7 +21,7 @@ function Tools({ onCardClick }: ToolsProps) {
       size: "2U",
       img: serverImg,
       height: 2,
-      type: "server",
+      type: "SERVER",
     },
     {
       key: "storage",
@@ -29,7 +29,7 @@ function Tools({ onCardClick }: ToolsProps) {
       size: "2U",
       img: storageImg,
       height: 2,
-      type: "storage",
+      type: "STORAGE",
     },
     {
       key: "switch",
@@ -37,7 +37,7 @@ function Tools({ onCardClick }: ToolsProps) {
       size: "1U",
       img: switchImg,
       height: 1,
-      type: "switch",
+      type: "SWITCH",
     },
     {
       key: "router",
@@ -45,7 +45,7 @@ function Tools({ onCardClick }: ToolsProps) {
       size: "1U",
       img: routerImg,
       height: 1,
-      type: "router",
+      type: "ROUTER",
     },
     {
       key: "kvm",
@@ -53,7 +53,7 @@ function Tools({ onCardClick }: ToolsProps) {
       size: "1U",
       img: kvmImg,
       height: 1,
-      type: "kvm",
+      type: "KVM",
     },
     {
       key: "firewall",
@@ -61,7 +61,7 @@ function Tools({ onCardClick }: ToolsProps) {
       size: "1U",
       img: firewallImg,
       height: 1,
-      type: "firewall",
+      type: "FIREWALL",
     },
     {
       key: "loadbalancer",
@@ -69,7 +69,7 @@ function Tools({ onCardClick }: ToolsProps) {
       size: "1U",
       img: loadBalanceImg,
       height: 1,
-      type: "loadbalancer",
+      type: "LOAD_BALANCER",
     },
   ];
 
