@@ -11,12 +11,12 @@ interface Equipment3DModelProps {
   modelPath: string;
   isSelected: boolean;
   onSelect: (id: string) => void;
-  onPositionChange: (id: string, gridX: number, gridY: number) => void;
+  onPositionChange: (id: string, gridX: number, gridY: number) => boolean; // boolean 반환으로 변경
   isDraggable?: boolean; // 드래그 가능 여부 (기본값: true)
   onServerClick?: (serverId: string) => void; // server 클릭 핸들러 추가
   onRightClick?: (equipmentId: string, x: number, y: number) => void; // 우클릭 핸들러 추가
   selectedEquipmentIds?: string[]; // 다중 선택된 ID 목록
-  onMultiDragEnd?: (updates: { id: string; gridX: number; gridY: number }[]) => void; // 다중 드래그 종료
+  onMultiDragEnd?: (updates: { id: string; gridX: number; gridY: number; originalGridX: number; originalGridY: number }[]) => boolean; // boolean 반환으로 변경
 }
 
 function Equipment3DModel({
@@ -246,6 +246,10 @@ function Equipment3DModel({
               multiDragStartPositions.current.set(sceneMesh.id, pos);
             }
           });
+        } else {
+          // 단일 드래그 시에도 원래 위치 저장
+          const pos = worldToGrid(mesh.position.x, mesh.position.z);
+          multiDragStartPositions.current.set(equipment.id, pos);
         }
       });
 
@@ -296,30 +300,69 @@ function Equipment3DModel({
           
           // 🔥 핵심: 드래그 시작 전에 이미 선택된 상태였고, 다중 선택이었을 때만 다중 업데이트
           if (wasSelectedBeforeDrag && isCurrentlyMultiSelected && onMultiDragEndRef.current) {
-            const updates: { id: string; gridX: number; gridY: number }[] = [];
+            const updates: { id: string; gridX: number; gridY: number; originalGridX: number; originalGridY: number }[] = [];
             
             scene.meshes.forEach((sceneMesh) => {
               if (sceneMesh.id && currentSelectedIds.includes(sceneMesh.id)) {
                 const gridPos = worldToGrid(sceneMesh.position.x, sceneMesh.position.z);
-                updates.push({
-                  id: sceneMesh.id,
-                  gridX: gridPos.gridX,
-                  gridY: gridPos.gridY,
-                });
-                // 격자에 스냅
-                const snappedPos = gridToWorld(gridPos.gridX, gridPos.gridY);
-                sceneMesh.position = snappedPos;
+                const originalPos = multiDragStartPositions.current.get(sceneMesh.id);
+                if (originalPos) {
+                  updates.push({
+                    id: sceneMesh.id,
+                    gridX: gridPos.gridX,
+                    gridY: gridPos.gridY,
+                    originalGridX: originalPos.gridX,
+                    originalGridY: originalPos.gridY,
+                  });
+                }
               }
             });
             
-            onMultiDragEndRef.current?.(updates);
+            // 유효성 검사를 포함한 다중 업데이트 (store에서 처리)
+            const validationResult = onMultiDragEndRef.current?.(updates);
+            
+            // 유효성 검사 실패 시 모든 메시를 원래 위치로 되돌림
+            if (validationResult === false) {
+              scene.meshes.forEach((sceneMesh) => {
+                if (sceneMesh.id && currentSelectedIds.includes(sceneMesh.id)) {
+                  const originalPos = multiDragStartPositions.current.get(sceneMesh.id);
+                  if (originalPos) {
+                    const snappedPos = gridToWorld(originalPos.gridX, originalPos.gridY);
+                    sceneMesh.position = snappedPos;
+                  }
+                }
+              });
+            } else {
+              // 유효성 검사 성공 시 격자에 스냅
+              scene.meshes.forEach((sceneMesh) => {
+                if (sceneMesh.id && currentSelectedIds.includes(sceneMesh.id)) {
+                  const gridPos = worldToGrid(sceneMesh.position.x, sceneMesh.position.z);
+                  const snappedPos = gridToWorld(gridPos.gridX, gridPos.gridY);
+                  sceneMesh.position = snappedPos;
+                }
+              });
+            }
+            
             multiDragStartPositions.current.clear();
           } else {
             // 단일 선택 시: 드래그 시작 전에 선택되지 않았거나, 단일 선택이었던 경우
             const { gridX, gridY } = worldToGrid(mesh.position.x, mesh.position.z);
-            onPositionChangeRef.current?.(equipment.id, gridX, gridY);
-            const snappedPos = gridToWorld(gridX, gridY);
-            mesh.position = snappedPos;
+            
+            // 유효성 검사 결과에 따라 위치 업데이트 또는 원위치 복원
+            const validationResult = onPositionChangeRef.current?.(equipment.id, gridX, gridY);
+            
+            if (validationResult === false) {
+              // 유효성 검사 실패 시 원래 위치로 되돌림
+              const originalPos = multiDragStartPositions.current.get(equipment.id);
+              if (originalPos) {
+                const snappedPos = gridToWorld(originalPos.gridX, originalPos.gridY);
+                mesh.position = snappedPos;
+              }
+            } else {
+              // 유효성 검사 성공 시 격자에 스냅
+              const snappedPos = gridToWorld(gridX, gridY);
+              mesh.position = snappedPos;
+            }
           }
         }
       });

@@ -16,9 +16,9 @@
   @apply mt-1 text-[#A0A0A0];
 }
 
-.add-room-button {
-  @apply bg-blue-600 text-white border-none px-6 py-3 rounded-lg text-base font-semibold cursor-pointer transition-colors hover:bg-blue-700;
-}
+/* .add-room-button {
+  @apply bg-green-600 text-white px-6 py-3 rounded-lg text-base font-semibold cursor-pointer transition-colors hover:bg-green-700;
+} */
 
 .dashboard-main {
   @apply flex-1 overflow-y-auto p-8;

@@ -53,10 +53,16 @@ interface BabylonDatacenterStore {
     gridX: number,
     gridY: number,
     gridZ?: number,
-  ) => void;
+  ) => boolean; // boolean 반환으로 변경
   updateMultipleEquipmentPositions: (
-    updates: { id: string; gridX: number; gridY: number }[],
-  ) => void; // 다중 이동
+    updates: {
+      id: string;
+      gridX: number;
+      gridY: number;
+      originalGridX: number;
+      originalGridY: number;
+    }[],
+  ) => boolean; // boolean 반환 및 타입 변경
   updateEquipmentRotation: (id: string, rotation: number) => void;
   rotateEquipment90: (id: string, clockwise?: boolean) => void; // 90도 회전 함수 추가
   removeEquipment: (id: string) => void;
@@ -173,11 +179,27 @@ export const useBabylonDatacenterStore = create<BabylonDatacenterStore>(
 
     // 장비 위치 업데이트
     updateEquipmentPosition: (id, gridX, gridY, gridZ = 0) => {
-      const { isValidPosition, isPositionOccupied } = get();
+      const { isValidPosition, isPositionOccupied, equipment } = get();
 
       console.log(
         `🔧 [Store] updateEquipmentPosition 호출 - id: ${id}, pos: (${gridX}, ${gridY})`,
       );
+
+      // 현재 장비의 위치 가져오기
+      const currentEquipment = equipment.find((eq) => eq.id === id);
+      if (!currentEquipment) {
+        console.log(`❌ [Store] 장비를 찾을 수 없음 - id: ${id}`);
+        return false;
+      }
+
+      // 동일한 위치로 이동하는 경우 아무것도 하지 않음
+      if (
+        currentEquipment.gridX === gridX &&
+        currentEquipment.gridY === gridY
+      ) {
+        console.log(`ℹ️ [Store] 동일한 위치로 이동 - 업데이트 생략`);
+        return true;
+      }
 
       // 유효성 검사 (자기 자신은 제외)
       const valid = isValidPosition(gridX, gridY);
@@ -191,7 +213,7 @@ export const useBabylonDatacenterStore = create<BabylonDatacenterStore>(
         console.log(
           `❌ [Store] 위치 업데이트 거부 - valid: ${valid}, occupied: ${occupied}`,
         );
-        return;
+        return false;
       }
 
       console.log(`✅ [Store] 위치 업데이트 승인`);
@@ -200,10 +222,54 @@ export const useBabylonDatacenterStore = create<BabylonDatacenterStore>(
           eq.id === id ? { ...eq, gridX, gridY, gridZ } : eq,
         ),
       }));
+
+      return true;
     },
 
     // 다중 장비 위치 업데이트
     updateMultipleEquipmentPositions: (updates) => {
+      const { isValidPosition, isPositionOccupied } = get();
+
+      console.log(
+        `🔧 [Store] updateMultipleEquipmentPositions 호출 - ${updates.length}개 장비`,
+      );
+
+      // 모든 장비의 유효성 검사
+      for (const update of updates) {
+        // 원래 위치와 동일한지 확인
+        const isSamePosition =
+          update.gridX === update.originalGridX &&
+          update.gridY === update.originalGridY;
+        if (isSamePosition) {
+          continue; // 동일한 위치로 이동하는 장비는 검사 생략
+        }
+
+        // 유효성 검사
+        const valid = isValidPosition(update.gridX, update.gridY);
+        const occupied = isPositionOccupied(
+          update.gridX,
+          update.gridY,
+          update.id,
+        );
+
+        if (!valid) {
+          console.log(
+            `❌ [Store] 다중 이동 거부 - 장비 ${update.id}가 격자 범위를 벗어남`,
+          );
+          return false;
+        }
+
+        if (occupied) {
+          console.log(
+            `❌ [Store] 다중 이동 거부 - 장비 ${update.id}의 목표 위치가 점유됨`,
+          );
+          return false;
+        }
+      }
+
+      console.log(`✅ [Store] 다중 이동 승인`);
+
+      // 모든 검사를 통과하면 위치 업데이트
       set((state) => {
         const updatesMap = new Map(updates.map((u) => [u.id, u]));
         return {
@@ -215,6 +281,8 @@ export const useBabylonDatacenterStore = create<BabylonDatacenterStore>(
           }),
         };
       });
+
+      return true;
     },
 
     // 장비 회전 업데이트

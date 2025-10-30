@@ -127,6 +127,36 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
     setToast((prev) => ({ ...prev, open: false }));
   }, []);
 
+  // 장비 위치 업데이트 핸들러 (유효성 검사 포함)
+  const handleEquipmentPositionChange = useCallback((id: string, gridX: number, gridY: number): boolean => {
+    const result = updateEquipmentPosition(id, gridX, gridY);
+    
+    if (!result) {
+      // 유효성 검사 실패 시 토스트 표시
+      if (!isValidPosition(gridX, gridY)) {
+        showToast('격자 범위를 벗어났습니다', 'error');
+      } else if (isPositionOccupied(gridX, gridY, id)) {
+        showToast('이미 장비가 배치되어 있습니다', 'error');
+      }
+    }
+    
+    return result;
+  }, [updateEquipmentPosition, isValidPosition, isPositionOccupied, showToast]);
+
+  // 다중 장비 위치 업데이트 핸들러 (유효성 검사 포함)
+  const handleMultipleEquipmentPositionsChange = useCallback((
+    updates: { id: string; gridX: number; gridY: number; originalGridX: number; originalGridY: number }[]
+  ): boolean => {
+    const result = updateMultipleEquipmentPositions(updates);
+    
+    if (!result) {
+      // 유효성 검사 실패 시 토스트 표시
+      showToast('선택된 장비들을 이동할 수 없습니다 (격자 범위 벗어남 또는 위치 중복)', 'error');
+    }
+    
+    return result;
+  }, [updateMultipleEquipmentPositions, showToast]);
+
   // 캔버스에서 마우스 좌표를 격자 좌표로 변환
   const screenToGrid = useCallback((clientX: number, clientY: number): { gridX: number; gridY: number } | null => {
     const canvas = canvasRef.current;
@@ -557,12 +587,12 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
                 modelPath={paletteItem.modelPath}
                 isSelected={selectedEquipmentIds.includes(eq.id)}
                 onSelect={setSelectedEquipment}
-                onPositionChange={updateEquipmentPosition}
+                onPositionChange={handleEquipmentPositionChange}
                 isDraggable={mode === 'edit'} // 편집 모드에서만 드래그 가능
                 onServerClick={mode === 'view' ? serverClickHandler : undefined} // view 모드에서만 클릭 핸들러 전달
                 onRightClick={mode === 'edit' ? rightClickHandler : undefined} // edit 모드에서만 우클릭 핸들러 전달
                 selectedEquipmentIds={selectedEquipmentIds}
-                onMultiDragEnd={updateMultipleEquipmentPositions}
+                onMultiDragEnd={handleMultipleEquipmentPositionsChange}
               />
             );
           })}
