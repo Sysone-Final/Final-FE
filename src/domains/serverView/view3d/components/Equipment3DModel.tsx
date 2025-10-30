@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, memo } from 'react';
 import { Scene, SceneLoader, AbstractMesh, Vector3, Color3, PointerDragBehavior, ActionManager, ExecuteCodeAction } from '@babylonjs/core';
 import '@babylonjs/loaders/glTF';
 import { COLORS, EQUIPMENT_SCALE, EQUIPMENT_Y_OFFSET, EQUIPMENT_POSITION_OFFSET } from '../constants/config';
@@ -14,6 +14,7 @@ interface Equipment3DModelProps {
   onPositionChange: (id: string, gridX: number, gridY: number) => void;
   isDraggable?: boolean; // 드래그 가능 여부 (기본값: true)
   onServerClick?: (serverId: string) => void; // server 클릭 핸들러 추가
+  onRightClick?: (equipmentId: string, x: number, y: number) => void; // 우클릭 핸들러 추가
 }
 
 function Equipment3DModel({
@@ -26,6 +27,7 @@ function Equipment3DModel({
   onPositionChange,
   isDraggable = true, // 기본값: 드래그 가능
   onServerClick, // server 클릭 핸들러
+  onRightClick, // 우클릭 핸들러
 }: Equipment3DModelProps) {
   const meshRef = useRef<AbstractMesh | null>(null);
   const dragBehaviorRef = useRef<PointerDragBehavior | null>(null);
@@ -58,7 +60,7 @@ function Equipment3DModel({
   useEffect(() => {
     if (!scene || !modelPath) return;
 
-    console.log(` [${equipment.id}] 메시 로드 시작 - rotation: ${equipment.rotation}`);
+    console.log(`📦 [${equipment.id}] 메시 로드 시작 - rotation: ${equipment.rotation}`);
 
     setIsLoaded(false);
 
@@ -80,14 +82,14 @@ function Equipment3DModel({
       (meshes) => {
         // cleanup이 실행되었으면 메시를 생성하지 않음
         if (isLoadingCancelled) {
-          console.log(` [${equipment.id}] 로딩 취소됨 - 메시 생성 안 함`);
+          console.log(`❌ [${equipment.id}] 로딩 취소됨 - 메시 생성 안 함`);
           meshes.forEach(mesh => mesh.dispose());
           return;
         }
         
         if (meshes.length === 0) return;
 
-        console.log(`[${equipment.id}] 메시 로드 완료 - meshes: ${meshes.length}개`);
+        console.log(`✅ [${equipment.id}] 메시 로드 완료 - meshes: ${meshes.length}개`);
 
         // 루트 메시 생성
         rootMesh = meshes[0];
@@ -109,7 +111,7 @@ function Equipment3DModel({
             quaternionCount++;
           }
         });
-        console.log(` [${equipment.id}] rotationQuaternion 제거: ${quaternionCount}개`);
+        console.log(`🔧 [${equipment.id}] rotationQuaternion 제거: ${quaternionCount}개`);
 
         // 선택 가능하게 설정
         rootMesh.isPickable = true;
@@ -129,75 +131,8 @@ function Equipment3DModel({
           }
         });
 
-        // 메시 클릭 이벤트 추가 (view 모드에서 server 클릭 시)
-        if (!isDraggable && equipment.type === 'server' && onServerClick) {
-          rootMesh.actionManager = new ActionManager(scene);
-          rootMesh.actionManager.registerAction(
-            new ExecuteCodeAction(
-              ActionManager.OnPickTrigger,
-              () => {
-                onServerClick(equipment.id);
-              }
-            )
-          );
-          
-          // 모든 자식 메시에도 동일한 액션 적용
-          meshes.forEach((mesh) => {
-            if (mesh !== rootMesh) {
-              mesh.actionManager = new ActionManager(scene);
-              mesh.actionManager.registerAction(
-                new ExecuteCodeAction(
-                  ActionManager.OnPickTrigger,
-                  () => {
-                    onServerClick(equipment.id);
-                  }
-                )
-              );
-            }
-          });
-        }
-
         meshRef.current = rootMesh;
         setIsLoaded(true);
-
-        // PointerDragBehavior 추가 (편집 모드에서만)
-        if (isDraggable) {
-          // PointerDragBehavior 추가 (XZ 평면에서만 드래그)
-          const dragBehavior = new PointerDragBehavior({ dragPlaneNormal: new Vector3(0, 1, 0) });
-          dragBehavior.moveAttached = false; // 자동 이동 비활성화 (수동으로 제어)
-          dragBehaviorRef.current = dragBehavior;
-          
-          // 드래그 시작 시
-          dragBehavior.onDragStartObservable.add(() => {
-            // 드래그 시작 시 장비 선택
-            onSelect(equipment.id);
-          });
-
-          // 드래그 중
-          dragBehavior.onDragObservable.add((event) => {
-            if (rootMesh) {
-              // 실제 메시를 드래그 위치로 이동
-              rootMesh.position.copyFrom(event.dragPlanePoint);
-            }
-          });
-
-          // 드래그 종료 시
-          dragBehavior.onDragEndObservable.add(() => {
-            if (rootMesh) {
-              // 현재 월드 좌표를 격자 좌표로 변환 (스냅)
-              const { gridX, gridY } = worldToGrid(rootMesh.position.x, rootMesh.position.z);
-              
-              // 격자 좌표로 위치 업데이트
-              onPositionChange(equipment.id, gridX, gridY);
-
-              // 스냅된 위치로 메시 위치 업데이트
-              const snappedPos = gridToWorld(gridX, gridY);
-              rootMesh.position = snappedPos;
-            }
-          });
-
-          rootMesh.addBehavior(dragBehavior);
-        }
       },
       undefined,
       (_scene, message, exception) => {
@@ -212,28 +147,8 @@ function Equipment3DModel({
       // 로딩 취소 플래그 설정
       isLoadingCancelled = true;
       
-      if (dragBehaviorRef.current) {
-        dragBehaviorRef.current.detach();
-        dragBehaviorRef.current = null;
-      }
-
       if (meshRef.current) {
         console.log(`🗑️ [${equipment.id}] 메시 dispose - 자식: ${meshRef.current.getChildMeshes().length}개`);
-        
-        // ActionManager 정리
-        if (meshRef.current.actionManager) {
-          meshRef.current.actionManager.dispose();
-          meshRef.current.actionManager = null;
-        }
-        
-        // 모든 자식 메시의 ActionManager도 정리
-        const childMeshes = meshRef.current.getChildMeshes();
-        childMeshes.forEach((mesh) => {
-          if (mesh.actionManager) {
-            mesh.actionManager.dispose();
-            mesh.actionManager = null;
-          }
-        });
         
         // 메시 dispose
         meshRef.current.dispose();
@@ -244,10 +159,148 @@ function Equipment3DModel({
       // 원본 색상 맵 정리
       emissiveColorsMap.clear();
     };
-    // ⚠️ 의도적으로 최소한의 dependency만 포함
-    // 메시는 한 번만 로드되어야 하며, 위치/회전 변경은 별도 useEffect에서 처리
+
+    // 메시는 한 번만 로드되어야 하며, isDraggable 변경으로 재로드되면 안됨
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scene, equipment.id, equipment.type, modelPath, cellSize, isDraggable]);
+  }, [scene, equipment.id, equipment.type, modelPath, cellSize]);
+
+  // 드래그 동작과 클릭 이벤트 핸들러 설정 (모드 변경 시에만 업데이트)
+  useEffect(() => {
+    const mesh = meshRef.current;
+    if (!mesh || !isLoaded) return;
+
+    console.log(`🎯 [${equipment.id}] 이벤트 핸들러 설정 - isDraggable: ${isDraggable}`);
+
+    // 기존 ActionManager 정리
+    if (mesh.actionManager) {
+      mesh.actionManager.dispose();
+      mesh.actionManager = null;
+    }
+
+    // 자식 메시들의 ActionManager도 정리
+    const childMeshes = mesh.getChildMeshes();
+    childMeshes.forEach((childMesh) => {
+      if (childMesh.actionManager) {
+        childMesh.actionManager.dispose();
+        childMesh.actionManager = null;
+      }
+    });
+
+    // 기존 드래그 동작 제거
+    if (dragBehaviorRef.current) {
+      dragBehaviorRef.current.detach();
+      dragBehaviorRef.current = null;
+    }
+
+    // 편집 모드: 드래그 동작 추가
+    if (isDraggable) {
+      const dragBehavior = new PointerDragBehavior({ dragPlaneNormal: new Vector3(0, 1, 0) });
+      dragBehavior.moveAttached = false;
+      dragBehaviorRef.current = dragBehavior;
+      
+      dragBehavior.onDragStartObservable.add(() => {
+        onSelect(equipment.id);
+      });
+
+      dragBehavior.onDragObservable.add((event) => {
+        if (mesh) {
+          mesh.position.copyFrom(event.dragPlanePoint);
+        }
+      });
+
+      dragBehavior.onDragEndObservable.add(() => {
+        if (mesh) {
+          const { gridX, gridY } = worldToGrid(mesh.position.x, mesh.position.z);
+          onPositionChange(equipment.id, gridX, gridY);
+          const snappedPos = gridToWorld(gridX, gridY);
+          mesh.position = snappedPos;
+        }
+      });
+
+      mesh.addBehavior(dragBehavior);
+
+      // 우클릭 이벤트 추가 (edit 모드에서)
+      if (onRightClick) {
+        mesh.actionManager = new ActionManager(scene);
+        mesh.actionManager.registerAction(
+          new ExecuteCodeAction(
+            ActionManager.OnPickTrigger,
+            (evt) => {
+              const event = evt.sourceEvent as PointerEvent;
+              if (event.button === 2) {
+                event.preventDefault();
+                onRightClick(equipment.id, event.clientX, event.clientY);
+              }
+            }
+          )
+        );
+
+        // 모든 자식 메시에도 동일한 액션 적용
+        childMeshes.forEach((childMesh) => {
+          if (!childMesh.actionManager) {
+            childMesh.actionManager = new ActionManager(scene);
+          }
+          childMesh.actionManager.registerAction(
+            new ExecuteCodeAction(
+              ActionManager.OnPickTrigger,
+              (evt) => {
+                const event = evt.sourceEvent as PointerEvent;
+                if (event.button === 2) {
+                  event.preventDefault();
+                  onRightClick(equipment.id, event.clientX, event.clientY);
+                }
+              }
+            )
+          );
+        });
+      }
+    }
+    // 보기 모드: server 클릭 이벤트 추가
+    else if (equipment.type === 'server' && onServerClick) {
+      mesh.actionManager = new ActionManager(scene);
+      mesh.actionManager.registerAction(
+        new ExecuteCodeAction(
+          ActionManager.OnPickTrigger,
+          () => {
+            onServerClick(equipment.id);
+          }
+        )
+      );
+      
+      // 모든 자식 메시에도 동일한 액션 적용
+      childMeshes.forEach((childMesh) => {
+        childMesh.actionManager = new ActionManager(scene);
+        childMesh.actionManager.registerAction(
+          new ExecuteCodeAction(
+            ActionManager.OnPickTrigger,
+            () => {
+              onServerClick(equipment.id);
+            }
+          )
+        );
+      });
+    }
+
+    return () => {
+      // 이벤트 핸들러만 정리 (메시는 dispose하지 않음)
+      if (dragBehaviorRef.current) {
+        dragBehaviorRef.current.detach();
+        dragBehaviorRef.current = null;
+      }
+
+      if (mesh.actionManager) {
+        mesh.actionManager.dispose();
+        mesh.actionManager = null;
+      }
+
+      childMeshes.forEach((childMesh) => {
+        if (childMesh.actionManager) {
+          childMesh.actionManager.dispose();
+          childMesh.actionManager = null;
+        }
+      });
+    };
+  }, [isLoaded, isDraggable, equipment.id, equipment.type, onSelect, onPositionChange, onServerClick, onRightClick, scene, gridToWorld, worldToGrid]);
 
   // 위치 업데이트 (초기 설정 + 드래그나 외부에서 위치 변경 시)
   useEffect(() => {
@@ -298,7 +351,7 @@ function Equipment3DModel({
       if (mesh.material && 'emissiveColor' in mesh.material) {
         const material = mesh.material as { emissiveColor: Color3 };
         
-        // 🔥 원래 emissive 색상 가져오기
+        // 원래 emissive 색상 가져오기
         const originalColor = originalEmissiveColors.current.get(mesh.uniqueId.toString());
         
         if (isSelected) {
@@ -324,4 +377,39 @@ function Equipment3DModel({
   return null;
 }
 
-export default Equipment3DModel
+// React.memo로 감싸서 불필요한 리렌더링 방지
+// 실제로 변경된 props만 비교
+const MemoizedEquipment3DModel = memo(Equipment3DModel, (prevProps, nextProps) => {
+  // scene은 항상 같은 인스턴스이므로 비교 제외
+  // 함수 props는 useCallback으로 메모이제이션되어 있다고 가정
+  
+  // equipment 객체의 실제 값 비교
+  const equipmentEqual = 
+    prevProps.equipment.id === nextProps.equipment.id &&
+    prevProps.equipment.type === nextProps.equipment.type &&
+    prevProps.equipment.gridX === nextProps.equipment.gridX &&
+    prevProps.equipment.gridY === nextProps.equipment.gridY &&
+    prevProps.equipment.gridZ === nextProps.equipment.gridZ &&
+    prevProps.equipment.rotation === nextProps.equipment.rotation;
+
+  // 다른 primitive props 비교
+  const otherPropsEqual =
+    prevProps.cellSize === nextProps.cellSize &&
+    prevProps.modelPath === nextProps.modelPath &&
+    prevProps.isSelected === nextProps.isSelected &&
+    prevProps.isDraggable === nextProps.isDraggable;
+
+  // 함수 props는 참조만 비교 (useCallback으로 메모이제이션되어 있어야 함)
+  const callbacksEqual =
+    prevProps.onSelect === nextProps.onSelect &&
+    prevProps.onPositionChange === nextProps.onPositionChange &&
+    prevProps.onServerClick === nextProps.onServerClick &&
+    prevProps.onRightClick === nextProps.onRightClick;
+
+  // 모든 조건이 true면 리렌더링 스킵 (true 반환)
+  return equipmentEqual && otherPropsEqual && callbacksEqual;
+});
+
+MemoizedEquipment3DModel.displayName = 'Equipment3DModel';
+
+export default MemoizedEquipment3DModel;

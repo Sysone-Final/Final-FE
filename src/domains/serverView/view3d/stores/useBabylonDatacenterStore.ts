@@ -13,6 +13,7 @@ interface BabylonDatacenterStore {
   // 장비 목록
   equipment: Equipment3D[];
   selectedEquipmentId: string | null;
+  selectedEquipmentIds: string[]; // 다중 선택
   mode: "view" | "edit";
   setMode: (mode: "view" | "edit") => void;
   toggleMode: () => void;
@@ -36,10 +37,16 @@ interface BabylonDatacenterStore {
     gridY: number,
     gridZ?: number,
   ) => void;
+  updateMultipleEquipmentPositions: (
+    updates: { id: string; gridX: number; gridY: number }[],
+  ) => void; // 다중 이동
   updateEquipmentRotation: (id: string, rotation: number) => void;
   rotateEquipment90: (id: string, clockwise?: boolean) => void; // 90도 회전 함수 추가
   removeEquipment: (id: string) => void;
   setSelectedEquipment: (id: string | null) => void;
+  setSelectedEquipments: (ids: string[]) => void; // 다중 선택 설정
+  toggleEquipmentSelection: (id: string) => void; // 토글 선택
+  clearSelection: () => void; // 선택 해제
   loadEquipment: (equipmentList: Equipment3D[]) => void; // 장비 목록 일괄 로드
 
   // 유틸리티
@@ -65,6 +72,7 @@ export const useBabylonDatacenterStore = create<BabylonDatacenterStore>(
     // 초기 장비 목록
     equipment: [],
     selectedEquipmentId: null,
+    selectedEquipmentIds: [],
     mode: "view",
     currentServerRoomId: null,
 
@@ -164,6 +172,21 @@ export const useBabylonDatacenterStore = create<BabylonDatacenterStore>(
       }));
     },
 
+    // 다중 장비 위치 업데이트
+    updateMultipleEquipmentPositions: (updates) => {
+      set((state) => {
+        const updatesMap = new Map(updates.map((u) => [u.id, u]));
+        return {
+          equipment: state.equipment.map((eq) => {
+            const update = updatesMap.get(eq.id);
+            return update
+              ? { ...eq, gridX: update.gridX, gridY: update.gridY }
+              : eq;
+          }),
+        };
+      });
+    },
+
     // 장비 회전 업데이트
     updateEquipmentRotation: (id, rotation) => {
       set((state) => ({
@@ -206,12 +229,44 @@ export const useBabylonDatacenterStore = create<BabylonDatacenterStore>(
 
     // 선택된 장비 설정
     setSelectedEquipment: (id) => {
-      set({ selectedEquipmentId: id });
+      set({ selectedEquipmentId: id, selectedEquipmentIds: id ? [id] : [] });
+    },
+
+    // 다중 선택 설정
+    setSelectedEquipments: (ids) => {
+      set({
+        selectedEquipmentIds: ids,
+        selectedEquipmentId: ids.length === 1 ? ids[0] : null,
+      });
+    },
+
+    // 토글 선택 (Ctrl+클릭)
+    toggleEquipmentSelection: (id) => {
+      set((state) => {
+        const isSelected = state.selectedEquipmentIds.includes(id);
+        const newIds = isSelected
+          ? state.selectedEquipmentIds.filter((i) => i !== id)
+          : [...state.selectedEquipmentIds, id];
+
+        return {
+          selectedEquipmentIds: newIds,
+          selectedEquipmentId: newIds.length === 1 ? newIds[0] : null,
+        };
+      });
+    },
+
+    // 선택 해제
+    clearSelection: () => {
+      set({ selectedEquipmentIds: [], selectedEquipmentId: null });
     },
 
     // 장비 목록 일괄 로드 (뷰어 모드에서 사용)
     loadEquipment: (equipmentList) => {
-      set({ equipment: equipmentList, selectedEquipmentId: null });
+      set({
+        equipment: equipmentList,
+        selectedEquipmentId: null,
+        selectedEquipmentIds: [],
+      });
     },
 
     // 위치가 점유되었는지 확인

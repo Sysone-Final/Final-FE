@@ -1,8 +1,10 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { Engine, Scene, ArcRotateCamera, HemisphericLight, Vector3, Color4, type IPointerEvent, type PickingInfo } from '@babylonjs/core';
+import { Snackbar, Alert } from '@mui/material';
 import GridFloor from './GridFloor';
 import Equipment3DModel from './Equipment3DModel';
 import EquipmentPalette3D from './EquipmentPalette3D';
+import ContextMenu from './ContextMenu';
 import { useBabylonDatacenterStore } from '../stores/useBabylonDatacenterStore';
 import { CAMERA_CONFIG, EQUIPMENT_PALETTE } from '../constants/config';
 import { getServerRoomEquipment } from '../data/mockServerRoomEquipment';
@@ -21,6 +23,24 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
   const renderLoopRef = useRef<boolean>(true); // 렌더링 루프 제어
   const hasAppliedInitialModeRef = useRef(false);
 
+  // 컨텍스트 메뉴 상태
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    equipmentId: string;
+  } | null>(null);
+
+  // 토스트 메시지 상태
+  const [toast, setToast] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'error' | 'warning' | 'info' | 'success';
+  }>({
+    open: false,
+    message: '',
+    severity: 'info',
+  });
+
   // Zustand
   const {
     gridConfig,
@@ -32,10 +52,13 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
     openRackModal, // 랙 모달 열기
     isRackModalOpen, // 랙 모달 상태 추가
     rotateEquipment90,
+    removeEquipment,
     mode,
     setMode,
     currentServerRoomId,
     initializeServerRoom,
+    isValidPosition,
+    isPositionOccupied,
   } = useBabylonDatacenterStore();
 
   // 초기 모드 적용 (최초 한 번)
@@ -68,12 +91,104 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
     rotateEquipment90(selectedEquipmentId, clockwise);
   }, [rotateEquipment90, selectedEquipmentId]);
 
+  // 모드에 따라 안정적인 핸들러 반환 (memo 최적화용)
   // Server 클릭 핸들러 (view 모드에서만)
-  const handleServerClick = useCallback((serverId: string) => {
-    if (mode === 'view') {
-      openRackModal(serverId);
+  const serverClickHandler = useCallback((serverId: string) => {
+    openRackModal(serverId);
+  }, [openRackModal]);
+
+  // 장비 우클릭 핸들러 (edit 모드에서만)
+  const rightClickHandler = useCallback((equipmentId: string, x: number, y: number) => {
+    setContextMenu({ x, y, equipmentId });
+  }, []);
+
+  // 토스트 표시 헬퍼
+  const showToast = useCallback((message: string, severity: 'error' | 'warning' | 'info' | 'success' = 'info') => {
+    setToast({ open: true, message, severity });
+  }, []);
+
+  // 토스트 닫기
+  const handleCloseToast = useCallback(() => {
+    setToast((prev) => ({ ...prev, open: false }));
+  }, []);
+
+  // 캔버스에서 마우스 좌표를 격자 좌표로 변환
+  const screenToGrid = useCallback((clientX: number, clientY: number): { gridX: number; gridY: number } | null => {
+    const canvas = canvasRef.current;
+    const scene = sceneRef.current;
+    if (!canvas || !scene) return null;
+
+    // 캔버스 상의 좌표로 변환
+    const rect = canvas.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+
+    // 레이 캐스팅으로 3D 공간의 좌표 얻기
+    const pickResult = scene.pick(x, y, (mesh) => mesh.name === 'ground');
+    
+    if (pickResult?.hit && pickResult.pickedPoint) {
+      const worldX = pickResult.pickedPoint.x;
+      const worldZ = pickResult.pickedPoint.z;
+      
+      // 격자 좌표로 변환
+      const gridX = Math.floor(worldX / gridConfig.cellSize);
+      const gridY = Math.floor(worldZ / gridConfig.cellSize);
+      
+      return { gridX, gridY };
     }
-  }, [mode, openRackModal]);
+    
+    return null;
+  }, [gridConfig.cellSize]);
+
+  // 드래그 앤 드롭으로 장비 추가
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    
+    const equipmentType = e.dataTransfer.getData('equipmentType') as EquipmentType;
+    if (!equipmentType) return;
+
+    const gridPos = screenToGrid(e.clientX, e.clientY);
+    
+    if (!gridPos) {
+      showToast('격자 범위를 벗어났습니다', 'error');
+      return;
+    }
+
+    const { gridX, gridY } = gridPos;
+
+    // 유효성 검사
+    if (!isValidPosition(gridX, gridY)) {
+      showToast('격자 범위를 벗어났습니다', 'error');
+      return;
+    }
+
+    if (isPositionOccupied(gridX, gridY)) {
+      showToast('이미 장비가 배치되어 있습니다', 'error');
+      return;
+    }
+
+    // 장비 추가
+    addEquipment(equipmentType, gridX, gridY);
+    showToast('장비가 추가되었습니다', 'success');
+  }, [screenToGrid, isValidPosition, isPositionOccupied, addEquipment, showToast]);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+  }, []);
+
+  // 컨텍스트 메뉴 닫기
+  const handleContextMenuClose = useCallback(() => {
+    setContextMenu(null);
+  }, []);
+
+  // 장비 삭제
+  const handleDeleteEquipment = useCallback(() => {
+    if (contextMenu) {
+      removeEquipment(contextMenu.equipmentId);
+      setContextMenu(null);
+    }
+  }, [contextMenu, removeEquipment]);
 
   // 격자 설정 변경
   // const handleGridChange = (key: 'rows' | 'columns', value: number) => {
@@ -208,6 +323,9 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
         ref={canvasRef}
         className="w-full h-full outline-none"
         style={{ touchAction: 'none' }}
+        onContextMenu={(e) => e.preventDefault()} // 우클릭 기본 메뉴 방지
+        onDrop={mode === 'edit' ? handleDrop : undefined} // 편집 모드에서만 드롭 허용
+        onDragOver={mode === 'edit' ? handleDragOver : undefined} // 드래그 오버 허용
       />
 
       {/* 컨트롤 가이드 */}
@@ -271,12 +389,35 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
                 onSelect={setSelectedEquipment}
                 onPositionChange={updateEquipmentPosition}
                 isDraggable={mode === 'edit'} // 편집 모드에서만 드래그 가능
-                onServerClick={mode === 'view' ? handleServerClick : undefined} // view 모드에서만 클릭 핸들러 전달
+                onServerClick={mode === 'view' ? serverClickHandler : undefined} // view 모드에서만 클릭 핸들러 전달
+                onRightClick={mode === 'edit' ? rightClickHandler : undefined} // edit 모드에서만 우클릭 핸들러 전달
               />
             );
           })}
         </>
       )}
+
+      {/* 컨텍스트 메뉴 */}
+      {contextMenu && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          onClose={handleContextMenuClose}
+          onDelete={handleDeleteEquipment}
+        />
+      )}
+
+      {/* 토스트 메시지 */}
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={3000}
+        onClose={handleCloseToast}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseToast} severity={toast.severity} sx={{ width: '100%' }}>
+          {toast.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 }
