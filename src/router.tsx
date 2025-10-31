@@ -1,22 +1,22 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
-import RackPage from "./domains/rack/RackPage";
 import ServerRoomDashboard from "./domains/serverRoom/pages/ServerRoomDashboard";
 import ServerViewPage from "./domains/serverView/pages/ServerViewPage";
 import ResourceManagePage from "./domains/resourceManage/pages/ResourceManagePage";
+import LoginPage from "./domains/login/LoginPage";
 
 const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <LoginPage />,
+  },
   {
     path: "/",
     element: <App />,
     children: [
       {
-        path: "",
+        path: "dashboard",
         element: <ServerRoomDashboard />,
-      },
-      {
-        path: "rack",
-        element: <RackPage />,
       },
       {
         path: "server-room-dashboard",
@@ -26,9 +26,9 @@ const router = createBrowserRouter([
         path: "server-room/:id/view",
         element: <ServerViewPage />,
       },
-       {
-        path: "assets", 
-        element: <ResourceManagePage />, 
+      {
+        path: "assets",
+        element: <ResourceManagePage />,
       },
     ],
   },
