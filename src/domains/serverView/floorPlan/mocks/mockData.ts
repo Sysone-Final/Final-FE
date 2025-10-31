@@ -1,10 +1,10 @@
 import type { Asset, AssetStatus } from '../types';
 
-// --- [추가] 헬퍼 함수: 랜덤 숫자 생성 (테스트 데이터 다양화) ---
+// ---  헬퍼 함수: 랜덤 숫자 생성 (테스트 데이터 다양화) ---
 const rand = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
 const randFloat = (min: number, max: number) => parseFloat((Math.random() * (max - min) + min).toFixed(1));
 
-// --- [추가] 랙 상태 결정 로직 (DashboardAssetView와 동일하게) ---
+// ---  랙 상태 결정 로직 (DashboardAssetView와 동일하게) ---
 const getStatusFromCpu = (cpu: number): AssetStatus => {
   if (cpu > 90) return 'danger';
   if (cpu > 75) return 'warning';
@@ -13,7 +13,7 @@ const getStatusFromCpu = (cpu: number): AssetStatus => {
 
 export const MOCK_ASSETS: Asset[] = [
   // --- Walls and Structure (15x8 Grid) ---
-  // (기존 벽, 문 구조물 - 이름 한글 유지)
+
   {
     id: 'wall_top',
     assetType: 'wall',
@@ -76,7 +76,7 @@ export const MOCK_ASSETS: Asset[] = [
     isLocked: true,
   },
 
-  // --- [수정] 랙 A열 (5개, 1x1 크기) ---
+  // ---  랙 A열 (5개, 1x1 크기) ---
   // A열: 대부분 정상
   ...Array.from({ length: 5 }).map((_, i) => {
     const cpu = rand(30, 60); // 30~60% (정상)
@@ -105,7 +105,7 @@ export const MOCK_ASSETS: Asset[] = [
     };
   }),
 
-  // --- [수정] 랙 B열 (5개, 1x1 크기) ---
+  // ---  랙 B열 (5개, 1x1 크기) ---
   // B열: 정상 + '주의' 1개
   ...Array.from({ length: 5 }).map((_, i) => {
     const isWarning = i === 3; // B-04 랙을 '주의' 상태로 설정
@@ -135,7 +135,7 @@ export const MOCK_ASSETS: Asset[] = [
     };
   }),
 
-  // --- [수정] 랙 C열 (6개, 1x1 크기) ---
+  // ---  랙 C열 (6개, 1x1 크기) ---
   // C열: 정상, 주의, 위험 골고루
   ...Array.from({ length: 6 }).map((_, i) => {
     let cpu: number;
@@ -234,7 +234,7 @@ export const MOCK_ASSETS: Asset[] = [
     customColor: '#f3d9e3',
   },
 
-  // --- Overhead & Wall-mounted items (한글 이름 유지) ---
+  // --- Overhead & Wall-mounted items ---
   {
     id: 'cctv-1',
     assetType: 'cctv',

@@ -1,6 +1,3 @@
-// floorPlan/components/LayoutAssetView.tsx
-// (이 파일의 모든 내용을 아래 코드로 교체하세요)
-
 import React from 'react';
 import { Group, Rect, Text, Circle } from 'react-konva';
 import type { KonvaEventObject } from 'konva/lib/Node';
@@ -58,7 +55,7 @@ const LayoutAssetView: React.FC<AssetRendererProps> = ({
   const pixelWidth = (asset.widthInCells ?? 1) * gridSize;
   const pixelHeight = (asset.heightInCells ?? 1) * gridSize;
 
-  // [추가] '상태 임계값' 모드인지 확인
+  // '상태 임계값' 모드인지 확인
   const isDashboardView = displayMode === 'status';
 
   const rackFillColor = isDashboardView
@@ -178,7 +175,7 @@ const LayoutAssetView: React.FC<AssetRendererProps> = ({
           <Rect {...doorPos} fill={DOOR_COLOR} listening={false} />
       )}
       <Group listening={false}>
-        {/* [수정] 대시보드 뷰 텍스트 로직 */}
+        {/* 대시보드 뷰 텍스트 */}
         {isDashboardView ? (
           <>
             {/* 대시보드 뷰에서는 벽(wall) 이름은 숨기고, 그 외 자산 이름만 표시 */}
@@ -213,8 +210,6 @@ const LayoutAssetView: React.FC<AssetRendererProps> = ({
             fontSize={smallFontSize} fill="#FFFFFF"
           />
         )}
-        {/* [!!!] "66% Full" 버그 수정 [!!!] */}
-            {/* (지난번에 건너뛴 3단계입니다) */}
             {displayOptions.showUUsage && asset.data?.uUsage !== undefined && (
               <Text
                 text={`U: ${asset.data.uUsage}%`} x={5} y={baseFontSize + smallFontSize + 12}

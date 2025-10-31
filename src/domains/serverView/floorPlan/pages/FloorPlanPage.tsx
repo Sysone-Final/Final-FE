@@ -27,10 +27,7 @@ export const checkCollision = (
 };
 
 export const useFloorPlanDragDrop = () => {
-  // 훅 내부에서 state를 구독하지 않습니다.
-  // const addAsset = useFloorPlanStore((state) => state.addAsset);  <-- 삭제
-  // const stage = useFloorPlanStore((state) => state.stage);      <-- 삭제
-  // const assets = useFloorPlanStore((state) => state.assets);     <-- 삭제
+
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { over, active } = event;

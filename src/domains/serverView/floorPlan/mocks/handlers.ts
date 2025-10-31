@@ -12,7 +12,7 @@ export const handlers = [
     return HttpResponse.json(MOCK_FLOOR_PLAN_DATA);
   }),
 
-  // 5. (신규) 서버실 상세 정보(크기 등) 업데이트 (PUT)
+  // 5. 서버실 상세 정보(크기 등) 업데이트 (PUT)
  http.put('/api/server-rooms/:roomId/floorplan/details', async ({ params, request }) => {
   const { roomId } = params;
   const updatedDetails = (await request.json()) as { gridCols?: number, gridRows?: number };

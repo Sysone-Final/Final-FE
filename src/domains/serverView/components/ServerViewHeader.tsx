@@ -1,19 +1,18 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from 'zustand';
-
 import {
   useFloorPlanStore,
   toggleMode,
   groupSelectedAssets,
   setDisplayMode,
-  zoom, 
+  zoom,
   useHasUnsavedChanges,
-} from '../floorPlan/stores/floorPlanStore';
+} from '../floorPlan/store/floorPlanStore';
 
 import { useBabylonDatacenterStore } from '../view3d/stores/useBabylonDatacenterStore';
 import { Settings, Eye, Undo2, Redo2, ZoomIn, ZoomOut, Palette } from 'lucide-react';
-
+import { useSidebarStore } from '../floorPlan/store/useSidebarStore';
 
 interface ServerViewHeaderProps {
   serverRoomId?: string;

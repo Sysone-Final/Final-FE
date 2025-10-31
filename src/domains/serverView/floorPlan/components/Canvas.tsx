@@ -55,7 +55,7 @@ useEffect(() => {
   return () => window.removeEventListener('resize', checkSize);
  }, []);
 
- //  Effect 2: Initial zoom (주석 해제)
+ //  Effect 2: Initial zoom 
  useLayoutEffect(() => {
   if ( !isLoading && !error && gridCols > 0 && stageSize.width > 0 && !isInitialZoomSet ) {
    const { CELL_SIZE, HEADER_PADDING } = CANVAS_VIEW_CONFIG;
@@ -73,7 +73,7 @@ useEffect(() => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
  }, [isLoading, error, gridCols, gridRows, stageSize, isInitialZoomSet]);
 
- // Event Handlers (주석 해제)
+ // Event Handlers 
  const handleWheel = (e: KonvaEventObject<WheelEvent>) => {
   e.evt.preventDefault();
   const scaleBy = 1.05;

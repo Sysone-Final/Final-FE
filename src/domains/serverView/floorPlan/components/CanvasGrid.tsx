@@ -80,37 +80,7 @@ const gridBgFill = isDashboardView ? '#0a0a0a' : '#1f2937';
       lines.push(<Text key={`left-row-header-${j}`} {...textProps} x={0} />);
       lines.push(<Text key={`right-row-header-${j}`} {...textProps} x={headerPadding + gridWidth} />);
     }
-  // for (let i = 0; i < cols; i++) {
-  //   const textProps = {
-  //       x: headerPadding + i * gridSize,
-  //       width: gridSize,
-  //       text: `${String.fromCharCode(65 + i)} (${i + 1})`, // A (1), B (2)...
-  //       align: 'center' as const,
-  //       verticalAlign: 'middle' as const,
-  //       fontSize: headerFontSize, // 변수 사용
-  //       fontStyle: 'bold',
-  //       fill: textFill,
-  //       height: headerPadding, // 패딩 크기만큼 높이 확보
-  //   };
-  //   lines.push(<Text key={`top-col-header-${i}`} {...textProps} y={0} />);
-  //   lines.push(<Text key={`bottom-col-header-${i}`} {...textProps} y={headerPadding + gridHeight} />);
-  // }
-  // // 왼쪽 & 오른쪽 행 헤더
-  // for (let j = 0; j < rows; j++) {
-  //     const textProps = {
-  //       y: headerPadding + j * gridSize,
-  //       height: gridSize,
-  //       text: `${j + 1}`, // 숫자만 표시 (기존 유지)
-  //       align: 'center' as const,
-  //       verticalAlign: 'middle' as const,
-  //       fontSize: headerFontSize, // 변수 사용
-  //       fontStyle: 'bold',
-  //       fill: textFill,
-  //       width: headerPadding, // 패딩 크기만큼 너비 확보
-  //     };
-  //   lines.push(<Text key={`left-row-header-${j}`} {...textProps} x={0} />);
-  //   lines.push(<Text key={`right-row-header-${j}`} {...textProps} x={headerPadding + gridWidth} />);
-  // }
+
 
   return <Group>{lines}</Group>;
 };

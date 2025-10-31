@@ -1,4 +1,3 @@
-// floorPlan/components/LeftSidebar/StatusLegendAndFilters.tsx (전문 교체)
 
 import React from 'react';
 import { useFloorPlanStore, setDashboardMetricView, toggleLayerVisibility, toggleSeverityVisibility } from '../../store/floorPlanStore';
@@ -15,7 +14,7 @@ const LegendItem: React.FC<{ color: string; label: string }> = ({ color, label }
  </div>
 );
 
-// 라디오 버튼 항목 (Phase 1)
+// 라디오 버튼 항목 
 const MetricViewRadio: React.FC<{
  label: string;
  value: DashboardMetricView;
@@ -75,7 +74,7 @@ return (
    <div className="option-section">
     <h4 className="option-section-title text-heading">랙 표시 정보 (View Mode)</h4>
     <div className="option-group flex flex-col gap-2">
-     {/* [수정] isChecked와 onChange 핸들러 전달 */}
+     {/*  isChecked와 onChange 핸들러 전달 */}
      <MetricViewRadio
       label="메모리 / 온도"
       value="default"

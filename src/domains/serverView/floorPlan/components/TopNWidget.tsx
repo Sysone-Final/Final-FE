@@ -1,12 +1,8 @@
-// floorPlan/components/TopNWidget.tsx
-
-import React, { useMemo, useState } from 'react'; // [1] useState 추가
+import React, { useMemo, useState } from 'react'; 
 import { useFloorPlanStore, zoomToAsset } from '../store/floorPlanStore';
-// [2] Chevron 아이콘 추가
 import { AlertTriangle, Cpu, Thermometer, ChevronDown, ChevronUp } from 'lucide-react'; 
 import type { Asset } from '../types';
 
-// ... (getAssetScore 함수는 그대로) ...
 const getAssetScore = (asset: Asset) => {
  let score = 0;
  let reason = '';

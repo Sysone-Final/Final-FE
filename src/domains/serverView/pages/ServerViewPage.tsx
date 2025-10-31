@@ -84,13 +84,9 @@ function ServerViewPage() {
    // 3D로 돌아갈 때 2D 로드 상태를 리셋 (Req 3)
    setIs2dLoaded(false);
   }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
  }, [viewDimension, id, is2dLoaded]);
 
-  // const LeftSidebarContent = mode === 'view' ? <DisplayOptions /> : <AssetLibrary />;
-  // const RightSidebarContent = mode === 'view' ? <PropertiesViewer /> : <PropertiesEditor />;
-  // const leftTitle = mode === 'view' ? '표시 옵션' : '자산 라이브러리';
-  // const rightTitle = mode === 'view' ? '속성 정보' : '속성 편집';
+
 let LeftSidebarContent;
   let leftTitle;
   let RightSidebarContent = null; // 기본값 null
