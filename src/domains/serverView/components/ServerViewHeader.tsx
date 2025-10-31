@@ -1,7 +1,19 @@
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from 'zustand';
-import { useFloorPlanStore } from '../floorPlan/store/floorPlanStore';
+
+import {
+  useFloorPlanStore, 
+  toggleMode, 
+  groupSelectedAssets, 
+  setDisplayMode,
+  zoom, 
+  useHasUnsavedChanges,
+} from '../floorPlan/store/floorPlanStore'; 
+
+
 import { Settings, Eye, Undo2, Redo2, ZoomIn, ZoomOut, Palette } from 'lucide-react';
+import { useSidebarStore } from '../floorPlan/store/useSidebarStore'; 
 
 interface ServerViewHeaderProps {
   serverRoomId?: string;
@@ -16,56 +28,71 @@ function ServerViewHeader({
 }: ServerViewHeaderProps) {
   const navigate = useNavigate();
 
-  // FloorPlan store 상태들 
+  // 스토어에서는 '데이터'만 가져옵니다.
   const mode = useFloorPlanStore((state) => state.mode);
-  const toggleMode = useFloorPlanStore((state) => state.toggleMode);
+  const hasUnsavedChanges = useHasUnsavedChanges();
   const selectedAssetIds = useFloorPlanStore((state) => state.selectedAssetIds);
-  const groupSelectedAssets = useFloorPlanStore((state) => state.groupSelectedAssets);
   const displayMode = useFloorPlanStore((state) => state.displayMode);
-  const setDisplayMode = useFloorPlanStore((state) => state.setDisplayMode);
-  const zoom = useFloorPlanStore((state) => state.zoom);
 
+const handleBackNavigation = () => {
+  // 편집 모드이고, 저장 안한게 있으면
+  if (mode === 'edit' && hasUnsavedChanges) {
+   if (
+    !window.confirm(
+     '저장하지 않은 변경 사항이 있습니다.\n정말로 이 페이지를 벗어나시겠습니까?',
+    )
+   ) {
+    return; // 이탈 취소
+   }
+  }
+  // (이탈 확정 시) 히스토리 클리어
+  useFloorPlanStore.temporal.getState().clear();
+  navigate('/server-room-dashboard');
+ };
+
+  // temporal 훅은 그대로 사용합니다.
   const undo = useStore(useFloorPlanStore.temporal, (state) => state.undo);
   const redo = useStore(useFloorPlanStore.temporal, (state) => state.redo);
 
-  // 편집/보기 모드 전환 핸들러
+  const { setLeftSidebarOpen, setRightSidebarOpen } = useSidebarStore(); // <- set 함수 가져오기
+  // import한 액션 함수를 사용하는 핸들러
   const handleToggleMode = () => {
-    if (mode === 'view' && selectedAssetIds.length > 1) {
-      if (
-        window.confirm(
-          `여러 개의 자산(${selectedAssetIds.length}개)이 선택되었습니다.\n이 자산들을 하나의 그룹으로 묶으시겠습니까?`
-        )
-      ) {
-        groupSelectedAssets();
-      }
+  if (mode === 'view') {
+   // "보기" -> "편집" 모드로 전환 시 (Req 6)
+   if (selectedAssetIds.length > 1) {
+    if ( window.confirm( /* ...confirm message... */ ) ) {
+     groupSelectedAssets(); 
     }
-    toggleMode();
-  };
+   }
+   // 양쪽 사이드바 열기
+   setLeftSidebarOpen(true);
+   setRightSidebarOpen(true);
+  } else {
+   // "편집" -> "보기" 모드로 전환 시
+   // (필요하다면) 오른쪽 사이드바 닫기
+   setRightSidebarOpen(false); 
+  }
+  
+  toggleMode(); 
+ };
 
-  const handleDisplayModeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setDisplayMode(e.target.value as 'status' | 'customColor');
-  };
+  // const handleDisplayModeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  //   setDisplayMode(e.target.value as 'status' | 'customColor'); 
+  // };
+
+  const handleZoomIn = () => zoom('in'); 
+  const handleZoomOut = () => zoom('out'); 
 
   return (
     <header className="bg-gray-800/50 backdrop-blur-sm border-b border-gray-700 px-6 py-4 flex items-center justify-between flex-shrink-0">
+      {/* 뒤로가기 버튼, 타이틀 */}
       <div className="flex items-center gap-4">
+        {/* ... (뒤로가기 버튼 코드) ... */}
         <button
-          onClick={() => navigate('/server-room-dashboard')}
+          onClick={handleBackNavigation}
           className="flex items-center gap-2 text-gray-100 hover:text-white transition-colors"
         >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
+           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" > <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/> </svg>
           <span>뒤로 가기</span>
         </button>
         <div className="h-6 w-px bg-gray-600" />
@@ -74,100 +101,64 @@ function ServerViewHeader({
         </h1>
       </div>
 
+      {/* 오른쪽 컨트롤 영역 */}
       <div className="flex items-center gap-4">
-        {/* 2D 뷰일 때만 표시되는 컨트롤들 */}
         {viewDimension === '2D' && (
           <>
             {/* 보기 모드 컨트롤 */}
             {mode === 'view' && (
               <>
-                {/* 보기 모드 선택 */}
-                <div className="flex items-center gap-2">
-                  <Palette className="w-5 h-5 text-gray-100" />
-                  <select
-                    value={displayMode}
-                    onChange={handleDisplayModeChange}
-                    className="border border-gray-600 bg-gray-700 text-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2"
-                  >
-                    <option value="status">상태 임계값</option>
-                    <option value="customColor">사용자 지정 색상</option>
-                  </select>
-                </div>
-
-                {/* 줌 컨트롤 */}
+                {/* Display Mode Select */}
+                <div className="flex items-center rounded-md p-1 bg-gray-700/50 border border-gray-600">
+                <button
+                  onClick={() => setDisplayMode('customColor')} // '상면도' 모드
+                  className={`px-3 py-1 rounded-md transition-colors ${
+                    displayMode === 'customColor'
+                      ? 'bg-gray-400 text-white shadow-lg'
+                      : 'text-gray-300 hover:text-white'
+                  }`}
+                >
+                  🖥️ 상면도
+                </button>
+                <button
+                  onClick={() => setDisplayMode('status')} // '상태 임계값' 모드
+                  className={`px-3 py-1 rounded-md transition-colors ${
+                    displayMode === 'status'
+                      ? 'bg-gray-400 text-white shadow-lg'
+                      : 'text-gray-300 hover:text-white'
+                  }`}
+                >
+                  📊 상태 임계값
+                </button>
+              </div>
+                {/* Zoom Buttons */}
+                {displayMode === 'customColor' && (
                 <div className="flex items-center border border-gray-600 rounded-lg p-1 bg-gray-700/50">
-                  <button
-                    onClick={() => zoom('out')}
-                    className="p-1 rounded-md text-gray-100 hover:bg-gray-600 transition-colors"
-                  >
-                    <ZoomOut className="w-5 h-5" />
-                  </button>
+                  <button onClick={handleZoomOut} className="p-1 rounded-md text-gray-100 hover:bg-gray-600 transition-colors"> <ZoomOut className="w-5 h-5" /> </button>
                   <span className="px-2 select-none text-gray-100">Zoom</span>
-                  <button
-                    onClick={() => zoom('in')}
-                    className="p-1 rounded-md text-gray-100 hover:bg-gray-600 transition-colors"
-                  >
-                    <ZoomIn className="w-5 h-5" />
-                  </button>
+                  <button onClick={handleZoomIn} className="p-1 rounded-md text-gray-100 hover:bg-gray-600 transition-colors"> <ZoomIn className="w-5 h-5" /> </button>
                 </div>
+              )}
               </>
             )}
-
             {/* 편집 모드 컨트롤 */}
             {mode === 'edit' && (
               <div className="flex items-center gap-2 border border-gray-600 rounded-lg p-1 bg-gray-700/50">
-                <button
-                  onClick={() => undo()}
-                  className="p-2 rounded-md flex items-center gap-1.5 text-gray-100 hover:bg-gray-600 transition-colors"
-                >
-                  <Undo2 className="w-4 h-4" /> 되돌리기
-                </button>
-                <button
-                  onClick={() => redo()}
-                  className="p-2 rounded-md flex items-center gap-1.5 text-gray-100 hover:bg-gray-600 transition-colors"
-                >
-                  <Redo2 className="w-4 h-4" /> 다시 실행
-                </button>
+                <button onClick={() => undo()} className="p-2 rounded-md flex items-center gap-1.5 text-gray-100 hover:bg-gray-600 transition-colors"> <Undo2 className="w-4 h-4" /> 되돌리기 </button>
+                <button onClick={() => redo()} className="p-2 rounded-md flex items-center gap-1.5 text-gray-100 hover:bg-gray-600 transition-colors"> <Redo2 className="w-4 h-4" /> 다시 실행 </button>
               </div>
             )}
-
             {/* 편집/보기 모드 전환 버튼 */}
-            <button
-              onClick={handleToggleMode}
-              className="py-2 px-4 rounded-lg flex items-center gap-2 transition-colors bg-gray-700/50 text-gray-100 hover:bg-gray-600 border border-gray-600"
-            >
-              {mode === 'view' ? (
-                <Settings className="w-5 h-5" />
-              ) : (
-                <Eye className="w-5 h-5" />
-              )}
+            <button onClick={handleToggleMode} className="py-2 px-4 rounded-lg flex items-center gap-2 transition-colors bg-gray-700/50 text-gray-100 hover:bg-gray-600 border border-gray-600">
+              {mode === 'view' ? <Settings className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               {mode === 'view' ? '편집 모드' : '보기 모드'}
             </button>
           </>
         )}
-
         {/* 2D/3D 토글 버튼 */}
         <div className="flex items-center rounded-md p-1 bg-gray-700/50 border border-gray-600">
-          <button
-            onClick={() => onViewDimensionChange('2D')}
-            className={`px-3 py-1 rounded-md transition-colors ${
-              viewDimension === '2D'
-                ? 'bg-gray-400 text-white shadow-lg'
-                : 'text-gray-300 hover:text-white'
-            }`}
-          >
-            2D
-          </button>
-          <button
-            onClick={() => onViewDimensionChange('3D')}
-            className={`px-3 py-1 rounded-md transition-colors ${
-              viewDimension === '3D'
-                ? 'bg-gray-400 text-white shadow-lg'
-                : 'text-gray-300 hover:text-white'
-            }`}
-          >
-            3D
-          </button>
+          <button onClick={() => onViewDimensionChange('2D')} className={`px-3 py-1 rounded-md transition-colors ${ viewDimension === '2D' ? 'bg-gray-400 text-white shadow-lg' : 'text-gray-300 hover:text-white' }`}> 2D </button>
+          <button onClick={() => onViewDimensionChange('3D')} className={`px-3 py-1 rounded-md transition-colors ${ viewDimension === '3D' ? 'bg-gray-400 text-white shadow-lg' : 'text-gray-300 hover:text-white' }`}> 3D </button>
         </div>
       </div>
     </header>
@@ -175,3 +166,4 @@ function ServerViewHeader({
 }
 
 export default ServerViewHeader;
+

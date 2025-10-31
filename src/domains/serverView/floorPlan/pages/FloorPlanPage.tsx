@@ -1,12 +1,15 @@
 import { type DragEndEvent } from '@dnd-kit/core';
-import { useFloorPlanStore } from './../store/floorPlanStore';
+import { useFloorPlanStore, addAsset } from './../store/floorPlanStore';
 import type { Asset } from './../types';
 
-export const CELL_SIZE = 80;
-export const HEADER_PADDING = 40;
+export const CELL_SIZE = 160;
+export const HEADER_PADDING = 80;
 
 //충돌 감지
-export const checkCollision = (targetAsset: Omit<Asset, 'id'>, allAssets: Asset[]): boolean => {
+export const checkCollision = (
+  targetAsset: Omit<Asset, 'id'>,
+  allAssets: Asset[],
+): boolean => {
   for (const asset of allAssets) {
     if (asset.layer !== targetAsset.layer) {
       continue;
@@ -24,16 +27,24 @@ export const checkCollision = (targetAsset: Omit<Asset, 'id'>, allAssets: Asset[
 };
 
 export const useFloorPlanDragDrop = () => {
-  const addAsset = useFloorPlanStore((state) => state.addAsset);
-  const stage = useFloorPlanStore((state) => state.stage);
-  const assets = useFloorPlanStore((state) => state.assets);
+  // 훅 내부에서 state를 구독하지 않습니다.
+  // const addAsset = useFloorPlanStore((state) => state.addAsset);  <-- 삭제
+  // const stage = useFloorPlanStore((state) => state.stage);      <-- 삭제
+  // const assets = useFloorPlanStore((state) => state.assets);     <-- 삭제
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { over, active } = event;
+
+    // 함수가 실행되는 시점에 store에서 최신 상태를 가져옵니다.
+    const { stage, assets } = useFloorPlanStore.getState();
+
     if (!over || over.id !== 'canvas-drop-area' || !stage) {
       return;
     }
-    const template = active.data.current as Omit<Asset, 'id' | 'gridX' | 'gridY'>;
+    const template = active.data.current as Omit<
+      Asset,
+      'id' | 'gridX' | 'gridY'
+    >;
     if (!template) return;
 
     const dropX = active.rect.current.translated?.left ?? 0;
@@ -48,15 +59,14 @@ export const useFloorPlanDragDrop = () => {
     const newAsset: Omit<Asset, 'id'> = { ...template, gridX, gridY };
 
     if (checkCollision(newAsset, assets)) {
-      alert(
-        `"${newAsset.name}"을(를) 해당 위치에 배치할 수 없습니다.\n동일한 레이어의 다른 자산과 겹칩니다.`
+      console.warn(
+        `"${newAsset.name}"을(를) 해당 위치에 배치할 수 없습니다.\n동일한 레이어의 다른 자산과 겹칩니다.`,
       );
       return;
     }
 
-    addAsset(newAsset);
+    addAsset(newAsset); 
   };
 
   return { handleDragEnd };
 };
-

@@ -1,15 +1,34 @@
-import { create, type StateCreator } from "zustand";
-import { temporal } from "zundo";
+import { create, type StateCreator } from 'zustand';
+import { temporal } from 'zundo';
+import { useStore } from 'zustand';
 import type {
   FloorPlanState,
   Asset,
   DisplayOptionsType,
   DisplayMode,
-} from "../types";
+  Mode,
+  DashboardMetricView, 
+ AssetLayer,     
+ AssetStatus,   
+} from '../types';
 
-const storeCreator: StateCreator<FloorPlanState> = (set, get) => ({
-  mode: "view",
-  displayMode: "status",
+export const initialState: FloorPlanState = {
+  mode: 'view',
+  displayMode: 'status',
+  //  지표 뷰 기본값
+  dashboardMetricView: 'default', 
+ //  레이어 필터 기본값
+ visibleLayers: {
+  floor: true,
+  wall: true,
+  overhead: true,
+ },
+ //  심각도 필터 기본값
+ visibleSeverities: {
+  normal: true,
+  warning: true,
+  danger: true,
+ },
   displayOptions: {
     showName: true,
     showStatusIndicator: true,
@@ -23,344 +42,350 @@ const storeCreator: StateCreator<FloorPlanState> = (set, get) => ({
     useLOD: true,
     showGridLine: true,
   },
-  // 30x16 그리드 크기 유지
-  gridCols: 30,
-  gridRows: 16,
+  gridCols: 15, // Adjusted default
+  gridRows: 8, // Adjusted default
   stage: { scale: 1, x: 0, y: 0 },
-  // 벽 크기(widthInCells)를 겹치지 않게 수정
-  assets: [
-    // --- Walls and Structure ---
-    {
-      id: "wall_top",
-      assetType: "wall",
-      layer: "floor",
-      name: "상단 벽",
-      gridX: 0,
-      gridY: 0,
-      widthInCells: 30, // 0~29 (30칸)
-      heightInCells: 1,
-      customColor: "#868e96",
-      isLocked: true,
-    },
-    {
-      id: "wall_bottom",
-      assetType: "wall",
-      layer: "floor",
-      name: "하단 벽",
-      gridX: 0,
-      gridY: 15,
-      widthInCells: 30, // 0~29 (30칸)
-      heightInCells: 1,
-      customColor: "#868e96",
-      isLocked: true,
-    },
-    {
-      id: "wall_left",
-      assetType: "wall",
-      layer: "floor",
-      name: "좌측 벽",
-      gridX: 0,
-      gridY: 1, // 상단 벽(0) 제외
-      widthInCells: 1,
-      heightInCells: 14, // 1~14 (14칸)
-      customColor: "#868e96",
-      isLocked: true,
-    },
-    {
-      id: "wall_right",
-      assetType: "wall",
-      layer: "floor",
-      name: "우측 벽",
-      gridX: 29,
-      gridY: 1, // 상단 벽(0) 제외
-      widthInCells: 1,
-      heightInCells: 14, // 1~14 (14칸)
-      customColor: "#868e96",
-      isLocked: true,
-    },
-    {
-      id: "main_door",
-      assetType: "door_double",
-      layer: "wall",
-      name: "주 출입문",
-      gridX: 14,
-      gridY: 15, // 하단 벽에 위치
-      widthInCells: 2,
-      heightInCells: 1,
-      customColor: "#ced4da",
-      doorDirection: "south",
-      isLocked: true,
-    },
-
-    // --- Rack Row A (Hot Aisle) --- (벽 안쪽(gridX: 1)에서 1칸 띄움)
-    ...Array.from({ length: 10 }).map((_, i) => ({
-      id: `A-${String(i + 1).padStart(2, "0")}`,
-      assetType: "rack" as const,
-      layer: "floor" as const,
-      name: `A-${String(i + 1).padStart(2, "0")}`,
-      status: "normal" as const,
-      data: { temperature: 22 + i * 0.2, uUsage: 60 + i },
-      gridX: 2 + i, // X: 2~11
-      gridY: 2, // Y: 2,3
-      widthInCells: 1,
-      heightInCells: 2,
-      customColor: "#dbe4ff",
-      doorDirection: "south" as const,
-      createdAt: new Date().toISOString(),
-      uHeight: 42 as const,
-    })),
-
-    // --- Rack Row B (Hot Aisle) --- (A열과 1칸 통로 확보)
-    ...Array.from({ length: 10 }).map((_, i) => ({
-      id: `B-${String(i + 1).padStart(2, "0")}`,
-      assetType: "rack" as const,
-      layer: "floor" as const,
-      name: `B-${String(i + 1).padStart(2, "0")}`,
-      status: "normal" as const,
-      data: { temperature: 23 + i * 0.1, uUsage: 55 + i * 2 },
-      gridX: 2 + i, // X: 2~11
-      gridY: 5, // Y: 5,6 (Y: 4가 통로)
-      widthInCells: 1,
-      heightInCells: 2,
-      customColor: "#dbe4ff",
-      doorDirection: "north" as const,
-      createdAt: new Date().toISOString(),
-      uHeight: 42 as const,
-    })),
-
-    // --- Rack Row C (with warning/danger) ---
-    ...Array.from({ length: 12 }).map((_, i) => ({
-      id: `C-${String(i + 1).padStart(2, "0")}`,
-      assetType: "rack" as const,
-      layer: "floor" as const,
-      name: `C-${String(i + 1).padStart(2, "0")}`,
-      status: i === 5 ? "warning" : i === 8 ? "danger" : ("normal" as const),
-      data: {
-        temperature: i === 5 ? 28 : i === 8 ? 32 : 24,
-        uUsage: 70 + i * 2,
-      },
-      gridX: 15 + i, // X: 15~26
-      gridY: 2, // Y: 2,3
-      widthInCells: 1,
-      heightInCells: 2,
-      customColor: "#dbe4ff",
-      doorDirection: "south" as const,
-      createdAt: new Date().toISOString(),
-      uHeight: 45 as const,
-    })),
-
-    // --- Cooling & Power ---
-    {
-      id: "crac-1",
-      assetType: "crac",
-      layer: "floor",
-      name: "항온항습기-01",
-      gridX: 2,
-      gridY: 9, // Y: 9,10,11,12
-      widthInCells: 2,
-      heightInCells: 4,
-      customColor: "#a7d8de",
-    },
-    {
-      id: "crac-2",
-      assetType: "crac",
-      layer: "floor",
-      name: "항온항습기-02",
-      gridX: 25, // X: 25,26
-      gridY: 9, // Y: 9,10,11,12
-      widthInCells: 2,
-      heightInCells: 4,
-      customColor: "#a7d8de",
-    },
-    {
-      id: "ups-1",
-      assetType: "ups_battery",
-      layer: "floor",
-      name: "UPS-01",
-      gridX: 5, // X: 5,6,7,8
-      gridY: 9, // Y: 9,10
-      widthInCells: 4,
-      heightInCells: 2,
-      customColor: "#f9dcc4",
-    },
-    {
-      id: "rpp-1",
-      assetType: "power_panel",
-      layer: "floor",
-      name: "RPP-A",
-      gridX: 15, // X: 15,16
-      gridY: 5, // Y: 5 (C열 뒤)
-      widthInCells: 2,
-      heightInCells: 1,
-      customColor: "#f3d9e3",
-    },
-    {
-      id: "rpp-2",
-      assetType: "power_panel",
-      layer: "floor",
-      name: "RPP-B",
-      gridX: 18, // X: 18,19
-      gridY: 5, // Y: 5 (C열 뒤)
-      widthInCells: 2,
-      heightInCells: 1,
-      customColor: "#f3d9e3",
-    },
-
-    // --- Overhead & Wall-mounted items ---
-    {
-      id: "cctv-1",
-      assetType: "cctv",
-      layer: "overhead",
-      name: "CCTV-코너-좌상",
-      gridX: 1, // 좌측 벽 안
-      gridY: 1, // 상단 벽 안
-      widthInCells: 1,
-      heightInCells: 1,
-      customColor: "#e0e0e0",
-    },
-    {
-      id: "cctv-2",
-      assetType: "cctv",
-      layer: "overhead",
-      name: "CCTV-코너-우상",
-      gridX: 28, // 우측 벽 안
-      gridY: 1, // 상단 벽 안
-      widthInCells: 1,
-      heightInCells: 1,
-      customColor: "#e0e0e0",
-    },
-    {
-      id: "cctv-3",
-      assetType: "cctv",
-      layer: "overhead",
-      name: "CCTV-중앙",
-      gridX: 14,
-      gridY: 8,
-      widthInCells: 1,
-      heightInCells: 1,
-      customColor: "#e0e0e0",
-    },
-    {
-      id: "epo-1",
-      assetType: "epo",
-      layer: "wall",
-      name: "EPO",
-      gridX: 17,
-      gridY: 15, // 하단 벽에 위치
-      widthInCells: 1,
-      heightInCells: 1,
-      customColor: "#ffadad",
-    },
-  ] as Asset[],
+  
+  assets: [],
+  isLoading: true,
+  error: null,
   selectedAssetIds: [],
+};
 
-  toggleMode: () =>
-    set((state) => ({ mode: state.mode === "view" ? "edit" : "view" })),
-  setDisplayOptions: (newOptions: Partial<DisplayOptionsType>) =>
-    set((state) => ({
-      displayOptions: { ...state.displayOptions, ...newOptions },
-    })),
-  setDisplayMode: (newMode: DisplayMode) => set({ displayMode: newMode }),
-  setGridSize: (cols, rows) => set({ gridCols: cols, gridRows: rows }),
-  setStage: (newStage) => set({ stage: newStage }),
-  addAsset: (newAsset) =>
-    set((state) => ({
-      assets: [
-        ...state.assets,
-        {
-          ...newAsset,
-          id: `asset_${crypto.randomUUID()}`,
-          createdAt: new Date().toISOString(),
-        },
-      ],
-    })),
-  updateAsset: (id, newProps) =>
-    set((state) => ({
-      assets: state.assets.map((asset) =>
-        asset.id === id
-          ? { ...asset, ...newProps, updatedAt: new Date().toISOString() }
-          : asset,
-      ),
-    })),
-  deleteAsset: (id) =>
-    set((state) => ({
-      assets: state.assets.filter((asset) => asset.id !== id),
-      selectedAssetIds: state.selectedAssetIds.filter((sid) => sid !== id),
-    })),
-  duplicateAsset: (id) =>
-    set((state) => {
-      const original = state.assets.find((a) => a.id === id);
-      if (!original) return state;
-      const duplicate: Asset = {
-        ...original,
-        id: `asset_${crypto.randomUUID()}`,
-        name: `${original.name} (Copy)`,
-        gridX: original.gridX + 1,
-        gridY: original.gridY + 1,
-        createdAt: new Date().toISOString(),
-        updatedAt: undefined,
-      };
-      return { assets: [...state.assets, duplicate] };
-    }),
-  selectAsset: (id, isMultiSelect = false) =>
-    set((state) => {
-      const { selectedAssetIds } = state;
-      if (isMultiSelect) {
-        const newSelection = selectedAssetIds.includes(id)
-          ? selectedAssetIds.filter((sid) => sid !== id)
-          : [...selectedAssetIds, id];
-        return { selectedAssetIds: newSelection };
-      }
-      if (selectedAssetIds.length === 1 && selectedAssetIds[0] === id)
-        return { selectedAssetIds: [] };
-      return { selectedAssetIds: [id] };
-    }),
-  deselectAll: () => set({ selectedAssetIds: [] }),
-
-  groupSelectedAssets: () => {
-    const { selectedAssetIds } = get();
-    // 's' 오타 수정
-    if (selectedAssetIds.length < 2) return;
-    const groupId = `group_${crypto.randomUUID()}`;
-    set((state) => ({
-      assets: state.assets.map((asset) =>
-        selectedAssetIds.includes(asset.id) ? { ...asset, groupId } : asset,
-      ),
-    }));
-  },
-  ungroupSelectedAssets: () => {
-    const { selectedAssetIds, assets } = get();
-    const groupIds = new Set(
-      assets
-        .filter((a) => selectedAssetIds.includes(a.id))
-        .map((a) => a.groupId)
-        .filter(Boolean),
-    );
-    if (groupIds.size === 0) return;
-    set((state) => ({
-      assets: state.assets.map((asset) =>
-        groupIds.has(asset.groupId) ? { ...asset, groupId: undefined } : asset,
-      ),
-    }));
-  },
-
-  zoom: (direction) => {
-    const { stage } = get();
-    const zoomFactor = 0.25;
-    const newScale =
-      direction === "in"
-        ? stage.scale + zoomFactor
-        : Math.max(0.1, stage.scale - zoomFactor);
-
-    set({ stage: { ...stage, scale: newScale } });
-  },
-});
+const storeCreator: StateCreator<FloorPlanState> = () => initialState;
 
 export const useFloorPlanStore = create<FloorPlanState>()(
   temporal(storeCreator, {
     partialize: (state: FloorPlanState) => ({
       assets: state.assets,
       selectedAssetIds: state.selectedAssetIds,
+      gridCols: state.gridCols,
+      gridRows: state.gridRows,
+      mode: state.mode,
+      displayMode: state.displayMode,
+      dashboardMetricView: state.dashboardMetricView,
+   visibleLayers: state.visibleLayers,
+   visibleSeverities: state.visibleSeverities,
     }),
   }),
 );
+
+// --- Actions ---
+
+/**
+ * (Action) 서버실 ID로 평면도 데이터를 API에서 가져옵니다.
+ */
+export const fetchFloorPlan = async (roomId: string) => {
+  useFloorPlanStore.setState({ isLoading: true, error: null });
+  try {
+    // --- 경로 handlers.ts와일치---
+    const response = await fetch(`/api/server-rooms/${roomId}/floorplan`);
+
+    if (!response.ok) {
+        // 응답 상태가 'ok'가 아닐 때 응답 내용을 텍스트로 확인
+        const errorText = await response.text();
+        console.error('Fetch error response:', errorText);
+        throw new Error(`Failed to fetch floor plan data. Status: ${response.status}`);
+    }
+
+    // 응답이 성공적일 때만 JSON 파싱 시도
+    const data = await response.json();
+
+    useFloorPlanStore.setState({
+      assets: data.assets,
+      gridCols: data.gridCols,
+      gridRows: data.gridRows,
+      isLoading: false,
+    });
+  } catch (err) {
+    // JSON 파싱 오류 포함 모든 에러 처리
+    console.error('Error in fetchFloorPlan:', err);
+    useFloorPlanStore.setState({
+      isLoading: false,
+      // err 객체가 Error 인스턴스인지 확인 후 메시지 사용
+      error: err instanceof Error ? err.message : String(err),
+    });
+  }
+};
+
+
+
+export const addAsset = async (newAsset: Omit<Asset, 'id'>) => {
+  try {
+    const response = await fetch('/api/floorplan/assets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newAsset),
+    });
+    if (!response.ok) throw new Error('Failed to add asset');
+
+    const savedAsset = await response.json();
+    useFloorPlanStore.setState((state) => ({
+      assets: [...state.assets, savedAsset],
+    }));
+  } catch (err) {
+    console.error('Error adding asset:', err);
+    // TODO: 사용자에게 에러 알림
+  }
+};
+
+export const updateAsset = async (
+  id: string,
+  newProps: Partial<Omit<Asset, 'id'>>,
+) => {
+  const originalAssets = useFloorPlanStore.getState().assets;
+  // Optimistic Update
+  useFloorPlanStore.setState((state) => ({
+    assets: state.assets.map((asset) =>
+      asset.id === id
+        ? { ...asset, ...newProps, updatedAt: new Date().toISOString() }
+        : asset,
+    ),
+  }));
+
+  try {
+    const response = await fetch(`/api/floorplan/assets/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newProps),
+    });
+    if (!response.ok) throw new Error('Failed to update asset');
+  } catch (err) {
+    console.error('Error updating asset:', err);
+    // 롤백
+    useFloorPlanStore.setState({ assets: originalAssets });
+    // TODO: 사용자에게 에러 알림
+  }
+};
+
+export const deleteAsset = async (id: string) => {
+  const { assets: originalAssets, selectedAssetIds: originalSelectedIds } =
+    useFloorPlanStore.getState();
+
+  useFloorPlanStore.setState((state) => ({
+    assets: state.assets.filter((asset) => asset.id !== id),
+    selectedAssetIds: state.selectedAssetIds.filter((sid) => sid !== id),
+  }));
+
+  try {
+    const response = await fetch(`/api/floorplan/assets/${id}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) throw new Error('Failed to delete asset');
+  } catch (err) {
+    console.error('Error deleting asset:', err);
+    useFloorPlanStore.setState({
+      assets: originalAssets,
+      selectedAssetIds: originalSelectedIds,
+    });
+    // TODO: 사용자에게 에러 알림
+  }
+};
+
+export const duplicateAsset = async (id: string) => {
+  const original = useFloorPlanStore.getState().assets.find((a) => a.id === id);
+  if (!original) return;
+
+  const { id: _, createdAt: __, updatedAt: ___, ...template } = original;
+  const newAssetTemplate = {
+    ...template,
+    name: `${original.name} (Copy)`,
+    gridX: original.gridX + 1,
+    gridY: original.gridY + 1,
+  };
+
+  try {
+    const response = await fetch('/api/floorplan/assets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newAssetTemplate),
+    });
+    if (!response.ok) throw new Error('Failed to duplicate asset');
+    const savedAsset = await response.json();
+    useFloorPlanStore.setState((state) => ({
+      assets: [...state.assets, savedAsset],
+    }));
+  } catch (err) {
+    console.error('Error duplicating asset:', err);
+    // TODO: 사용자에게 에러 알림
+  }
+};
+
+export const toggleMode = () =>
+  useFloorPlanStore.setState((state) => ({
+    mode: state.mode === 'view' ? 'edit' : 'view',
+  }));
+
+// 지표 뷰 변경
+export const setDashboardMetricView = (view: DashboardMetricView) =>
+ useFloorPlanStore.setState({ dashboardMetricView: view });
+
+// 레이어 가시성 토글
+export const toggleLayerVisibility = (layer: AssetLayer) =>
+ useFloorPlanStore.setState((state) => ({
+  visibleLayers: {
+   ...state.visibleLayers,
+   [layer]: !state.visibleLayers[layer],
+  },
+ }));
+
+// 심각도 가시성 토글
+export const toggleSeverityVisibility = (status: AssetStatus) =>
+ useFloorPlanStore.setState((state) => ({
+  visibleSeverities: {
+   ...state.visibleSeverities,
+   [status]: !state.visibleSeverities[status],
+  },
+ }));
+
+export const setDisplayOptions = (newOptions: Partial<DisplayOptionsType>) =>
+  useFloorPlanStore.setState((state) => ({
+    displayOptions: { ...state.displayOptions, ...newOptions },
+  }));
+
+export const setDisplayMode = (newMode: DisplayMode) =>
+  useFloorPlanStore.setState({ displayMode: newMode });
+
+export const  setGridSize = (cols: number, rows: number) =>
+  useFloorPlanStore.setState({ gridCols: cols, gridRows: rows });
+
+// --- 서버실 상세 정보 API 업데이트 액션 ---
+export const updateServerRoomDetails = async (
+ roomId: string,
+ newDetails: { gridCols?: number; gridRows?: number },
+) => {
+ const { gridCols: oldCols, gridRows: oldRows } = useFloorPlanStore.getState();
+ const oldSettings = { gridCols: oldCols, gridRows: oldRows };
+ 
+ // 1. 낙관적 업데이트 (UI 즉시 반영)
+ useFloorPlanStore.setState(newDetails);
+
+ try {
+  // 2. API 호출
+  const response = await fetch(`/api/server-rooms/${roomId}/floorplan/details`, {
+   method: 'PUT',
+   headers: { 'Content-Type': 'application/json' },
+   body: JSON.stringify(newDetails),
+  });
+  if (!response.ok) throw new Error('Failed to update server room details');
+ 
+  console.log('Server room details updated successfully');
+ 
+ } catch (err) {
+  console.error('Error updating server room details:', err);
+  // 3. 롤백
+  useFloorPlanStore.setState(oldSettings);
+  alert('서버실 크기 저장에 실패했습니다.'); // TODO: 사용자에게 에러 알림
+ }
+};
+
+export const setStage = (newStage: FloorPlanState['stage']) =>
+  useFloorPlanStore.setState({ stage: newStage });
+
+export const selectAsset = (id: string, isMultiSelect = false) =>
+  useFloorPlanStore.setState((state) => {
+    const { selectedAssetIds } = state;
+    if (isMultiSelect) {
+      const newSelection = selectedAssetIds.includes(id)
+        ? selectedAssetIds.filter((sid) => sid !== id)
+        : [...selectedAssetIds, id];
+      return { selectedAssetIds: newSelection };
+    }
+    if (selectedAssetIds.length === 1 && selectedAssetIds[0] === id)
+      return { selectedAssetIds: [] };
+    return { selectedAssetIds: [id] };
+  });
+
+export const deselectAll = () =>
+  useFloorPlanStore.setState({ selectedAssetIds: [] });
+
+export const groupSelectedAssets = () => {
+  const { selectedAssetIds } = useFloorPlanStore.getState();
+  if (selectedAssetIds.length < 2) return;
+  const groupId = `group_${crypto.randomUUID()}`;
+  useFloorPlanStore.setState((state) => ({
+    assets: state.assets.map((asset) =>
+      selectedAssetIds.includes(asset.id) ? { ...asset, groupId } : asset,
+    ),
+  }));
+  // TODO: 그룹 변경 사항 API 업데이트 (여러 자산을 한번에)
+};
+
+export const ungroupSelectedAssets = () => {
+  const { selectedAssetIds, assets } = useFloorPlanStore.getState();
+  const groupIds = new Set(
+    assets
+      .filter((a) => selectedAssetIds.includes(a.id))
+      .map((a) => a.groupId)
+      .filter(Boolean),
+  );
+  if (groupIds.size === 0) return;
+  useFloorPlanStore.setState((state) => ({
+    assets: state.assets.map((asset) =>
+      groupIds.has(asset.groupId) ? { ...asset, groupId: undefined } : asset,
+    ),
+  }));
+  // TODO: 그룹 해제 사항 API 업데이트 (여러 자산을 한번에)
+};
+
+
+// --- (신규) 저장 안 된 변경 사항 확인용 훅 ---
+/**
+* Zundo 히스토리에 'pastStates' (되돌리기 스택)가 1개 이상 있으면 
+* 저장되지 않은 변경 사항이 있는 것으로 간주합니다.
+*/
+export const zoom = (direction: 'in' | 'out') => {
+ const { stage } = useFloorPlanStore.getState();
+ const zoomFactor = 0.25;
+ const newScale =
+  direction === 'in'
+   ? stage.scale + zoomFactor
+   : Math.max(0.1, stage.scale - zoomFactor);
+ useFloorPlanStore.setState({ stage: { ...stage, scale: newScale } });
+};
+
+/**
+* Zundo 히스토리에 'pastStates' (되돌리기 스택)가 1개 이상 있으면 
+* 저장되지 않은 변경 사항이 있는 것으로 간주합니다.
+*/
+export const useHasUnsavedChanges = () => {
+ const pastStatesCount = useStore(
+  useFloorPlanStore.temporal,
+  (state) => state.pastStates.length,
+ );
+ return pastStatesCount > 0;
+};
+
+//  특정 자산으로 줌하는 액션
+export const zoomToAsset = (assetId: string) => {
+ const { assets, } = useFloorPlanStore.getState();
+ const stageNode = document.querySelector('.canvas-container'); // 캔버스 컨테이너 크기 참조
+ if (!stageNode) return;
+
+ const asset = assets.find((a) => a.id === assetId);
+ if (!asset) return;
+
+ const { width: stageWidth, height: stageHeight } = stageNode.getBoundingClientRect();
+
+ // (이 값들은 floorPlanHooks.ts와 일치해야 함)
+ const CELL_SIZE = 160; 
+ const HEADER_PADDING = 80;
+
+ const assetCenterX =
+  HEADER_PADDING +
+  (asset.gridX + asset.widthInCells / 2) * CELL_SIZE;
+ const assetCenterY =
+  HEADER_PADDING +
+  (asset.gridY + asset.heightInCells / 2) * CELL_SIZE;
+
+ const newScale = 1.0; // 100% 줌으로 설정 (조정 가능)
+
+ const newX = stageWidth / 2 - assetCenterX * newScale;
+ const newY = stageHeight / 2 - assetCenterY * newScale;
+
+ setStage({ scale: newScale, x: newX, y: newY });
+
+ useFloorPlanStore.setState({ selectedAssetIds: [assetId] });
+};
+
+

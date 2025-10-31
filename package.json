@@ -8,14 +8,9 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "lint": "eslint .",
-    "prepare": "husky"
+    
   },
-  "lint-staged": {
-    "**/*.ts": [
-      "prettier --write",
-      "eslint --fix"
-    ]
-  },
+ 
   "dependencies": {
     "@babylonjs/core": "^8.32.0",
     "@babylonjs/loaders": "^8.32.0",
@@ -24,6 +19,7 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
+    "@react-spring/konva": "^10.0.3",
     "@tailwindcss/vite": "^4.1.14",
     "@tanstack/react-query": "^5.90.5",
     "@tanstack/react-query-devtools": "^5.90.2",
@@ -53,8 +49,6 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.4.0",
-    "husky": "^9.1.7",
-    "lint-staged": "^16.2.4",
     "msw": "^2.11.6",
     "prettier": "^3.6.2",
     "rollup-plugin-visualizer": "^6.0.5",
