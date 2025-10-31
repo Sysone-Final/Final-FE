@@ -50,12 +50,12 @@ function Rack({
   );
 
   const handleDeviceDragEnd = (deviceId: number, newY: number) => {
-    const draggedDevice = devices.find((d) => d.id === deviceId);
+    const draggedDevice = devices.find((d) => d.equipmentId === deviceId);
     if (!draggedDevice) return;
 
     const newPosition = calculateDraggedPosition(
       newY,
-      draggedDevice.height,
+      draggedDevice.unitSize,
       baseY,
       unitHeight
     );
@@ -78,7 +78,7 @@ function Rack({
 
   return (
     <div
-      className="flex justify-center items-center overflow-y-auto overflow-x-hidden h-[670px] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden mx-auto"
+      className="flex justify-center items-start overflow-y-auto overflow-x-hidden h-full [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden mx-auto"
       style={{ width: `${fullWidth}px` }}
     >
       <Stage
@@ -128,17 +128,17 @@ function Rack({
           {/* 설치된 장비들 */}
           {devices.map((device) => {
             const y = calculateDeviceY(
-              device.position,
-              device.height,
+              device.startUnit,
+              device.unitSize,
               rackHeight,
               baseY,
               unitHeight
             );
-            const height = unitHeight * device.height;
+            const height = unitHeight * device.unitSize;
 
             return (
               <Device
-                key={device.id}
+                key={device.equipmentId}
                 device={device}
                 y={y}
                 height={height}
@@ -156,11 +156,18 @@ function Rack({
           {floatingDevice && floatingInfo && (
             <Device
               device={{
-                id: FLOATING_DEVICE_ID,
-                name: floatingDevice.card.label,
-                type: floatingDevice.card.type,
-                position: floatingInfo.position,
-                height: floatingDevice.card.height,
+                equipmentId: FLOATING_DEVICE_ID,
+                equipmentName: floatingDevice.card.label,
+                equipmentCode: `TEMP-${Date.now()}`,
+                equipmentType: floatingDevice.card.type,
+                status: "NORMAL",
+                startUnit: floatingInfo.position,
+                unitSize: floatingDevice.card.height,
+                rackName: "TEMP",
+                modelName: "Unknown",
+                manufacturer: "Unknown",
+                ipAddress: "0.0.0.0",
+                powerConsumption: 0,
               }}
               y={floatingInfo.y}
               height={floatingInfo.height}

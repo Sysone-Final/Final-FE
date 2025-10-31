@@ -1,21 +1,33 @@
-export type DeviceType =
-  | "server"
-  | "switch"
-  | "router"
-  | "storage"
-  | "firewall"
-  | "loadbalancer"
-  | "pdu"
-  | "kvm"
-  | "other";
+export type EquipmentType =
+  | "SERVER"
+  | "SWITCH"
+  | "ROUTER"
+  | "STORAGE"
+  | "FIREWALL"
+  | "LOAD_BALANCER"
+  | "KVM";
+
+export type EquipmentStatus =
+  | "NORMAL"
+  | "WARNING"
+  | "ERROR"
+  | "MAINTENANCE"
+  | "POWERED_OFF"
+  | "DECOMMISSIONED";
 
 export interface RackDevice {
-  id: number;
-  name: string;
-  type: DeviceType;
-  position: number;
-  height: number;
-  color?: string;
+  equipmentId: number;
+  equipmentName: string;
+  equipmentCode: string;
+  equipmentType: EquipmentType;
+  status: EquipmentStatus;
+  startUnit: number;
+  unitSize: number;
+  rackName: string;
+  modelName: string;
+  manufacturer: string;
+  ipAddress: string;
+  powerConsumption: number;
 }
 
 export interface DeviceCard {
@@ -24,7 +36,7 @@ export interface DeviceCard {
   size: string;
   img: string;
   height: number;
-  type: DeviceType;
+  type: EquipmentType;
 }
 
 export interface FloatingDevice {

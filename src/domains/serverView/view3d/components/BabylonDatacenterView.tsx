@@ -1,49 +1,93 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
-import { Engine, Scene, ArcRotateCamera, HemisphericLight, Vector3, Color4 } from '@babylonjs/core';
+import { Engine, Scene, ArcRotateCamera, HemisphericLight, Vector3, Color4, type IPointerEvent, type PickingInfo } from '@babylonjs/core';
+import { Snackbar, Alert } from '@mui/material';
 import GridFloor from './GridFloor';
 import Equipment3DModel from './Equipment3DModel';
 import EquipmentPalette3D from './EquipmentPalette3D';
+import ContextMenu from './ContextMenu';
+import SelectionBox from './SelectionBox';
 import { useBabylonDatacenterStore } from '../stores/useBabylonDatacenterStore';
 import { CAMERA_CONFIG, EQUIPMENT_PALETTE } from '../constants/config';
 import { getServerRoomEquipment } from '../data/mockServerRoomEquipment';
 import type { EquipmentType } from '../types';
 
 interface BabylonDatacenterViewProps {
-  mode?: 'edit' | 'view'; // 편집 모드 or 뷰어 모드
-  serverRoomId?: string; // 뷰어 모드일 때 서버실 ID
+  mode?: 'edit' | 'view'; // 초기 모드 (기본값: view)
+  serverRoomId?: string; // 서버실 ID
 }
 
-function BabylonDatacenterView({ mode = 'edit', serverRoomId }: BabylonDatacenterViewProps = {}) {
+function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: BabylonDatacenterViewProps = {}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<Engine | null>(null);
   const sceneRef = useRef<Scene | null>(null);
   const [isSceneReady, setIsSceneReady] = useState(false);
   const renderLoopRef = useRef<boolean>(true); // 렌더링 루프 제어
+  const hasAppliedInitialModeRef = useRef(false);
+
+  // 컨텍스트 메뉴 상태
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    equipmentId: string;
+  } | null>(null);
+  
+  // 다중 선택 드래그 상태
+  const [isDraggingSelection, setIsDraggingSelection] = useState(false);
+  const [selectionStart, setSelectionStart] = useState<{ gridX: number; gridY: number } | null>(null);
+
+  // 토스트 메시지 상태
+  const [toast, setToast] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'error' | 'warning' | 'info' | 'success';
+  }>({
+    open: false,
+    message: '',
+    severity: 'info',
+  });
 
   // Zustand
   const {
     gridConfig,
     equipment,
     selectedEquipmentId,
+    selectedEquipmentIds,
     addEquipment,
     setSelectedEquipment,
-    // setGridConfig,
     updateEquipmentPosition,
-    loadEquipment, // 장비 목록 로드 함수 추가
+    updateMultipleEquipmentPositions,
     openRackModal, // 랙 모달 열기
     isRackModalOpen, // 랙 모달 상태 추가
     rotateEquipment90,
+    removeEquipment,
+    mode,
+    setMode,
+    currentServerRoomId,
+    initializeServerRoom,
+    isValidPosition,
+    isPositionOccupied,
+    selectionArea,
+    setSelectionArea,
+    selectEquipmentInArea,
+    clearSelection,
   } = useBabylonDatacenterStore();
 
-  // 뷰어 모드일 때 서버실 데이터 로드
+  // 초기 모드 적용 (최초 한 번)
   useEffect(() => {
-    if (mode === 'view' && serverRoomId) {
-      // 목 데이터에서 서버실 장비 로드
-      const equipmentData = getServerRoomEquipment(serverRoomId);
-      loadEquipment(equipmentData);
-      console.log(`✅ Loaded ${equipmentData.length} equipment for server room: ${serverRoomId}`);
-    }
-  }, [mode, serverRoomId, loadEquipment]);
+    if (hasAppliedInitialModeRef.current) return;
+    setMode(initialMode);
+    hasAppliedInitialModeRef.current = true;
+  }, [initialMode, setMode]);
+
+  // 서버실 데이터 로드
+  useEffect(() => {
+    if (!serverRoomId) return;
+    if (currentServerRoomId === serverRoomId) return;
+
+    const equipmentData = getServerRoomEquipment(serverRoomId);
+    initializeServerRoom(serverRoomId, equipmentData);
+    console.log(`✅ Loaded ${equipmentData.length} equipment for server room: ${serverRoomId}`);
+  }, [serverRoomId, currentServerRoomId, initializeServerRoom]);
 
   // 장비 추가 핸들러
   const handleAddEquipment = useCallback((type: EquipmentType) => {
@@ -58,12 +102,156 @@ function BabylonDatacenterView({ mode = 'edit', serverRoomId }: BabylonDatacente
     rotateEquipment90(selectedEquipmentId, clockwise);
   }, [rotateEquipment90, selectedEquipmentId]);
 
+  // 모드에 따라 안정적인 핸들러 반환 (memo 최적화용)
   // Server 클릭 핸들러 (view 모드에서만)
-  const handleServerClick = useCallback((serverId: string) => {
-    if (mode === 'view') {
-      openRackModal(serverId);
+  const serverClickHandler = useCallback((serverId: string) => {
+    openRackModal(serverId);
+  }, [openRackModal]);
+
+  // 장비 우클릭 핸들러 (edit 모드에서만)
+  const rightClickHandler = useCallback((equipmentId: string, x: number, y: number) => {
+    // 우클릭한 장비가 선택되지 않았다면 선택
+    if (!selectedEquipmentIds.includes(equipmentId)) {
+      setSelectedEquipment(equipmentId);
     }
-  }, [mode, openRackModal]);
+    setContextMenu({ x, y, equipmentId });
+  }, [selectedEquipmentIds, setSelectedEquipment]);
+
+  // 토스트 표시 헬퍼
+  const showToast = useCallback((message: string, severity: 'error' | 'warning' | 'info' | 'success' = 'info') => {
+    setToast({ open: true, message, severity });
+  }, []);
+
+  // 토스트 닫기
+  const handleCloseToast = useCallback(() => {
+    setToast((prev) => ({ ...prev, open: false }));
+  }, []);
+
+  // 장비 위치 업데이트 핸들러 (유효성 검사 포함)
+  const handleEquipmentPositionChange = useCallback((id: string, gridX: number, gridY: number): boolean => {
+    const result = updateEquipmentPosition(id, gridX, gridY);
+    
+    if (!result) {
+      // 유효성 검사 실패 시 토스트 표시
+      if (!isValidPosition(gridX, gridY)) {
+        showToast('격자 범위를 벗어났습니다', 'error');
+      } else if (isPositionOccupied(gridX, gridY, id)) {
+        showToast('이미 장비가 배치되어 있습니다', 'error');
+      }
+    }
+    
+    return result;
+  }, [updateEquipmentPosition, isValidPosition, isPositionOccupied, showToast]);
+
+  // 다중 장비 위치 업데이트 핸들러 (유효성 검사 포함)
+  const handleMultipleEquipmentPositionsChange = useCallback((
+    updates: { id: string; gridX: number; gridY: number; originalGridX: number; originalGridY: number }[]
+  ): boolean => {
+    const result = updateMultipleEquipmentPositions(updates);
+    
+    if (!result) {
+      // 유효성 검사 실패 시 토스트 표시
+      showToast('선택된 장비들을 이동할 수 없습니다 (격자 범위 벗어남 또는 위치 중복)', 'error');
+    }
+    
+    return result;
+  }, [updateMultipleEquipmentPositions, showToast]);
+
+  // 캔버스에서 마우스 좌표를 격자 좌표로 변환
+  const screenToGrid = useCallback((clientX: number, clientY: number): { gridX: number; gridY: number } | null => {
+    const canvas = canvasRef.current;
+    const scene = sceneRef.current;
+    if (!canvas || !scene) return null;
+
+    // 캔버스 상의 좌표로 변환
+    const rect = canvas.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+
+    // 레이 캐스팅으로 3D 공간의 좌표 얻기
+    const pickResult = scene.pick(x, y, (mesh) => mesh.name === 'ground');
+    
+    if (pickResult?.hit && pickResult.pickedPoint) {
+      const worldX = pickResult.pickedPoint.x;
+      const worldZ = pickResult.pickedPoint.z;
+      
+      // 격자 좌표로 변환
+      const gridX = Math.floor(worldX / gridConfig.cellSize);
+      const gridY = Math.floor(worldZ / gridConfig.cellSize);
+      
+      return { gridX, gridY };
+    }
+    
+    return null;
+  }, [gridConfig.cellSize]);
+
+  // 드래그 앤 드롭으로 장비 추가
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    
+    const equipmentType = e.dataTransfer.getData('equipmentType') as EquipmentType;
+    if (!equipmentType) return;
+
+    const gridPos = screenToGrid(e.clientX, e.clientY);
+    
+    if (!gridPos) {
+      showToast('격자 범위를 벗어났습니다', 'error');
+      return;
+    }
+
+    const { gridX, gridY } = gridPos;
+
+    // 유효성 검사
+    if (!isValidPosition(gridX, gridY)) {
+      showToast('격자 범위를 벗어났습니다', 'error');
+      return;
+    }
+
+    if (isPositionOccupied(gridX, gridY)) {
+      showToast('이미 장비가 배치되어 있습니다', 'error');
+      return;
+    }
+
+    // 장비 추가
+    addEquipment(equipmentType, gridX, gridY);
+    showToast('장비가 추가되었습니다', 'success');
+  }, [screenToGrid, isValidPosition, isPositionOccupied, addEquipment, showToast]);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+  }, []);
+
+  // 컨텍스트 메뉴 닫기
+  const handleContextMenuClose = useCallback(() => {
+    setContextMenu(null);
+  }, []);
+
+  // 장비 삭제
+  const handleDeleteEquipment = useCallback(() => {
+    if (contextMenu) {
+      // 다중 선택된 경우 모두 삭제
+      if (selectedEquipmentIds.length > 1) {
+        selectedEquipmentIds.forEach((id) => removeEquipment(id));
+        clearSelection();
+        showToast(`${selectedEquipmentIds.length}개 장비가 삭제되었습니다`, 'success');
+      } else {
+        // 단일 선택
+        removeEquipment(contextMenu.equipmentId);
+        showToast('장비가 삭제되었습니다', 'success');
+      }
+      setContextMenu(null);
+    }
+  }, [contextMenu, selectedEquipmentIds, removeEquipment, clearSelection, showToast]);
+  
+  // 다중 선택된 장비 삭제
+  const handleDeleteSelectedEquipment = useCallback(() => {
+    if (selectedEquipmentIds.length > 0) {
+      selectedEquipmentIds.forEach((id) => removeEquipment(id));
+      clearSelection();
+      showToast(`${selectedEquipmentIds.length}개 장비가 삭제되었습니다`, 'success');
+    }
+  }, [selectedEquipmentIds, removeEquipment, clearSelection, showToast]);
 
   // 격자 설정 변경
   // const handleGridChange = (key: 'rows' | 'columns', value: number) => {
@@ -117,16 +305,6 @@ function BabylonDatacenterView({ mode = 'edit', serverRoomId }: BabylonDatacente
     const light2 = new HemisphericLight('light2', new Vector3(0, -1, 0), scene);
     light2.intensity = 0.3;
 
-    // 배경 클릭 시 선택 해제 (edit 모드에서만)
-    if (mode === 'edit') {
-      scene.onPointerDown = (_evt, pickResult) => {
-        // 아무것도 선택되지 않았거나 바닥을 클릭한 경우
-        if (!pickResult.hit || pickResult.pickedMesh?.name === 'ground') {
-          setSelectedEquipment(null);
-        }
-      };
-    }
-
     setIsSceneReady(true);
 
     // 렌더링 루프 (최적화: 렌더링이 필요할 때만 실행)
@@ -159,7 +337,128 @@ function BabylonDatacenterView({ mode = 'edit', serverRoomId }: BabylonDatacente
         engine.dispose();
       }
     };
-  }, [gridConfig.columns, gridConfig.rows, gridConfig.cellSize, setSelectedEquipment, mode]);
+  }, [gridConfig.columns, gridConfig.rows, gridConfig.cellSize]);
+
+  // 모드 변경에 따른 포인터 상호작용 업데이트
+  useEffect(() => {
+    const scene = sceneRef.current;
+    const canvas = canvasRef.current;
+    if (!scene || !canvas) return;
+
+    if (mode === 'edit') {
+      // 편집 모드: 다중 선택 및 배경 클릭 처리
+      const pointerDownHandler = (evt: IPointerEvent, pickResult: PickingInfo) => {
+        // 우클릭은 무시
+        if (evt.button === 2) return;
+        
+        // 장비 메시를 클릭한 경우 (equipment-로 시작하는 name 또는 id) - 이벤트 무시
+        const clickedEquipment = pickResult.pickedMesh?.name?.startsWith('equipment-') || 
+                                 pickResult.pickedMesh?.id?.startsWith('server-') ||
+                                 pickResult.pickedMesh?.id?.startsWith('door-') ||
+                                 pickResult.pickedMesh?.id?.startsWith('climatic_chamber-') ||
+                                 pickResult.pickedMesh?.id?.startsWith('fire_extinguisher-') ||
+                                 pickResult.pickedMesh?.id?.startsWith('thermometer-') ||
+                                 pickResult.pickedMesh?.id?.startsWith('aircon-');
+        
+        if (clickedEquipment) {
+          // 장비를 클릭한 경우 - 장비의 자체 드래그 동작이 처리하도록 함
+          return;
+        }
+        
+        // Ctrl/Cmd + 좌클릭: 영역 선택 시작 (배경 클릭 시에만)
+        if ((evt.ctrlKey || evt.metaKey) && evt.button === 0) {
+          // 배경이나 ground만 클릭한 경우에만 영역 선택 시작
+          if (pickResult.hit && (pickResult.pickedMesh?.name === 'ground' || !pickResult.pickedMesh)) {
+            const gridPos = screenToGrid(evt.clientX, evt.clientY);
+            if (gridPos) {
+              setIsDraggingSelection(true);
+              setSelectionStart(gridPos);
+              setSelectionArea({
+                startX: gridPos.gridX,
+                startY: gridPos.gridY,
+                endX: gridPos.gridX,
+                endY: gridPos.gridY,
+              });
+              // 카메라 비활성화
+              scene.activeCamera!.detachControl();
+            }
+          }
+          return;
+        }
+        
+        // 장비가 아닌 배경 클릭: 선택 해제
+        if (pickResult.hit && pickResult.pickedMesh?.name === 'ground') {
+          clearSelection();
+          setSelectionStart(null);
+          setIsDraggingSelection(false);
+        } else if (!pickResult.hit) {
+          // 아무것도 클릭하지 않은 경우에도 선택 해제
+          clearSelection();
+          setSelectionStart(null);
+          setIsDraggingSelection(false);
+        }
+      };
+
+      const pointerMoveHandler = (evt: IPointerEvent) => {
+        if (isDraggingSelection && selectionStart) {
+          const gridPos = screenToGrid(evt.clientX, evt.clientY);
+          if (gridPos) {
+            setSelectionArea({
+              startX: selectionStart.gridX,
+              startY: selectionStart.gridY,
+              endX: gridPos.gridX,
+              endY: gridPos.gridY,
+            });
+          }
+        }
+      };
+
+      const pointerUpHandler = (evt: IPointerEvent) => {
+        if (isDraggingSelection && selectionStart) {
+          const gridPos = screenToGrid(evt.clientX, evt.clientY);
+          if (gridPos) {
+            // 영역 내의 장비 선택
+            selectEquipmentInArea(
+              selectionStart.gridX,
+              selectionStart.gridY,
+              gridPos.gridX,
+              gridPos.gridY
+            );
+          }
+          setIsDraggingSelection(false);
+          setSelectionStart(null);
+          setSelectionArea(null);
+          // 카메라 다시 활성화
+          scene.activeCamera!.attachControl(canvas, true);
+        }
+      };
+
+      scene.onPointerDown = pointerDownHandler;
+      scene.onPointerMove = pointerMoveHandler;
+      scene.onPointerUp = pointerUpHandler;
+
+      return () => {
+        if (scene.onPointerDown === pointerDownHandler) {
+          scene.onPointerDown = undefined;
+        }
+        if (scene.onPointerMove === pointerMoveHandler) {
+          scene.onPointerMove = undefined;
+        }
+        if (scene.onPointerUp === pointerUpHandler) {
+          scene.onPointerUp = undefined;
+        }
+      };
+    }
+
+    // 보기 모드로 전환 시 선택 해제 및 포인터 이벤트 제거
+    clearSelection();
+    setSelectionArea(null);
+    setIsDraggingSelection(false);
+    setSelectionStart(null);
+    scene.onPointerDown = undefined;
+    scene.onPointerMove = undefined;
+    scene.onPointerUp = undefined;
+  }, [mode, isDraggingSelection, selectionStart, clearSelection, setSelectionArea, selectEquipmentInArea, screenToGrid]);
 
   // 🔥 랙 모달이 열리면 Babylon 렌더링 일시정지 (성능 최적화)
   useEffect(() => {
@@ -177,134 +476,162 @@ function BabylonDatacenterView({ mode = 'edit', serverRoomId }: BabylonDatacente
     }
   }, [mode, serverRoomId]);
 
+  // Delete 키 이벤트 처리
+  useEffect(() => {
+    if (mode !== 'edit') return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Delete' && selectedEquipmentIds.length > 0) {
+        handleDeleteSelectedEquipment();
+      }
+      // Escape 키로 선택 해제
+      if (e.key === 'Escape') {
+        clearSelection();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [mode, selectedEquipmentIds, handleDeleteSelectedEquipment, clearSelection]);
+
   return (
-    <div className="flex h-full w-full overflow-hidden">
-      {/* 메인 3D 뷰 영역 */}
-      <div className="flex-1 relative">
-        {/* 헤더 */}
-        {/* <div className="absolute top-0 left-0 right-0 backdrop-blur-sm p-4 z-10">
-          <div className="flex gap-4 items-center text-white text-sm">
-            <div className="flex items-center gap-2">
-              <label>행:</label>
-              <button
-                onClick={() => handleGridChange('rows', gridConfig.rows - 1)}
-                className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded"
-              >
-                -
-              </button>
-              <span className="w-8 text-center">{gridConfig.rows}</span>
-              <button
-                onClick={() => handleGridChange('rows', gridConfig.rows + 1)}
-                className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded"
-              >
-                +
-              </button>
-            </div>
+    <div className="h-full w-full overflow-hidden relative">
+      <canvas
+        ref={canvasRef}
+        className="w-full h-full outline-none"
+        style={{ touchAction: 'none' }}
+        onContextMenu={(e) => e.preventDefault()} // 우클릭 기본 메뉴 방지
+        onDrop={mode === 'edit' ? handleDrop : undefined} // 편집 모드에서만 드롭 허용
+        onDragOver={mode === 'edit' ? handleDragOver : undefined} // 드래그 오버 허용
+      />
 
-            <div className="flex items-center gap-2">
-              <label>열:</label>
-              <button
-                onClick={() => handleGridChange('columns', gridConfig.columns - 1)}
-                className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded"
-              >
-                -
-              </button>
-              <span className="w-8 text-center">{gridConfig.columns}</span>
-              <button
-                onClick={() => handleGridChange('columns', gridConfig.columns + 1)}
-                className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded"
-              >
-                +
-              </button>
-            </div>
-
-            <div className="ml-auto text-white">
-              배치된 장비: {equipment.length}개
-            </div>
-          </div>
-        </div> */}
-
-        {/* Canvas */}
-        <canvas
-          ref={canvasRef}
-          className="w-full h-full outline-none"
-          style={{ touchAction: 'none' }}
-        />
-
-        {/* 컨트롤 가이드 */}
-        <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-md rounded-lg p-3 text-white text-xs max-w-xs">
-          <div className="font-semibold mb-2">⌨️ 컨트롤</div>
-          <ul className="space-y-1">
-            <li>• 좌클릭 드래그 (배경): 카메라 회전</li>
-            {mode === 'edit' && <li>• 좌클릭 드래그 (장비): 장비 이동</li>}
-            <li>• 우클릭 드래그: 카메라 이동</li>
-            <li>• 마우스 휠: 줌 인/아웃</li>
-          </ul>
-        </div>
-
-        {mode === 'edit' && selectedEquipmentId && (
-          <div className="absolute bottom-4 right-4 bg-black/50 backdrop-blur-md rounded-lg p-3 text-white text-xs flex items-center gap-2">
-            <span className="font-semibold">회전</span>
-            <button
-              type="button"
-              onClick={() => handleRotateEquipment(false)}
-              className="bg-gray-700 hover:bg-gray-600 text-white rounded-md px-3 py-1 text-sm"
-            >
-              ⟲ 90°
-            </button>
-            <button
-              type="button"
-              onClick={() => handleRotateEquipment(true)}
-              className="bg-gray-700 hover:bg-gray-600 text-white rounded-md px-3 py-1 text-sm"
-            >
-              ⟳ 90°
-            </button>
-          </div>
-        )}
-
-        {/* 뷰어 모드 */}
-        {/* {mode === 'view' && (
-          <div className="absolute top-4 left-4 bg-blue-500/30 backdrop-blur-md rounded-lg px-4 py-2 text-white text-sm">
-            <span className="font-semibold">뷰어 모드</span>
-          </div>
-        )} */}
-
-        {/* 3D 객체들 렌더링 */}
-        {isSceneReady && sceneRef.current && (
-          <>
-            {/* 격자 바닥 */}
-            <GridFloor scene={sceneRef.current} gridConfig={gridConfig} />
-
-            {/* 장비들 */}
-            {equipment.map((eq) => {
-              const paletteItem = EQUIPMENT_PALETTE.find((p) => p.type === eq.type);
-              if (!paletteItem) return null;
-
-              return (
-                <Equipment3DModel
-                  key={eq.id}
-                  scene={sceneRef.current!}
-                  equipment={eq}
-                  cellSize={gridConfig.cellSize}
-                  modelPath={paletteItem.modelPath}
-                  isSelected={eq.id === selectedEquipmentId}
-                  onSelect={setSelectedEquipment}
-                  onPositionChange={updateEquipmentPosition}
-                  isDraggable={mode === 'edit'} // 편집 모드에서만 드래그 가능
-                  onServerClick={mode === 'view' ? handleServerClick : undefined} // view 모드에서만 클릭 핸들러 전달
-                />
-              );
-            })}
-          </>
-        )}
+      {/* 컨트롤 가이드 */}
+      <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-md rounded-lg p-3 text-white text-xs max-w-xs z-10">
+        <div className="font-semibold mb-2">⌨️ 컨트롤</div>
+        <ul className="space-y-1">
+          <li>• 좌클릭 드래그 (배경): 카메라 회전</li>
+          {mode === 'edit' && <li>• 좌클릭 드래그 (장비): 장비 이동</li>}
+          {mode === 'edit' && <li>• Ctrl+드래그 (배경): 영역 선택</li>}
+          <li>• 우클릭 드래그: 카메라 이동</li>
+          <li>• 마우스 휠: 줌 인/아웃</li>
+          {mode === 'edit' && selectedEquipmentIds.length > 0 && (
+            <>
+              <li>• Delete: 선택된 장비 삭제</li>
+              <li>• Esc: 선택 해제</li>
+            </>
+          )}
+        </ul>
       </div>
 
-      {/* 편집 모드에서만 표시 */}
+      {/* 회전 버튼 */}
+      {mode === 'edit' && selectedEquipmentIds.length === 1 && (
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 border border-slate-300/40 backdrop-blur-sm rounded-lg p-3 text-white text-xs flex items-center gap-2">
+          <span className="font-semibold">회전</span>
+          <button
+            type="button"
+            onClick={() => handleRotateEquipment(false)}
+            className="bg-gray-700 hover:bg-gray-600 text-white rounded-md px-3 py-1 text-sm"
+          >
+            ⟲ 90°
+          </button>
+          <button
+            type="button"
+            onClick={() => handleRotateEquipment(true)}
+            className="bg-gray-700 hover:bg-gray-600 text-white rounded-md px-3 py-1 text-sm"
+          >
+            ⟳ 90°
+          </button>
+        </div>
+      )}
+      
+      {/* 다중 선택 시 삭제 버튼 */}
+      {mode === 'edit' && selectedEquipmentIds.length > 1 && (
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 border border-slate-300/40 backdrop-blur-sm rounded-lg p-3 text-white text-xs flex items-center gap-2">
+          <span className="font-semibold">{selectedEquipmentIds.length}개 선택됨</span>
+          <button
+            type="button"
+            onClick={handleDeleteSelectedEquipment}
+            className="bg-red-700 hover:bg-red-600 text-white rounded-md px-3 py-1 text-sm"
+          >
+            🗑️ 삭제
+          </button>
+        </div>
+      )}
+
+      {/* 장비 목록 패널 - 편집 모드에서만 표시 (오른쪽 상단에 플로팅) */}
       {mode === 'edit' && (
-        <div className="w-70 h-full flex-shrink-0">
+        <div className="absolute top-4 right-4 w-60 max-h-[calc(100vh-10rem)] z-20">
           <EquipmentPalette3D onAddEquipment={handleAddEquipment} />
         </div>
       )}
+
+      {/* 3D 객체들 렌더링 */}
+      {isSceneReady && sceneRef.current && (
+        <>
+          {/* 격자 바닥 */}
+          <GridFloor scene={sceneRef.current} gridConfig={gridConfig} />
+
+          {/* 장비들 */}
+          {equipment.map((eq) => {
+            const paletteItem = EQUIPMENT_PALETTE.find((p) => p.type === eq.type);
+            if (!paletteItem) return null;
+
+            return (
+              <Equipment3DModel
+                key={eq.id}
+                scene={sceneRef.current!}
+                equipment={eq}
+                cellSize={gridConfig.cellSize}
+                modelPath={paletteItem.modelPath}
+                isSelected={selectedEquipmentIds.includes(eq.id)}
+                onSelect={setSelectedEquipment}
+                onPositionChange={handleEquipmentPositionChange}
+                isDraggable={mode === 'edit'} // 편집 모드에서만 드래그 가능
+                onServerClick={mode === 'view' ? serverClickHandler : undefined} // view 모드에서만 클릭 핸들러 전달
+                onRightClick={mode === 'edit' ? rightClickHandler : undefined} // edit 모드에서만 우클릭 핸들러 전달
+                selectedEquipmentIds={selectedEquipmentIds}
+                onMultiDragEnd={handleMultipleEquipmentPositionsChange}
+              />
+            );
+          })}
+          
+          {/* 선택 영역 박스 */}
+          {mode === 'edit' && selectionArea && (
+            <SelectionBox
+              scene={sceneRef.current!}
+              startGridX={selectionArea.startX}
+              startGridY={selectionArea.startY}
+              endGridX={selectionArea.endX}
+              endGridY={selectionArea.endY}
+              cellSize={gridConfig.cellSize}
+            />
+          )}
+        </>
+      )}
+
+      {/* 컨텍스트 메뉴 */}
+      {contextMenu && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          onClose={handleContextMenuClose}
+          onDelete={handleDeleteEquipment}
+        />
+      )}
+
+      {/* 토스트 메시지 */}
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={3000}
+        onClose={handleCloseToast}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseToast} severity={toast.severity} sx={{ width: '100%' }}>
+          {toast.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 }

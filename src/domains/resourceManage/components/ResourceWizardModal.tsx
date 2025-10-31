@@ -998,7 +998,7 @@ useEffect(() => {
                   type="button"
                   onClick={handleClose}
                   disabled={isLoading}
-                  className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                  className="px-4 py-2 btn-cancel"
                 >
                   취소
                 </button>
@@ -1008,7 +1008,7 @@ useEffect(() => {
                     type="button"
                     onClick={nextStep} // 유효성 검사가 포함된 nextStep
                     disabled={isLoading}
-                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    className="px-4 py-2 btn-create"
                   >
                     다음
                   </button>
