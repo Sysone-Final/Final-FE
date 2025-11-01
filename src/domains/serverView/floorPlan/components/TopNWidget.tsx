@@ -78,7 +78,7 @@ const TopNWidget: React.FC = () => {
         key={asset.id}
         onClick={() => handleItemClick(asset.id)}
         className="px-3 py-2 text-left hover:bg-gray-700/50 transition-colors border-b border-gray-700/50 last:border-b-0"
-t      >
+      >
         <p className="text-sm font-semibold text-white truncate">{asset.name}</p>
         <p className="text-xs text-red-400">{reason}</p>
        </button>

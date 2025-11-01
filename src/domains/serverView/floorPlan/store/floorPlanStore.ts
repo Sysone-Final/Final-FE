@@ -11,6 +11,7 @@ import type {
  AssetLayer,     
  AssetStatus,   
 } from '../types';
+import toast from 'react-hot-toast';
 
 export const initialState: FloorPlanState = {
   mode: 'view',

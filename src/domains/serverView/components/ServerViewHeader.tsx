@@ -27,25 +27,13 @@ function ServerViewHeader({
 }: ServerViewHeaderProps) {
   const navigate = useNavigate();
 
-  // 스토어에서는 '데이터'만 가져옵니다.
   const mode = useFloorPlanStore((state) => state.mode);
   const hasUnsavedChanges = useHasUnsavedChanges();
   const selectedAssetIds = useFloorPlanStore((state) => state.selectedAssetIds);
   const displayMode = useFloorPlanStore((state) => state.displayMode);
 
-  const handleBackNavigation = () => {
-    // 편집 모드이고, 저장 안한게 있으면
-    if (mode === 'edit' && hasUnsavedChanges) {
-      if (
-        !window.confirm(
-          '저장하지 않은 변경 사항이 있습니다.\n정말로 이 페이지를 벗어나시겠습니까?',
-        )
-      ) {
-        return; // 이탈 취소
-      }
-    }
-    // (이탈 확정 시) 히스토리 클리어
-    useFloorPlanStore.temporal.getState().clear();
+const handleBackNavigation = () => {
+
     navigate('/server-room-dashboard');
   };
 
@@ -53,16 +41,12 @@ function ServerViewHeader({
   const undo = useStore(useFloorPlanStore.temporal, (state) => state.undo);
   const redo = useStore(useFloorPlanStore.temporal, (state) => state.redo);
 
-  // [MERGE] 님의 사이드바 스토어(HEAD)와 팀원의 3D 스토어(main)를 모두 가져옵니다.
   const { setLeftSidebarOpen, setRightSidebarOpen } = useSidebarStore(); // (HEAD)
   const mode3d = useBabylonDatacenterStore((state) => state.mode); // (main)
   const toggleMode3d = useBabylonDatacenterStore((state) => state.toggleMode); // (main)
 
-  // [MERGE] 팀원의 'handleToggleMode2D' 함수에(main) 님의 사이드바 로직(HEAD)을 합칩니다.
   const handleToggleMode2D = () => {
     if (mode === 'view') {
-      // "보기" -> "편집" 모드로 전환 시
-      // (main)의 그룹핑 확인 로직 (더 상세한 메시지 버전)
       if (selectedAssetIds.length > 1) {
         if (
           window.confirm(
@@ -72,24 +56,20 @@ function ServerViewHeader({
           groupSelectedAssets();
         }
       }
-      // (HEAD) 님의 사이드바 열기 로직
       setLeftSidebarOpen(true);
       setRightSidebarOpen(true);
     } else {
       // "편집" -> "보기" 모드로 전환 시
-      // (HEAD) 님의 오른쪽 사이드바 닫기 로직
       setRightSidebarOpen(false);
     }
 
     toggleMode(); // 2D 모드 전환 실행
   };
 
-  // [MERGE] 3D 토글 핸들러(main)와 Zoom 핸들러(HEAD)를 모두 유지합니다.
   const handleToggleMode3D = () => { // (main)
     toggleMode3d();
   };
   
-  // [MERGE] 활성화된 'handleDisplayModeChange' 함수를 사용합니다. (main)
   const handleDisplayModeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setDisplayMode(e.target.value as 'status' | 'customColor');
   };
@@ -98,10 +78,8 @@ function ServerViewHeader({
   const handleZoomOut = () => zoom('out'); // (HEAD)
 
   return (
-    // [MERGE] 헤더 태그 (main) - (py-2 사용. 님의 py-4로 바꾸셔도 무방합니다)
     <header className="bg-gray-800/50 backdrop-blur-sm border-b border-gray-700 px-6 py-2 flex items-center justify-between flex-shrink-0">
       <div className="flex items-center gap-4">
-        {/* ... (뒤로가기 버튼 코드) ... */}
         <button
           onClick={handleBackNavigation}
           className="flex items-center gap-2 text-gray-100 hover:text-white transition-colors"
@@ -130,7 +108,6 @@ function ServerViewHeader({
 
       {/* 오른쪽 컨트롤 영역 */}
       <div className="flex items-center gap-4">
-        {/* [MERGE] 3D/2D 분기를 위해 '?' 삼항 연산자 사용 (main) */}
         {viewDimension === '2D' ? (
           <>
             {/* 보기 모드 컨트롤 */}
@@ -200,7 +177,6 @@ function ServerViewHeader({
                 </button>
               </div>
             )}
-            {/* [MERGE] 'handleToggleMode2D'를 호출하는 버튼 사용 (main) */}
             <button
               onClick={handleToggleMode2D}
               className="py-2 px-4 rounded-lg flex items-center gap-2 transition-colors bg-gray-700/50 text-gray-100 hover:bg-gray-600 border border-gray-600"

@@ -34,15 +34,34 @@ function ServerViewPage() {
  const shouldBlock = mode === 'edit' && hasUnsavedChanges;
 
  const isDashboardView = mode === 'view' && displayMode === 'status';
-// 1. React Router 이탈 방지 (헤더의 다른 탭 등)v6.7+ (useBlocker) 기준으로 작성
- // v6.7 이상: useBlocker 훅,  v6.4: <Prompt> 컴포넌트 (구현 방식이 다름)
- const blocker = useBlocker(
-  ({ nextLocation }) =>
-   shouldBlock &&
-   !window.confirm(
-    '저장하지 않은 변경 사항이 있습니다.\n정말로 이 페이지를 벗어나시겠습니까?',
-   )
- );
+
+// 1. Zundo 히스토리 클리어 함수를 가져옵니다.
+  const clearTemporalHistory = useFloorPlanStore.temporal.getState().clear;
+
+  // 2. useBlocker에 전달할 함수를 '외부'에 정의합니다.
+  const handleBlockNavigation = ({ nextLocation }: { nextLocation: any }) => {
+    // 3. 차단해야 하는 상황(shouldBlock)인지 확인합니다.
+    if (shouldBlock) {
+      // 4. Gatekeeper가 '직접' 확인 창을 띄웁니다.
+      if (
+        window.confirm(
+          '저장하지 않은 변경 사항이 있습니다.\n정말로 이 페이지를 벗어나시겠습니까?',
+        )
+      ) {
+        // 5. [확인] 클릭: 히스토리를 클리어하고
+        clearTemporalHistory();
+        // 6. '차단 해제' (false 반환)
+        return false;
+      }
+      // 7. [취소] 클릭: '차단' (true 반환)
+      return true;
+    }
+    // 8. 차단할 필요가 없으면 '차단 해제' (false 반환)
+    return false;
+  };
+
+  // 9. 이 함수를 useBlocker에 전달합니다.
+  const blocker = useBlocker(handleBlockNavigation);
 // const isDashboardView = mode === 'view' && displayMode === 'status';
   const {
   isLeftSidebarOpen, toggleLeftSidebar, isRightSidebarOpen, toggleRightSidebar,
