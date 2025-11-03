@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import RackView from '../../../rack/components/RackView';
+import RackView from '../../rack/components/RackView';
 import { useBabylonDatacenterStore } from '../stores/useBabylonDatacenterStore';
 
 function RackModal() {
