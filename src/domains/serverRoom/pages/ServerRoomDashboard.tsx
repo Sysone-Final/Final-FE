@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import ServerRoomList from '../components/ServerRoomList';
+import ServerRoomCreateModal from '../components/ServerRoomCreateModal';
 import { MOCK_SERVER_ROOMS } from '../constants/mockData';
 import type{ ServerRoom } from '../types';
 import '../css/serverRoomDashboard.css';
 
 const ServerRoomDashboard: React.FC = () => {
   const [serverRooms, setServerRooms] = useState<ServerRoom[]>([]);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   useEffect(() => {
     // 실제 환경에서는 이 부분에서 API를 호출하여 데이터를 가져옵니다.
@@ -31,7 +33,10 @@ const ServerRoomDashboard: React.FC = () => {
           <h1 className="dashboard-title">서버실 관리</h1>
           <p className="dashboard-subtitle">데이터 센터 인프라를 모니터링하고 관리하세요</p>
         </div>
-        <button className="btn-create px-6 py-3">
+        <button 
+          className="btn-create px-6 py-3"
+          onClick={() => setIsCreateModalOpen(true)}
+        >
           + 새 서버실 추가
         </button>
       </header>
@@ -70,6 +75,12 @@ const ServerRoomDashboard: React.FC = () => {
           </div>
         </section>
       </main>
+
+      {/* 서버실 생성 모달 */}
+      <ServerRoomCreateModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+      />
     </div>
   );
 };
