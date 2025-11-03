@@ -93,3 +93,21 @@ body {
   @apply fixed inset-0 z-50 flex justify-center items-center p-4 backdrop-blur-sm bg-black/50
 }
 
+/* 탭 레이아웃 */
+
+.tab-layout{
+  @apply h-full w-full flex flex-col overflow-hidden bg-neutral-900;
+}
+
+.tab-header {
+  /* 헤더 배경 및 테두리 조정 */
+  @apply flex justify-between items-center px-8 py-4 flex-shrink-0 border-b border-white/10;
+}
+
+.tab-title {
+  @apply m-0; /* 텍스트 스타일은 컴포넌트에서 text-main-title 사용 */
+}
+
+.tab-subtitle {
+  @apply mt-1; /* 텍스트 스타일은 컴포넌트에서 text-body-primary 사용 + 색상 조정 */
+}

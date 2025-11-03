@@ -139,15 +139,15 @@ export default function ResourceManagePage() {
 
  return (
   // 전체 레이아웃 (ServerRoomDashboard와 동일)
-  <div className="h-full w-full flex flex-col overflow-hidden">
+  <div className="tab-layout">
 
    {/* 헤더 스타일 적용 (ServerRoomDashboard와 동일) */}
-   <header className="flex justify-between items-center px-8 py-6 flex-shrink-0 border-b border-white/10 backdrop-blur-sm bg-gray-900">
+   <header className="tab-header">
     <div>
      {/* 제목 */}
-     <h1 className="text-main-title">자원 관리 목록</h1>
+     <h1 className="text-main-title tab-title">자원 관리 목록</h1>
      {/* 부제목 */}
-     <p className="text-body-primary text-gray-400">데이터 센터의 모든 하드웨어 자산을 효율적으로 관리하세요.</p>
+     <p className="tab-subtitle text-body-primary text-gray-400">데이터 센터의 모든 하드웨어 자산을 효율적으로 관리하세요.</p>
     </div>
     
     {/* --- ⬇️ [리팩토링 1] 버튼과 스피너를 묶기 위한 div --- */}
@@ -163,7 +163,7 @@ export default function ResourceManagePage() {
      {/* "자산 추가" 버튼 */}
      <button
       onClick={addResourceHandler} // 핸들러 연결
-      className="bg-blue-600 text-white border-none px-6 py-3 rounded-lg text-base font-semibold cursor-pointer transition-colors hover:bg-blue-700 text-button"
+      className="btn-create px-4 py-3"
      >
       <Plus size={18} className="inline mr-1" /> {/* 아이콘 추가 */}
       자산 추가

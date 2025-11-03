@@ -30,7 +30,7 @@ export default function ResourceFilters({
           <input
             type="search"
             placeholder="자산명, 모델명, IP로 검색..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 text-gray-50 placeholder-gray-400"
+            className="w-full pl-10 pr-4 py-2 border border-slate-300/40 rounded-lg focus:outline-none bg-gray-700/50 text-gray-50 placeholder-gray-400"
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
           />
@@ -39,7 +39,7 @@ export default function ResourceFilters({
         {/* Select 박스 다크 모드 */}
         <div className="flex items-center gap-2">
           <select
-            className="border border-gray-700 rounded-lg py-2 px-3 focus:outline-none bg-gray-800 text-gray-50"
+            className="border border-slate-300/40 rounded-lg py-2.5 px-3 focus:outline-none bg-gray-700/50 text-gray-50"
             // value={typeFilter} // TODO
             // onChange={(e) => onTypeChange(e.target.value)} // TODO
           >
@@ -47,7 +47,7 @@ export default function ResourceFilters({
             {/* TODO(user): 실제 자원 유형 옵션 추가 */}
           </select>
           <select
-            className="border border-gray-700 rounded-lg py-2 px-3 focus:outline-none bg-gray-800 text-gray-50"
+            className="border border-slate-300/40 rounded-lg py-2.5 px-3 focus:outline-none bg-gray-700/50 text-gray-50"
             value={statusFilter}
             onChange={(e) => onStatusChange(e.target.value)}
           >
@@ -61,7 +61,7 @@ export default function ResourceFilters({
             <option value="미할당">미할당</option> */}
           </select>
           <select
-            className="border border-gray-700 rounded-lg py-2 px-3 focus:outline-none bg-gray-800 text-gray-50"
+            className="border border-slate-300/40 rounded-lg py-2.5 px-3 focus:outline-none bg-gray-700/50 text-gray-50"
             // value={locationFilter} // TODO
             // onChange={(e) => onLocationChange(e.target.value)} // TODO
           >

@@ -20,7 +20,7 @@ export const columns: ColumnDef<Resource>[] = [
   cell: ({ row }) => (
    <input
     type="checkbox"
-    className="rounded border-gray-600 bg-gray-700 focus:ring-blue-500" // 다크 모드 스타일    checked={row.getIsSelected()}
+    className="rounded border-gray-600 bg-gray-700 focus:ring-slate-300/40" // 다크 모드 스타일    checked={row.getIsSelected()}
     disabled={!row.getCanSelect()}
     onChange={row.getToggleSelectedHandler()}
    />
