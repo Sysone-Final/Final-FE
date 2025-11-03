@@ -10,7 +10,7 @@ import {
 import ServerViewHeader from '../components/ServerViewHeader';
 import Canvas from '../floorPlan/components/Canvas';
 import BabylonDatacenterView from '../view3d/components/BabylonDatacenterView';
-import RackModal from '../view3d/components/RackModal';
+import RackModal from '../components/RackModal';
 import { useFloorPlanDragDrop } from '../floorPlan/pages/FloorPlanPage';
 
 import FloatingSidebarPanel from '../floorPlan/components/FloatingSidebarPanel';
