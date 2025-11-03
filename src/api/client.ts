@@ -1,66 +1,64 @@
 import axios from "axios";
-import { useAuthStore } from "../domains/login/store/useAuthStore";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const BASE_URL = "https://api.serverway.shop/api";
+
+// 메모리에 토큰 저장
+let accessTokenInMemory: string | null = null;
+
+export const setAccessToken = (token: string | null) => {
+  accessTokenInMemory = token;
+};
+
+export const getAccessToken = () => accessTokenInMemory;
 
 const client = axios.create({
   baseURL: BASE_URL,
   headers: {
     "Content-Type": "application/json",
+    "Accept": "application/json",
   },
-  withCredentials: false,
+  withCredentials: true, // HttpOnly 쿠키 전송 (Refresh Token)
 });
-console.log("Client config:", client.defaults);
 
-//요청 인터셉터
+// 요청 인터셉터
 client.interceptors.request.use(
   (config) => {
-    const { accessToken } = useAuthStore.getState();
-    if (accessToken) {
-      config.headers["Authorization"] = `Bearer ${accessToken}`;
+    if (accessTokenInMemory) {
+      config.headers["Authorization"] = `Bearer ${accessTokenInMemory}`;
     }
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// 토큰 갱신
-const refreshAccessToken = async () => {
-  const { login, logout } = useAuthStore.getState();
-  try {
-    const response = await axios.post(
-      `${BASE_URL}/auth/refresh`,
-      {},
-      { withCredentials: true }
-    );
-    login(response.data);
-    return true;
-  } catch (error) {
-    console.error("Token refresh failed:", error);
-    logout();
-    return false;
-  }
-};
-
-//응답 인터셉터
+// 응답 인터셉터
 client.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const { logout } = useAuthStore.getState();
     const originalRequest = error.config;
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      const success = await refreshAccessToken();
-
-      if (success) {
-        const { accessToken } = useAuthStore.getState();
-        originalRequest.headers["Authorization"] = `Bearer ${accessToken}`;
+      try {
+        // Refresh Token은 HttpOnly 쿠키로 자동 전송됨
+        const response = await axios.post(
+          `${BASE_URL}/auth/refresh`,
+          {},
+          { withCredentials: true }
+        );
+        
+        const newToken = response.data.accessToken;
+        setAccessToken(newToken); // 메모리에 저장
+        
+        originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
         return client(originalRequest);
+      } catch (error) {
+        console.error("Token refresh failed:", error);
+        setAccessToken(null);
+        window.location.href = "/";
+        return Promise.reject(error);
       }
-      logout();
-      window.location.href = "/";
     }
     return Promise.reject(error);
   }

@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { LoginResponse } from "../types/login";
+import { setAccessToken } from "@api/client";
 
 type User = Omit<LoginResponse, "accessToken">;
 
@@ -18,6 +19,8 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
   login: (response) => {
     const { accessToken, ...user } = response;
+    // 메모리에 Access Token 저장 (client.ts)
+    setAccessToken(accessToken);
     set({
       accessToken,
       user,
@@ -26,6 +29,8 @@ export const useAuthStore = create<AuthStore>((set) => ({
   },
 
   logout: () => {
+    // 메모리에서 Access Token 제거
+    setAccessToken(null);
     set({
       accessToken: null,
       user: null,
