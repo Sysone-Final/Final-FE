@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+.login-page {
+  @apply relative h-screen w-screen p-[4vw];
+}
+
+.login-container {
+  @apply flex h-full w-full gap-[2vw] rounded-[32px] border border-white/20 bg-white/10 backdrop-blur-[20px];
+}
+
+.login-form-container {
+  @apply flex h-full w-1/2 flex-col items-start justify-center gap-[2vw] pl-[4vw];
+}
+
+.login-form {
+  @apply flex w-full max-w-[28vw] flex-col gap-[1.5vw];
+}
+
+.login-logo {
+  @apply w-[4vw];
+}
+
+.rotating-logo-container {
+  @apply flex h-full w-1/2 flex-col items-start justify-center gap-[2vw] p-[4vw];
+}
+
+.hero-content {
+  @apply flex w-full flex-col gap-[0.5vw];
+}
+
+.hero-text {
+  @apply text-[4.5vw] leading-[1.3];
+}
+
+.hero-text-white {
+  @apply text-white;
+}
+
+.hero-text-gradient {
+  @apply ml-[3vw] bg-gradient-to-r from-green-500 via-emerald-500 to-cyan-500 bg-clip-text text-transparent;
+}
+
+.hero-subtext {
+  @apply mt-[1vw] text-[1.1vw] leading-[1.6] text-white/60;
+}
+
+.network-animation-wrapper {
+  @apply w-full scale-100;
+}

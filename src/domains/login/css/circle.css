@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+@layer utilities {
+  @keyframes twinkle {
+    0%,
+    100% {
+      opacity: 0.5;
+    }
+    30% {
+      opacity: 0.3;
+    }
+  }
+
+  .animate-twinkle-slow {
+    @apply animate-[twinkle_8s_ease-in-out_infinite];
+  }
+
+  .animate-twinkle-medium {
+    @apply animate-[twinkle_6s_ease-in-out_infinite];
+  }
+
+  .animate-twinkle-fast {
+    @apply animate-[twinkle_4s_ease-in-out_infinite];
+  }
+}
