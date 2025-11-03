@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+.input-container {
+  @apply flex flex-col gap-2;
+}
+
+.input-wrapper {
+  @apply flex items-center gap-2.5 rounded-lg border border-white/30 bg-white/5 px-4 py-3.5 shadow-md backdrop-blur-[10px];
+}
+
+.input-icon {
+  @apply flex h-6 w-6 flex-shrink-0 items-center justify-center;
+}
+
+.input-icon img,
+.input-icon svg {
+  @apply h-6 w-6 flex-shrink-0 object-contain;
+}
+
+input {
+  @apply flex-1 border-none bg-transparent text-gray-400 outline-none placeholder:text-gray-500;
+}
+
+input:hover,
+input:focus,
+input:active {
+  @apply border-none outline-none shadow-none;
+}
+
+.input-error {
+  @apply text-sm text-red-600;
+}
+
+/* Autofill 스타일 */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
+  box-shadow: 0 0 0 1000px transparent inset !important;
+  -webkit-text-fill-color: #9ca3af !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
