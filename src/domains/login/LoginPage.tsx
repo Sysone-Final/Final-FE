@@ -7,20 +7,20 @@ import PasswordIcon from "../assets/password.svg";
 import "./css/LoginPage.css";
 import NetworkAnimation from "./components/NetworkAnimation";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
 import {
   validateEmail,
   validatePassword,
   hasKorean,
   removeKorean,
 } from "./utils/loginValidation";
+import { useLogin } from "./hooks/useLogin";
 
 function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
-  const navigate = useNavigate();
+  const mutation = useLogin();
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -34,7 +34,8 @@ function LoginPage() {
     setEmail(filteredValue);
   };
 
-  const handleLogin = () => {
+  const handleLogin = (e?: React.MouseEvent) => {
+    e?.preventDefault();
     setEmailError("");
     setPasswordError("");
 
@@ -43,15 +44,18 @@ function LoginPage() {
 
     if (emailValidationError) {
       setEmailError(emailValidationError);
+      return;
     }
 
     if (passwordValidationError) {
       setPasswordError(passwordValidationError);
+      return;
     }
 
-    if (!emailValidationError && !passwordValidationError) {
-      navigate("/dashboard");
-    }
+    mutation.mutate({
+      userName: email,
+      password: password,
+    });
   };
 
   return (
@@ -71,6 +75,7 @@ function LoginPage() {
               onChange={handleEmailChange}
               icon={<img src={EmailIcon} alt="email" />}
               error={emailError}
+              disabled={mutation.isPending}
             />
             <Input
               label="비밀번호"
@@ -81,8 +86,18 @@ function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               icon={<img src={PasswordIcon} alt="password" />}
               error={passwordError}
+              disabled={mutation.isPending}
             />
-            <Button text="로그인" onClick={handleLogin} />
+            {mutation.isError && (
+              <div style={{ color: "red", marginTop: "10px" }}>
+                로그인 실패: {mutation.error?.message || "다시 시도해주세요."}
+              </div>
+            )}
+            <Button
+              text="로그인"
+              onClick={handleLogin}
+              disabled={mutation.isPending}
+            />
           </div>
         </div>
         <div className="rotating-logo-container">

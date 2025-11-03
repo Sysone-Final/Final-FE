@@ -9,6 +9,7 @@ interface InputProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   error?: string;
   icon: React.ReactNode;
+  disabled?: boolean;
 }
 
 function Input({
@@ -20,6 +21,7 @@ function Input({
   id,
   label,
   error,
+  disabled,
 }: InputProps) {
   return (
     <div className="input-container">
@@ -35,6 +37,7 @@ function Input({
           value={value}
           onChange={onChange}
           placeholder={placeholder}
+          disabled={disabled}
         />
       </div>
       {error && <div className="input-error">{error}</div>}
