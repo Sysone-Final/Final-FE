@@ -1,18 +1,20 @@
 
 import React from 'react';
 import { useFloorPlanStore, setDashboardMetricView, toggleLayerVisibility, toggleSeverityVisibility } from '../../store/floorPlanStore';
-import type { DashboardMetricView, AssetLayer, AssetStatus } from '../../types';
+import type { DashboardMetricView, 
+    // AssetLayer, AssetStatus
+ } from '../../types';
 
 // 범례 항목
-const LegendItem: React.FC<{ color: string; label: string }> = ({ color, label }) => (
- <div className="flex items-center gap-2">
-  <span
-   className="w-3 h-3 rounded-full border border-gray-500"
-   style={{ backgroundColor: color }}
-  />
-  <span className="text-sm text-gray-200">{label}</span>
- </div>
-);
+// const LegendItem: React.FC<{ color: string; label: string }> = ({ color, label }) => (
+//  <div className="flex items-center gap-2">
+//   <span
+//    className="w-3 h-3 rounded-full border border-gray-500"
+//    style={{ backgroundColor: color }}
+//   />
+//   <span className="text-sm text-gray-200">{label}</span>
+//  </div>
+// );
 
 // 라디오 버튼 항목 
 const MetricViewRadio: React.FC<{
@@ -111,7 +113,7 @@ return (
     </div>
    </div>
 
-   {/* --- [Phase 3] 심각도 필터 --- */}
+   {/* --- 심각도 필터 --- */}
    <div className="option-section">
     <h4 className="option-section-title text-heading">심각도 필터 (Severity)</h4>
     <div className="option-group">
@@ -133,7 +135,7 @@ return (
     </div>
    </div>
 
-   {/* --- [Phase 2] 자산 레이어 필터 --- */}
+   {/* ---  자산 레이어 필터 --- */}
    <div className="option-section">
     <h4 className="option-section-title text-heading">자산 레이어 (Asset Layer)</h4>
     <div className="option-group">

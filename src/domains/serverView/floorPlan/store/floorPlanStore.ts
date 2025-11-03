@@ -6,30 +6,27 @@ import type {
   Asset,
   DisplayOptionsType,
   DisplayMode,
-  Mode,
-  DashboardMetricView, 
- AssetLayer,     
- AssetStatus,   
+  // Mode,
+  DashboardMetricView,
+  AssetLayer,
+  AssetStatus,
 } from '../types';
 import toast from 'react-hot-toast';
 
 export const initialState: FloorPlanState = {
   mode: 'view',
   displayMode: 'status',
-  //  지표 뷰 기본값
-  dashboardMetricView: 'default', 
- //  레이어 필터 기본값
- visibleLayers: {
-  floor: true,
-  wall: true,
-  overhead: true,
- },
- //  심각도 필터 기본값
- visibleSeverities: {
-  normal: true,
-  warning: true,
-  danger: true,
- },
+  dashboardMetricView: 'default',
+  visibleLayers: {
+    floor: true,
+    wall: true,
+    overhead: true,
+  },
+  visibleSeverities: {
+    normal: true,
+    warning: true,
+    danger: true,
+  },
   displayOptions: {
     showName: true,
     showStatusIndicator: true,
@@ -43,10 +40,9 @@ export const initialState: FloorPlanState = {
     useLOD: true,
     showGridLine: true,
   },
-  gridCols: 15, // Adjusted default
-  gridRows: 8, // Adjusted default
+  gridCols: 15,
+  gridRows: 8,
   stage: { scale: 1, x: 0, y: 0 },
-  
   assets: [],
   isLoading: true,
   error: null,
@@ -65,33 +61,26 @@ export const useFloorPlanStore = create<FloorPlanState>()(
       mode: state.mode,
       displayMode: state.displayMode,
       dashboardMetricView: state.dashboardMetricView,
-   visibleLayers: state.visibleLayers,
-   visibleSeverities: state.visibleSeverities,
+      visibleLayers: state.visibleLayers,
+      visibleSeverities: state.visibleSeverities,
     }),
   }),
 );
 
 // --- Actions ---
 
-/**
- * (Action) 서버실 ID로 평면도 데이터를 API에서 가져옵니다.
- */
 export const fetchFloorPlan = async (roomId: string) => {
   useFloorPlanStore.setState({ isLoading: true, error: null });
   try {
-    // --- 경로 handlers.ts와일치---
     const response = await fetch(`/api/server-rooms/${roomId}/floorplan`);
-
     if (!response.ok) {
-        // 응답 상태가 'ok'가 아닐 때 응답 내용을 텍스트로 확인
-        const errorText = await response.text();
-        console.error('Fetch error response:', errorText);
-        throw new Error(`Failed to fetch floor plan data. Status: ${response.status}`);
+      const errorText = await response.text();
+      console.error('Fetch error response:', errorText);
+      throw new Error(
+        `Failed to fetch floor plan data. Status: ${response.status}`,
+      );
     }
-
-    // 응답이 성공적일 때만 JSON 파싱 시도
     const data = await response.json();
-
     useFloorPlanStore.setState({
       assets: data.assets,
       gridCols: data.gridCols,
@@ -99,17 +88,13 @@ export const fetchFloorPlan = async (roomId: string) => {
       isLoading: false,
     });
   } catch (err) {
-    // JSON 파싱 오류 포함 모든 에러 처리
     console.error('Error in fetchFloorPlan:', err);
     useFloorPlanStore.setState({
       isLoading: false,
-      // err 객체가 Error 인스턴스인지 확인 후 메시지 사용
       error: err instanceof Error ? err.message : String(err),
     });
   }
 };
-
-
 
 export const addAsset = async (newAsset: Omit<Asset, 'id'>) => {
   try {
@@ -135,7 +120,6 @@ export const updateAsset = async (
   newProps: Partial<Omit<Asset, 'id'>>,
 ) => {
   const originalAssets = useFloorPlanStore.getState().assets;
-  // Optimistic Update
   useFloorPlanStore.setState((state) => ({
     assets: state.assets.map((asset) =>
       asset.id === id
@@ -153,34 +137,46 @@ export const updateAsset = async (
     if (!response.ok) throw new Error('Failed to update asset');
   } catch (err) {
     console.error('Error updating asset:', err);
-    // 롤백
     useFloorPlanStore.setState({ assets: originalAssets });
     // TODO: 사용자에게 에러 알림
   }
 };
 
 export const deleteAsset = async (id: string) => {
-  const { assets: originalAssets, selectedAssetIds: originalSelectedIds } =
-    useFloorPlanStore.getState();
+ // 삭제 전, asset 이름 확보
+ const { assets: originalAssets, selectedAssetIds: originalSelectedIds } =
+  useFloorPlanStore.getState();
 
-  useFloorPlanStore.setState((state) => ({
-    assets: state.assets.filter((asset) => asset.id !== id),
-    selectedAssetIds: state.selectedAssetIds.filter((sid) => sid !== id),
-  }));
+ //  삭제할 자산의 이름 찾기
+ const assetToDelete = originalAssets.find((asset) => asset.id === id);
+ const assetName = assetToDelete?.name ?? '자산'; // 이름이 없으면 '자산'
 
-  try {
-    const response = await fetch(`/api/floorplan/assets/${id}`, {
-      method: 'DELETE',
-    });
-    if (!response.ok) throw new Error('Failed to delete asset');
-  } catch (err) {
-    console.error('Error deleting asset:', err);
-    useFloorPlanStore.setState({
-      assets: originalAssets,
-      selectedAssetIds: originalSelectedIds,
-    });
-    // TODO: 사용자에게 에러 알림
-  }
+ //  Optimistic UI 업데이트 (즉시 상태 변경)
+ useFloorPlanStore.setState((state) => ({
+  assets: state.assets.filter((asset) => asset.id !== id),
+  selectedAssetIds: state.selectedAssetIds.filter((sid) => sid !== id),
+ }));
+
+ // 성공 토스트 (즉시 띄움)
+ toast.success(`"${assetName}"이(가) 삭제되었습니다.`);
+
+ try {
+  //  API 호출
+  const response = await fetch(`/api/floorplan/assets/${id}`, {
+   method: 'DELETE',
+  });
+  if (!response.ok) throw new Error('Failed to delete asset');
+
+ } catch (err) {
+  console.error('Error deleting asset:', err);
+  
+  //  롤백 및 에러 토스트
+  useFloorPlanStore.setState({
+   assets: originalAssets,
+   selectedAssetIds: originalSelectedIds,
+  });
+  toast.error(`"${assetName}" 삭제에 실패했습니다. (서버 오류)`);
+ }
 };
 
 export const duplicateAsset = async (id: string) => {
@@ -196,6 +192,7 @@ export const duplicateAsset = async (id: string) => {
   };
 
   try {
+    //  경로가 소문자 'floorplan'인지 확인
     const response = await fetch('/api/floorplan/assets', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -212,32 +209,30 @@ export const duplicateAsset = async (id: string) => {
   }
 };
 
+
 export const toggleMode = () =>
   useFloorPlanStore.setState((state) => ({
     mode: state.mode === 'view' ? 'edit' : 'view',
   }));
 
-// 지표 뷰 변경
 export const setDashboardMetricView = (view: DashboardMetricView) =>
- useFloorPlanStore.setState({ dashboardMetricView: view });
+  useFloorPlanStore.setState({ dashboardMetricView: view });
 
-// 레이어 가시성 토글
 export const toggleLayerVisibility = (layer: AssetLayer) =>
- useFloorPlanStore.setState((state) => ({
-  visibleLayers: {
-   ...state.visibleLayers,
-   [layer]: !state.visibleLayers[layer],
-  },
- }));
+  useFloorPlanStore.setState((state) => ({
+    visibleLayers: {
+      ...state.visibleLayers,
+      [layer]: !state.visibleLayers[layer],
+    },
+  }));
 
-// 심각도 가시성 토글
 export const toggleSeverityVisibility = (status: AssetStatus) =>
- useFloorPlanStore.setState((state) => ({
-  visibleSeverities: {
-   ...state.visibleSeverities,
-   [status]: !state.visibleSeverities[status],
-  },
- }));
+  useFloorPlanStore.setState((state) => ({
+    visibleSeverities: {
+      ...state.visibleSeverities,
+      [status]: !state.visibleSeverities[status],
+    },
+  }));
 
 export const setDisplayOptions = (newOptions: Partial<DisplayOptionsType>) =>
   useFloorPlanStore.setState((state) => ({
@@ -247,10 +242,8 @@ export const setDisplayOptions = (newOptions: Partial<DisplayOptionsType>) =>
 export const setDisplayMode = (newMode: DisplayMode) =>
   useFloorPlanStore.setState({ displayMode: newMode });
 
-export const  setGridSize = (cols: number, rows: number) =>
+export const setGridSize = (cols: number, rows: number) =>
   useFloorPlanStore.setState({ gridCols: cols, gridRows: rows });
-
-// --- 서버실 상세 정보 API 업데이트 액션 ---
 export const updateServerRoomDetails = async (
  roomId: string,
  newDetails: { gridCols?: number; gridRows?: number },
@@ -258,11 +251,9 @@ export const updateServerRoomDetails = async (
  const { gridCols: oldCols, gridRows: oldRows } = useFloorPlanStore.getState();
  const oldSettings = { gridCols: oldCols, gridRows: oldRows };
  
- // 1. 낙관적 업데이트 (UI 즉시 반영)
  useFloorPlanStore.setState(newDetails);
 
  try {
-  // 2. API 호출
   const response = await fetch(`/api/server-rooms/${roomId}/floorplan/details`, {
    method: 'PUT',
    headers: { 'Content-Type': 'application/json' },
@@ -271,14 +262,42 @@ export const updateServerRoomDetails = async (
   if (!response.ok) throw new Error('Failed to update server room details');
  
   console.log('Server room details updated successfully');
+  
+  //성공 토스트로
+  toast.success('서버실 크기가 저장되었습니다.');
  
  } catch (err) {
   console.error('Error updating server room details:', err);
-  // 3. 롤백
   useFloorPlanStore.setState(oldSettings);
-  alert('서버실 크기 저장에 실패했습니다.'); // TODO: 사용자에게 에러 알림
+  
+  toast.error('서버실 크기 저장에 실패했습니다.');
  }
 };
+// export const updateServerRoomDetails = async (
+//   roomId: string,
+//   newDetails: { gridCols?: number; gridRows?: number },
+// ) => {
+//   const { gridCols: oldCols, gridRows: oldRows } = useFloorPlanStore.getState();
+//   const oldSettings = { gridCols: oldCols, gridRows: oldRows };
+  
+//   useFloorPlanStore.setState(newDetails);
+
+//   try {
+//     const response = await fetch(`/api/server-rooms/${roomId}/floorplan/details`, {
+//       method: 'PUT',
+//       headers: { 'Content-Type': 'application/json' },
+//       body: JSON.stringify(newDetails),
+//     });
+//     if (!response.ok) throw new Error('Failed to update server room details');
+  
+//     console.log('Server room details updated successfully');
+  
+//   } catch (err) {
+//     console.error('Error updating server room details:', err);
+//     useFloorPlanStore.setState(oldSettings);
+//     alert('서버실 크기 저장에 실패했습니다.');
+//   }
+// };
 
 export const setStage = (newStage: FloorPlanState['stage']) =>
   useFloorPlanStore.setState({ stage: newStage });
@@ -309,7 +328,6 @@ export const groupSelectedAssets = () => {
       selectedAssetIds.includes(asset.id) ? { ...asset, groupId } : asset,
     ),
   }));
-  // TODO: 그룹 변경 사항 API 업데이트 (여러 자산을 한번에)
 };
 
 export const ungroupSelectedAssets = () => {
@@ -326,67 +344,49 @@ export const ungroupSelectedAssets = () => {
       groupIds.has(asset.groupId) ? { ...asset, groupId: undefined } : asset,
     ),
   }));
-  // TODO: 그룹 해제 사항 API 업데이트 (여러 자산을 한번에)
 };
 
-
-// --- (신규) 저장 안 된 변경 사항 확인용 훅 ---
-/**
-* Zundo 히스토리에 'pastStates' (되돌리기 스택)가 1개 이상 있으면 
-* 저장되지 않은 변경 사항이 있는 것으로 간주합니다.
-*/
 export const zoom = (direction: 'in' | 'out') => {
- const { stage } = useFloorPlanStore.getState();
- const zoomFactor = 0.25;
- const newScale =
-  direction === 'in'
-   ? stage.scale + zoomFactor
-   : Math.max(0.1, stage.scale - zoomFactor);
- useFloorPlanStore.setState({ stage: { ...stage, scale: newScale } });
+  const { stage } = useFloorPlanStore.getState();
+  const zoomFactor = 0.25;
+  const newScale =
+    direction === 'in'
+      ? stage.scale + zoomFactor
+      : Math.max(0.1, stage.scale - zoomFactor);
+  useFloorPlanStore.setState({ stage: { ...stage, scale: newScale } });
 };
 
-/**
-* Zundo 히스토리에 'pastStates' (되돌리기 스택)가 1개 이상 있으면 
-* 저장되지 않은 변경 사항이 있는 것으로 간주합니다.
-*/
 export const useHasUnsavedChanges = () => {
- const pastStatesCount = useStore(
-  useFloorPlanStore.temporal,
-  (state) => state.pastStates.length,
- );
- return pastStatesCount > 0;
+  const pastStatesCount = useStore(
+    useFloorPlanStore.temporal,
+    (state) => state.pastStates.length,
+  );
+  return pastStatesCount > 0;
 };
 
-//  특정 자산으로 줌하는 액션
 export const zoomToAsset = (assetId: string) => {
- const { assets, } = useFloorPlanStore.getState();
- const stageNode = document.querySelector('.canvas-container'); // 캔버스 컨테이너 크기 참조
- if (!stageNode) return;
+  const { assets } = useFloorPlanStore.getState();
+  const stageNode = document.querySelector('.canvas-container');
+  if (!stageNode) return;
 
- const asset = assets.find((a) => a.id === assetId);
- if (!asset) return;
+  const asset = assets.find((a) => a.id === assetId);
+  if (!asset) return;
 
- const { width: stageWidth, height: stageHeight } = stageNode.getBoundingClientRect();
+  const { width: stageWidth, height: stageHeight } =
+    stageNode.getBoundingClientRect();
 
- // (이 값들은 floorPlanHooks.ts와 일치해야 함)
- const CELL_SIZE = 160; 
- const HEADER_PADDING = 80;
+  const CELL_SIZE = 160;
+  const HEADER_PADDING = 80;
 
- const assetCenterX =
-  HEADER_PADDING +
-  (asset.gridX + asset.widthInCells / 2) * CELL_SIZE;
- const assetCenterY =
-  HEADER_PADDING +
-  (asset.gridY + asset.heightInCells / 2) * CELL_SIZE;
+  const assetCenterX =
+    HEADER_PADDING + (asset.gridX + asset.widthInCells / 2) * CELL_SIZE;
+  const assetCenterY =
+    HEADER_PADDING + (asset.gridY + asset.heightInCells / 2) * CELL_SIZE;
 
- const newScale = 1.0; // 100% 줌으로 설정 (조정 가능)
+  const newScale = 1.0;
+  const newX = stageWidth / 2 - assetCenterX * newScale;
+  const newY = stageHeight / 2 - assetCenterY * newScale;
 
- const newX = stageWidth / 2 - assetCenterX * newScale;
- const newY = stageHeight / 2 - assetCenterY * newScale;
-
- setStage({ scale: newScale, x: newX, y: newY });
-
- useFloorPlanStore.setState({ selectedAssetIds: [assetId] });
+  setStage({ scale: newScale, x: newX, y: newY });
+  useFloorPlanStore.setState({ selectedAssetIds: [assetId] });
 };
-
-

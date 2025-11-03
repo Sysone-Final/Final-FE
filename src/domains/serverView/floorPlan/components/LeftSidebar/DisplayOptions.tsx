@@ -1,9 +1,7 @@
-// floorPlan/components/LeftSidebar/DisplayOptions.tsx
 
 import { useFloorPlanStore, setDisplayOptions, toggleLayerVisibility } from '../../store/floorPlanStore.ts';
 import type { DisplayOptionsType, AssetLayer } from '../../types';
 
-// [수정] OptionCheckbox를 여기서 닫아야 합니다.
 const OptionCheckbox = ({
  label,
  optionKey,
@@ -11,11 +9,10 @@ const OptionCheckbox = ({
  label: string;
  optionKey: keyof DisplayOptionsType;
 }) => {
- const { displayOptions } = useFloorPlanStore(); // setDisplayOptions는 여기서 필요 없으므로 제거
+ const { displayOptions } = useFloorPlanStore(); 
  const isChecked = displayOptions[optionKey];
  
  const handleChange = () => {
-  // setDisplayOptions는 스토어에서 직접 가져와 사용
   setDisplayOptions({ [optionKey]: !isChecked });
  };
  
@@ -32,7 +29,6 @@ const OptionCheckbox = ({
  );
 };
 
-// [수정] LayerCheckbox를 OptionCheckbox 밖으로 분리해야 합니다.
 const LayerCheckbox = ({
 label,
 layerKey,

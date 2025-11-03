@@ -2,12 +2,18 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
   useFloorPlanStore,
   updateServerRoomDetails,
-  updateAsset, // updateAsset을 store에서 직접 가져옵니다.
+  updateAsset,
+  deleteAsset,
+  duplicateAsset,
+  groupSelectedAssets,
+  ungroupSelectedAssets,
 } from '../../store/floorPlanStore';
 import type { Asset, UHeight } from '../../types';
 import { useParams } from 'react-router-dom';
+import { useConfirmationModal } from '../ConfirmationModal';
 
 const COLOR_PRESETS = [
+  // ... (preset colors) ...
   '#f1c40f',
   '#e67e22',
   '#e74c3c',
@@ -24,26 +30,21 @@ const U_HEIGHT_OPTIONS: UHeight[] = [42, 45, 48, 52];
 const PropertiesEditor: React.FC = () => {
   const { id: roomId } = useParams<{ id: string }>();
 
-  // --- [*** 1. 오류 수정 ***] ---
-  // 스토어에서 값을 객체로 한번에 가져오지 않고, 개별적으로 선택합니다.
-  // 이렇게 하면 스토어의 다른 값이 변경되어도 이 값들이 변하지 않으면 리렌더링되지 않습니다.
+  const { confirm } = useConfirmationModal();
+  
   const gridCols = useFloorPlanStore((state) => state.gridCols);
   const gridRows = useFloorPlanStore((state) => state.gridRows);
   const assets = useFloorPlanStore((state) => state.assets);
   const selectedAssetIds = useFloorPlanStore(
     (state) => state.selectedAssetIds,
   );
-  const {
-    deleteAsset,
-    duplicateAsset,
-    groupSelectedAssets,
-    ungroupSelectedAssets,
-  } = useFloorPlanStore();
-  // --- (수정 끝) ---
+
+  // const {} = useFloorPlanStore();
 
   const selectedAssets = assets.filter((asset) =>
     selectedAssetIds.includes(asset.id),
   );
+
   const isSingleSelection = selectedAssets.length === 1;
   const selectedAsset = isSingleSelection ? selectedAssets[0] : null;
 
@@ -60,13 +61,11 @@ const PropertiesEditor: React.FC = () => {
   const [localGridCols, setLocalGridCols] = useState(gridCols);
   const [localGridRows, setLocalGridRows] = useState(gridRows);
 
-  // 스토어(gridCols, gridRows)가 바뀌면 로컬 상태 업데이트
   useEffect(() => {
     setLocalGridCols(gridCols);
     setLocalGridRows(gridRows);
   }, [gridCols, gridRows]);
 
-  // 스토어(selectedAsset)가 바뀌면 로컬 편집 상태(editableAsset) 업데이트
   useEffect(() => {
     setEditableAsset(selectedAsset);
   }, [selectedAsset]);
@@ -78,20 +77,24 @@ const PropertiesEditor: React.FC = () => {
 
   const handleServerRoomSizeSave = () => {
     if (!roomId) return;
-    if (
-      window.confirm(
-        `서버실 크기를 ${localGridCols} x ${localGridRows} (으)로 변경하시겠습니까?`,
-      )
-    ) {
-      updateServerRoomDetails(roomId, {
-        gridCols: localGridCols,
-        gridRows: localGridRows,
-      });
-    }
+    confirm({
+      title: '서버실 크기 변경',
+      message: (
+        <p>
+          서버실 크기를 <strong>{localGridCols} x {localGridRows}</strong> (으)로
+          변경하시겠습니까?
+        </p>
+      ),
+      confirmText: '변경',
+      confirmAction: () => {
+        updateServerRoomDetails(roomId, {
+          gridCols: localGridCols,
+          gridRows: localGridRows,
+        });
+      },
+    });
   };
 
-  // --- [*** 2. 오류 수정 (로직 변경) ***] ---
-  // handleChange: 키 입력 시 *로컬* 상태(editableAsset)만 즉시 업데이트합니다.
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -111,41 +114,32 @@ const PropertiesEditor: React.FC = () => {
     const updatedValue = numericFields.includes(name)
       ? parseFloat(value) || 0
       : value;
-
-    // 스토어(updateAsset)를 바로 호출하지 않고, 로컬 상태만 업데이트
     setEditableAsset((prev) =>
       prev ? { ...prev, [name]: updatedValue } : null,
     );
   };
 
-  // handleBlur: 입력창에서 포커스가 벗어났을 때(onBlur) *글로벌* 스토어(updateAsset)를 업데이트합니다.
   const handleBlur = (
     e: React.FocusEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >,
   ) => {
     if (!selectedAsset || !editableAsset) return;
-
     const { name } = e.target;
     const key = name as keyof Asset;
-
-    // 로컬 상태와 스토어 상태가 다를 때만 스토어 업데이트
     if (editableAsset[key] !== selectedAsset[key]) {
       console.log(`Updating store for [${key}]:`, editableAsset[key]);
       updateAsset(selectedAsset.id, { [key]: editableAsset[key] });
     }
   };
-  // --- (수정 끝) ---
 
   const handleRotate = (direction: 'cw' | 'ccw') => {
     if (!selectedAsset) return;
-    const currentRotation = editableAsset?.rotation || 0; // editableAsset 기준으로 변경
+    const currentRotation = editableAsset?.rotation || 0;
     const newRotation =
       direction === 'cw'
         ? (currentRotation + 45) % 360
         : (currentRotation - 45 + 360) % 360;
-    
-    // 로컬과 글로벌 동시 업데이트 (회전은 즉시 반영)
     setEditableAsset((prev) => (prev ? { ...prev, rotation: newRotation } : null));
     updateAsset(selectedAsset.id, { rotation: newRotation });
   };
@@ -155,15 +149,23 @@ const PropertiesEditor: React.FC = () => {
   };
 
   const handleDeleteSelected = () => {
-    if (
-      window.confirm(`선택한 ${selectedAssetIds.length}개 자산을 삭제하시겠습니까?`)
-    ) {
-      selectedAssetIds.forEach((id) => deleteAsset(id));
-    }
+    confirm({
+      title: '자산 삭제',
+      message: (
+        <p>
+          선택한 <strong>{selectedAssetIds.length}개</strong> 자산을
+          삭제하시겠습니까?
+        </p>
+      ),
+      confirmText: '삭제',
+      confirmAction: () => {
+        selectedAssetIds.forEach((id) => deleteAsset(id));
+      },
+    });
   };
 
   if (selectedAssets.length === 0) {
-    // (서버실 설정 UI - 이상 없음)
+    // (서버실 설정 UI)
     return (
       <div className="properties-editor-container h-full overflow-y-auto pr-2">
         <div className="editor-header">
@@ -220,7 +222,7 @@ const PropertiesEditor: React.FC = () => {
   }
 
   if (!isSingleSelection) {
-    // (다중 선택 UI - 이상 없음)
+    // (다중 선택 UI)
     return (
       <div className="properties-editor-container">
         <div className="editor-header">
@@ -230,19 +232,19 @@ const PropertiesEditor: React.FC = () => {
         </div>
         <div className="p-2 flex flex-col gap-2">
           <button
-            onClick={groupSelectedAssets}
+            onClick={groupSelectedAssets} 
             className="action-button group-btn text-button"
           >
             🔗 그룹 만들기
           </button>
           <button
-            onClick={ungroupSelectedAssets}
+            onClick={ungroupSelectedAssets} 
             className="action-button group-btn text-button"
           >
             ✂️ 그룹 해제
           </button>
           <button
-            onClick={handleDeleteSelected}
+            onClick={handleDeleteSelected} 
             className="action-button delete-btn text-button"
           >
             🗑️ 선택 자산 모두 삭제
@@ -254,13 +256,14 @@ const PropertiesEditor: React.FC = () => {
 
   if (!editableAsset || !selectedAsset) return null;
 
+  // (단일 선택 UI)
   return (
     <div className="properties-editor-container h-full overflow-y-auto pr-2">
       <div className="editor-header">
         <h3 className="editor-title">속성: {editableAsset.name}</h3>
         <button
           onClick={() =>
-            updateAsset(selectedAsset.id, {
+            updateAsset(selectedAsset.id, { 
               isLocked: !selectedAsset.isLocked,
             })
           }
@@ -270,6 +273,7 @@ const PropertiesEditor: React.FC = () => {
         </button>
       </div>
 
+      {/* (기본 섹션) */}
       <div className="accordion-section">
         <button
           onClick={() => toggleSection('basic')}
@@ -279,8 +283,8 @@ const PropertiesEditor: React.FC = () => {
         </button>
         {openSections.basic && (
           <div className="accordion-content">
-            {/* --- [*** 2. 오류 수정 (적용) ***] ---
-                모든 입력 필드에 onBlur={handleBlur}를 추가합니다. */}
+            {/* ( ... 폼 필드들 ... ) */}
+            {/* 이름 */}
             <div className="input-group">
               <label className="input-label text-label-form">이름</label>
               <input
@@ -293,6 +297,7 @@ const PropertiesEditor: React.FC = () => {
                 disabled={selectedAsset.isLocked}
               />
             </div>
+            {/* X, Y */}
             <div className="input-row">
               <div className="input-group">
                 <label className="input-label text-label-form">X</label>
@@ -319,6 +324,7 @@ const PropertiesEditor: React.FC = () => {
                 />
               </div>
             </div>
+            {/* 너비, 높이 */}
             <div className="input-row">
               <div className="input-group">
                 <label className="input-label text-label-form">너비 (칸)</label>
@@ -347,6 +353,7 @@ const PropertiesEditor: React.FC = () => {
                 />
               </div>
             </div>
+            {/* U 높이 */}
             {selectedAsset.assetType === 'rack' && (
               <div className="input-group">
                 <label className="input-label text-label-form">
@@ -369,6 +376,7 @@ const PropertiesEditor: React.FC = () => {
                 </select>
               </div>
             )}
+            {/* 회전 */}
             <div className="input-group">
               <label className="input-label text-label-form">
                 회전: {editableAsset.rotation || 0}°
@@ -390,6 +398,7 @@ const PropertiesEditor: React.FC = () => {
                 </button>
               </div>
             </div>
+            {/* 문 방향 */}
             {(selectedAsset.assetType === 'rack' ||
               selectedAsset.assetType.startsWith('door')) && (
               <div className="input-group">
@@ -413,6 +422,7 @@ const PropertiesEditor: React.FC = () => {
         )}
       </div>
 
+      {/* (시각 섹션) */}
       <div className="accordion-section">
         <button
           onClick={() => toggleSection('visual')}
@@ -422,6 +432,8 @@ const PropertiesEditor: React.FC = () => {
         </button>
         {openSections.visual && (
           <div className="accordion-content">
+            {/* ( ... 폼 필드들 ... ) */}
+            {/* 색상 */}
             <div className="input-group">
               <label className="input-label text-label-form">색상</label>
               <div className="color-preset-grid">
@@ -431,7 +443,6 @@ const PropertiesEditor: React.FC = () => {
                     className="color-preset-btn"
                     style={{ backgroundColor: color }}
                     onClick={() => {
-                      // 색상/투명도 등은 즉시 반영 (로컬 + 글로벌 동시)
                       setEditableAsset((prev) =>
                         prev ? { ...prev, customColor: color } : null,
                       );
@@ -448,11 +459,12 @@ const PropertiesEditor: React.FC = () => {
                 name="customColor"
                 className="color-picker"
                 value={editableAsset.customColor || '#ecf0f1'}
-                onChange={handleChange} // 로컬에만 반영
-                onBlur={handleBlur} // 스토어에 반영
+                onChange={handleChange}
+                onBlur={handleBlur}
                 disabled={selectedAsset.isLocked}
               />
             </div>
+            {/* 투명도 */}
             <div className="input-group">
               <label className="input-label text-label-form">
                 투명도: {Math.round((editableAsset.opacity ?? 1) * 100)}%
@@ -465,8 +477,8 @@ const PropertiesEditor: React.FC = () => {
                 max="1"
                 step="0.1"
                 value={editableAsset.opacity ?? 1}
-                onChange={handleChange} // 로컬에만 반영
-                onBlur={handleBlur} // 스토어에 반영
+                onChange={handleChange}
+                onBlur={handleBlur}
                 disabled={selectedAsset.isLocked}
               />
             </div>
@@ -474,6 +486,7 @@ const PropertiesEditor: React.FC = () => {
         )}
       </div>
 
+      {/* (메타데이터 섹션) */}
       <div className="accordion-section">
         <button
           onClick={() => toggleSection('metadata')}
@@ -483,6 +496,7 @@ const PropertiesEditor: React.FC = () => {
         </button>
         {openSections.metadata && (
           <div className="accordion-content">
+            {/* ( ... 폼 필드들 ... ) */}
             <div className="input-group">
               <label className="input-label text-label-form">설명</label>
               <textarea
@@ -513,6 +527,7 @@ const PropertiesEditor: React.FC = () => {
         )}
       </div>
 
+      {/* (고급 섹션) */}
       <div className="accordion-section">
         <button
           onClick={() => toggleSection('advanced')}
@@ -524,17 +539,24 @@ const PropertiesEditor: React.FC = () => {
           <div className="accordion-content">
             <button
               className="action-button duplicate-btn text-button"
-              onClick={() => duplicateAsset(selectedAsset.id)}
+              onClick={() => duplicateAsset(selectedAsset.id)} 
             >
               📋 복제
             </button>
             <button
               className="action-button delete-btn text-button"
               onClick={() => {
-                if (
-                  window.confirm(`"${selectedAsset.name}" 자산을 삭제하시겠습니까?`)
-                )
-                  deleteAsset(selectedAsset.id);
+                confirm({
+                  title: '자산 삭제',
+                  message: (
+                    <p>
+                      "<strong>{selectedAsset.name}</strong>" 자산을
+                      삭제하시겠습니까?
+                    </p>
+                  ),
+                  confirmText: '삭제',
+                  confirmAction: () => deleteAsset(selectedAsset.id), 
+                });
               }}
             >
               🗑️ 삭제
@@ -547,4 +569,3 @@ const PropertiesEditor: React.FC = () => {
 };
 
 export default PropertiesEditor;
-

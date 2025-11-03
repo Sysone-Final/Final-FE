@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from 'react'; 
 import { useFloorPlanStore, zoomToAsset } from '../store/floorPlanStore';
-import { AlertTriangle, Cpu, Thermometer, ChevronDown, ChevronUp } from 'lucide-react'; 
+import { AlertTriangle, 
+    // Cpu, Thermometer,
+     ChevronDown, ChevronUp } from 'lucide-react'; 
 import type { Asset } from '../types';
 
 const getAssetScore = (asset: Asset) => {
@@ -28,7 +30,7 @@ const getAssetScore = (asset: Asset) => {
 
 const TopNWidget: React.FC = () => {
  const { assets } = useFloorPlanStore();
- const [isOpen, setIsOpen] = useState(true); // [3] 'isOpen' 상태 추가 (기본값: 열림)
+ const [isOpen, setIsOpen] = useState(true); //  'isOpen' 상태 추가 (기본값: 열림)
 
  const top5Assets = useMemo(() => {
   return assets
@@ -39,7 +41,7 @@ const TopNWidget: React.FC = () => {
    .slice(0, 5);
  }, [assets]);
 
- const handleToggleOpen = () => setIsOpen(prev => !prev); // [4] 토글 핸들러
+ const handleToggleOpen = () => setIsOpen(prev => !prev); //  토글 핸들러
  
  const handleItemClick = (assetId: string) => {
   zoomToAsset(assetId);
@@ -53,7 +55,7 @@ const TopNWidget: React.FC = () => {
   <div className="absolute top-20 right-4 z-10 w-64 max-w-xs">
    <div className="bg-gray-900/80 backdrop-blur-md rounded-lg shadow-lg border border-gray-700 overflow-hidden">
     
-    {/* [5] 헤더를 토글 버튼으로 변경 */}
+    {/*  헤더를 토글 버튼으로 변경 */}
     <button
      onClick={handleToggleOpen}
      className="w-full flex items-center justify-between p-3 border-b border-gray-700 hover:bg-gray-800/50 transition-colors"
@@ -62,7 +64,7 @@ const TopNWidget: React.FC = () => {
       <AlertTriangle className="w-5 h-5 text-red-500" />
       <h3 className="text-sm font-bold text-red-400">실시간 문제 리포트</h3>
      </div>
-     {/* [6] 토글 아이콘 추가 */}
+     {/* 토글 아이콘 추가 */}
      {isOpen ? (
       <ChevronUp className="w-5 h-5 text-gray-400" />
      ) : (
@@ -70,7 +72,7 @@ const TopNWidget: React.FC = () => {
      )}
     </button>
     
-    {/* [7] isOpen이 true일 때만 본문 렌더링 */}
+    {/*  isOpen이 true일 때만 본문 렌더링 */}
     {isOpen && (
      <div className="flex flex-col">
       {top5Assets.map(({ asset, reason }) => (

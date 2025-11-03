@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useParams, useBlocker } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { useParams, useBlocker, useLocation } from 'react-router-dom';
 import { DndContext } from '@dnd-kit/core';
 import {
   useFloorPlanStore,
@@ -22,11 +22,17 @@ import PropertiesEditor from '../floorPlan/components/RightSidebar/PropertiesEdi
 import PropertiesViewer from '../floorPlan/components/RightSidebar/PropertiesViewer';
 import StatusLegendAndFilters from '../floorPlan/components/LeftSidebar/StatusLegendAndFilters';
 import TopNWidget from '../floorPlan/components/TopNWidget';
-
+import {
+  ConfirmationModal,
+  useConfirmationModal,
+} from '../floorPlan/components/ConfirmationModal';
 function ServerViewPage() {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
   const [viewDimension, setViewDimension] = useState<'2D' | '3D'>('3D');
-  const { handleDragEnd } = useFloorPlanDragDrop();
+  const canvasContainerRef = useRef<HTMLDivElement>(null);
+  // const { handleDragEnd } = useFloorPlanDragDrop();
+  const { handleDragEnd } = useFloorPlanDragDrop(canvasContainerRef);
   const mode = useFloorPlanStore((state) => state.mode);
   const displayMode = useFloorPlanStore((state) => state.displayMode);
   const hasUnsavedChanges = useHasUnsavedChanges();
@@ -38,36 +44,72 @@ function ServerViewPage() {
 // 1. Zundo 히스토리 클리어 함수를 가져옵니다.
   const clearTemporalHistory = useFloorPlanStore.temporal.getState().clear;
 
-  // 2. useBlocker에 전달할 함수를 '외부'에 정의합니다.
-  const handleBlockNavigation = ({ nextLocation }: { nextLocation: any }) => {
-    // 3. 차단해야 하는 상황(shouldBlock)인지 확인합니다.
-    if (shouldBlock) {
-      // 4. Gatekeeper가 '직접' 확인 창을 띄웁니다.
-      if (
-        window.confirm(
-          '저장하지 않은 변경 사항이 있습니다.\n정말로 이 페이지를 벗어나시겠습니까?',
-        )
-      ) {
-        // 5. [확인] 클릭: 히스토리를 클리어하고
-        clearTemporalHistory();
-        // 6. '차단 해제' (false 반환)
-        return false;
-      }
-      // 7. [취소] 클릭: '차단' (true 반환)
-      return true;
+  const { confirm } = useConfirmationModal();
+const blocker = useBlocker(
+    ({ nextLocation }) =>
+      shouldBlock && nextLocation.pathname !== location.pathname,
+  );
+
+  useEffect(() => {
+    if (blocker.state === 'blocked') {
+      confirm({
+        title: '페이지 이탈 확인',
+        message:
+          '저장하지 않은 변경 사항이 있습니다. 정말로 이 페이지를 벗어나시겠습니까?',
+        confirmText: '나가기',
+        confirmAction: () => {
+          clearTemporalHistory();
+          blocker.proceed(); // 모달에서 '확인' 시 이탈
+        },
+        cancelAction: () => {
+          blocker.reset(); // 모달에서 '취소' 시 차단 해제
+        },
+      });
     }
-    // 8. 차단할 필요가 없으면 '차단 해제' (false 반환)
-    return false;
-  };
+  }, [blocker, confirm, clearTemporalHistory]);
+
+  // 2. useBlocker에 전달할 함수를 '외부'에 정의합니다.
+  // const handleBlockNavigation = ({ nextLocation }: { nextLocation: any }) => {
+  //   // 3. 차단해야 하는 상황(shouldBlock)인지 확인합니다.
+  //   if (shouldBlock) {
+  //     // 4. Gatekeeper가 '직접' 확인 창을 띄웁니다.
+  //     if (
+  //       window.confirm(
+  //         '저장하지 않은 변경 사항이 있습니다.\n정말로 이 페이지를 벗어나시겠습니까?',
+  //       )
+  //     ) {
+  //       // 5. [확인] 클릭: 히스토리를 클리어하고
+  //       clearTemporalHistory();
+  //       // 6. '차단 해제' (false 반환)
+  //       return false;
+  //     }
+  //     // 7. [취소] 클릭: '차단' (true 반환)
+  //     return true;
+  //   }
+  //   // 8. 차단할 필요가 없으면 '차단 해제' (false 반환)
+  //   return false;
+  // };
 
   // 9. 이 함수를 useBlocker에 전달합니다.
-  const blocker = useBlocker(handleBlockNavigation);
-// const isDashboardView = mode === 'view' && displayMode === 'status';
-  const {
-  isLeftSidebarOpen, toggleLeftSidebar, isRightSidebarOpen, toggleRightSidebar,
-  setLeftSidebarOpen, setRightSidebarOpen 
- } = useSidebarStore();
- const [is2dLoaded, setIs2dLoaded] = useState(false);
+//   const blocker = useBlocker(handleBlockNavigation);
+// // const isDashboardView = mode === 'view' && displayMode === 'status';
+//   const {
+//   isLeftSidebarOpen, toggleLeftSidebar, isRightSidebarOpen, toggleRightSidebar,
+//   setLeftSidebarOpen, setRightSidebarOpen 
+//  } = useSidebarStore();
+//  const [is2dLoaded, setIs2dLoaded] = useState(false);
+
+
+const {
+    isLeftSidebarOpen,
+    toggleLeftSidebar,
+    isRightSidebarOpen,
+    toggleRightSidebar,
+    setLeftSidebarOpen,
+    setRightSidebarOpen,
+  } = useSidebarStore();
+  const [is2dLoaded, setIs2dLoaded] = useState(false);
+
 // 2. 브라우저 이탈 방지 (새로고침, 탭 닫기)
  useEffect(() => {
   const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -103,7 +145,7 @@ function ServerViewPage() {
    // 3D로 돌아갈 때 2D 로드 상태를 리셋 (Req 3)
    setIs2dLoaded(false);
   }
- }, [viewDimension, id, is2dLoaded]);
+ }, [viewDimension, id, is2dLoaded, setLeftSidebarOpen, setRightSidebarOpen]);
 
 
 let LeftSidebarContent;
@@ -130,6 +172,7 @@ if (isDashboardView) {
     // 최상위 div: h-full w-full flex flex-col overflow-hidden
     <div className="h-full w-full flex flex-col overflow-hidden">
       {/* Header: flex-shrink-0 필요 */}
+      <ConfirmationModal />
       <ServerViewHeader
         serverRoomId={id}
         viewDimension={viewDimension}
@@ -149,7 +192,7 @@ if (isDashboardView) {
         <DndContext onDragEnd={handleDragEnd}>
           {/* Canvas Container: flex-1 */}
           <div className="flex-1 relative overflow-hidden">
-            <Canvas />
+            <Canvas containerRef={canvasContainerRef} />
             
 {isDashboardView && <TopNWidget />}
 

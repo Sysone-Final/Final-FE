@@ -1,4 +1,3 @@
-// floorPlan/components/FloatingSidebarPanel.tsx
 
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -38,7 +37,6 @@ const FloatingSidebarPanel: React.FC<FloatingSidebarPanelProps> = ({
   }
  `;
 
- // [!!!] 이 부분의 CSS 클래스를 수정합니다 [!!!]
  const buttonClasses = `
   sidebar-toggle-button
   absolute top-1/2 -translate-y-1/2 p-2 rounded-full
@@ -51,7 +49,6 @@ const FloatingSidebarPanel: React.FC<FloatingSidebarPanelProps> = ({
   z-20 
   ${position === 'left' ? '-right-8' : '-left-8'}
  `;
- // [!!!] 수정 끝 [!!!]
 
  return (
   <div className={panelClasses}>

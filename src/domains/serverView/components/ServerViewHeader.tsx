@@ -7,13 +7,15 @@ import {
   groupSelectedAssets,
   setDisplayMode,
   zoom,
-  useHasUnsavedChanges,
+  // useHasUnsavedChanges,
 } from '../floorPlan/store/floorPlanStore';
 
 import { useBabylonDatacenterStore } from '../view3d/stores/useBabylonDatacenterStore';
-import { Settings, Eye, Undo2, Redo2, ZoomIn, ZoomOut, Palette } from 'lucide-react';
+import { Settings, Eye, Undo2, Redo2, ZoomIn, ZoomOut, 
+  // Palette 
+} from 'lucide-react';
 import { useSidebarStore } from '../floorPlan/store/useSidebarStore';
-
+import { useConfirmationModal } from '../floorPlan/components/ConfirmationModal';
 interface ServerViewHeaderProps {
   serverRoomId?: string;
   viewDimension: '2D' | '3D';
@@ -27,59 +29,89 @@ function ServerViewHeader({
 }: ServerViewHeaderProps) {
   const navigate = useNavigate();
 
+  const { confirm } = useConfirmationModal();
+
+  // 스토어에서는 '데이터'만 가져옵니다.
   const mode = useFloorPlanStore((state) => state.mode);
-  const hasUnsavedChanges = useHasUnsavedChanges();
+  // const hasUnsavedChanges = useHasUnsavedChanges();
   const selectedAssetIds = useFloorPlanStore((state) => state.selectedAssetIds);
   const displayMode = useFloorPlanStore((state) => state.displayMode);
 
 const handleBackNavigation = () => {
-
+    // 1. window.confirm() 로직을 '모두 삭제'합니다.
+    // 2. 히스토리 클리어 로직을 '삭제'합니다. (Gatekeeper가 처리)
+    
+    // 3. 오직 "나가겠다"는 신호(navigate)만 보냅니다.
+    //    이후의 모든 처리는 ServerViewPage.tsx의 useBlocker가 담당합니다.
     navigate('/server-room-dashboard');
   };
 
-  // temporal 훅은 그대로 사용합니다.
   const undo = useStore(useFloorPlanStore.temporal, (state) => state.undo);
   const redo = useStore(useFloorPlanStore.temporal, (state) => state.redo);
 
-  const { setLeftSidebarOpen, setRightSidebarOpen } = useSidebarStore(); // (HEAD)
-  const mode3d = useBabylonDatacenterStore((state) => state.mode); // (main)
-  const toggleMode3d = useBabylonDatacenterStore((state) => state.toggleMode); // (main)
+  const { setLeftSidebarOpen, setRightSidebarOpen } = useSidebarStore();
+  const mode3d = useBabylonDatacenterStore((state) => state.mode); 
+  const toggleMode3d = useBabylonDatacenterStore((state) => state.toggleMode); 
 
   const handleToggleMode2D = () => {
     if (mode === 'view') {
-      if (selectedAssetIds.length > 1) {
-        if (
-          window.confirm(
-            `여러 개의 자산(${selectedAssetIds.length}개)이 선택되었습니다.\n이 자산들을 하나의 그룹으로 묶으시겠습니까?`,
-          )
-        ) {
+      // 공통으로 실행될 로직
+      const switchToEditMode = (shouldGroup: boolean) => {
+        if (shouldGroup) {
           groupSelectedAssets();
         }
+        setLeftSidebarOpen(true);
+        setRightSidebarOpen(true);
+        toggleMode(); // 2D 모드 전환 실행
+      };
+
+      if (selectedAssetIds.length > 1) {
+        // 5. window.confirm()을 confirm() 훅으로 대체
+        confirm({
+          title: '자산 그룹화',
+          message: (
+            <p>
+              여러 개의 자산(<strong>{selectedAssetIds.length}개</strong>)이
+              선택되었습니다.
+              <br />이 자산들을 하나의 그룹으로 묶으시겠습니까?
+            </p>
+          ),
+          confirmText: '그룹화',
+          confirmAction: () => switchToEditMode(true), // 확인 시 그룹화 후 전환
+          cancelAction: () => switchToEditMode(false), // 취소 시 그냥 전환
+        });
+      } else {
+        // 그룹화할 자산이 없으면 바로 전환
+        switchToEditMode(false);
       }
-      setLeftSidebarOpen(true);
-      setRightSidebarOpen(true);
     } else {
       // "편집" -> "보기" 모드로 전환 시
       setRightSidebarOpen(false);
+      toggleMode(); // 2D 모드 전환 실행
     }
-
-    toggleMode(); // 2D 모드 전환 실행
   };
 
-  const handleToggleMode3D = () => { // (main)
+
+  //  3D 토글 핸들러(main)와 Zoom 핸들러(HEAD)를 모두 유지합니다.
+  const handleToggleMode3D = () => { 
     toggleMode3d();
   };
   
-  const handleDisplayModeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setDisplayMode(e.target.value as 'status' | 'customColor');
-  };
+  // 활성화된 'handleDisplayModeChange' 함수를 사용
+  // const handleDisplayModeChange = (
+  //   e: React.ChangeEvent<HTMLSelectElement>,
+  // ) => {
+  //   setDisplayMode(e.target.value as 'status' | 'customColor');
+  // };
 
-  const handleZoomIn = () => zoom('in'); // (HEAD)
-  const handleZoomOut = () => zoom('out'); // (HEAD)
+  const handleZoomIn = () => zoom('in'); 
+  const handleZoomOut = () => zoom('out'); 
 
   return (
+    // 헤더 태그 
     <header className="bg-gray-800/50 backdrop-blur-sm border-b border-gray-700 px-6 py-2 flex items-center justify-between flex-shrink-0">
       <div className="flex items-center gap-4">
+        {/* ... (뒤로가기 버튼 코드) ... */}
         <button
           onClick={handleBackNavigation}
           className="flex items-center gap-2 text-gray-100 hover:text-white transition-colors"
@@ -108,6 +140,7 @@ const handleBackNavigation = () => {
 
       {/* 오른쪽 컨트롤 영역 */}
       <div className="flex items-center gap-4">
+        {/* 3D/2D 분기를 위해 '?' 삼항 연산자 사용  */}
         {viewDimension === '2D' ? (
           <>
             {/* 보기 모드 컨트롤 */}
@@ -177,6 +210,7 @@ const handleBackNavigation = () => {
                 </button>
               </div>
             )}
+            {/*  'handleToggleMode2D'를 호출하는 버튼 사용 (main) */}
             <button
               onClick={handleToggleMode2D}
               className="py-2 px-4 rounded-lg flex items-center gap-2 transition-colors bg-gray-700/50 text-gray-100 hover:bg-gray-600 border border-gray-600"
