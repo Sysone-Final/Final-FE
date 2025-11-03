@@ -1,4 +1,4 @@
-import client from "../../../api/client";
+import client from "@api/client";
 import type { LoginRequest, LoginResponse } from "../types/login";
 
 export const loginApi = async (data: LoginRequest): Promise<LoginResponse> => {

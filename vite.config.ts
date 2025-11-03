@@ -15,4 +15,15 @@ export default defineConfig({
       brotliSize: true,
     }),
   ],
+  resolve: {
+    alias: {
+      "@": "/src",
+      "@api": "/src/api",
+      "@components": "/src/components",
+      "@domains": "/src/domains",
+      "@hooks": "/src/hooks",
+      "@stores": "/src/stores",
+      "@assets": "/src/assets",
+    },
+  },
 });
