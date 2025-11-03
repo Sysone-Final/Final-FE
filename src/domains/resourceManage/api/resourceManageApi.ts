@@ -1,4 +1,3 @@
-// src/domains/resourceManage/api/resourceManageApi.ts
 import axios from "axios";
 import type {
   PaginatedResourceResponse,
@@ -97,6 +96,17 @@ export const deleteMultipleResources = async (ids: string[]): Promise<void> => {
     data: { ids },
   });
   // void 타입은 return 문이 없어도 됨 (오류 없음)
+};
+
+/**
+ * 9.2 자원 상세 정보 조회 (GET /resourceManage/{id})
+ * @param id 조회할 자원 ID
+ */
+export const getResourceById = async (id: string): Promise<Resource> => {
+  // 💡 create/updateResource와 마찬가지로 API 응답 래퍼가 없다고 가정합니다.
+  // 💡 (만약 래퍼가 있다면 getDatacenters처럼 .result를 반환하세요.)
+  const response = await apiClient.get<Resource>(`${RESOURCE_API_URL}/${id}`);
+  return response.data; // Resource 타입 값 반환
 };
 
 // API 응답 래퍼 타입 정의
