@@ -867,9 +867,9 @@ useEffect(() => {
 
   return (
     // 모달 배경 블러
-    <div className="fixed inset-0 z-40 flex justify-center items-center p-4 backdrop-blur-sm bg-black/20">
+    <div className="modal-bg">
       {/* 모달창 스타일 */}
-      <div className="bg-gray-900 bg-opacity-60 backdrop-blur-lg border border-white border-opacity-20 rounded-lg shadow-xl w-full max-w-3xl z-50">
+      <div className="modal">
         <div className="p-6 md:p-8">
           {/* 헤더 */}
           <div className="flex justify-between items-center mb-6">
@@ -896,7 +896,7 @@ useEffect(() => {
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${
                   step >= 1
-                    ? "bg-blue-500 border-blue-500 text-white"
+                    ? "bg-green-500 border-blue-500 text-white"
                     : "border-gray-400 text-gray-400"
                 }`}
               >
@@ -922,7 +922,7 @@ useEffect(() => {
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${
                   step >= 2
-                    ? "bg-blue-500 border-blue-500 text-white"
+                    ? "bg-green-500 border-blue-500 text-white"
                     : "border-gray-400 text-gray-400"
                 }`}
               >
@@ -948,7 +948,7 @@ useEffect(() => {
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${
                   step >= 3
-                    ? "bg-blue-500 border-blue-500 text-white"
+                    ? "bg-green-500 border-green-500 text-white"
                     : "border-gray-400 text-gray-400"
                 }`}
               >

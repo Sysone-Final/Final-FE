@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import ServerRoomList from '../components/ServerRoomList';
+import ServerRoomCreateModal from '../components/ServerRoomCreateModal';
 import { MOCK_SERVER_ROOMS } from '../constants/mockData';
 import type { ServerRoom } from '../types';
-import '../css/serverRoomDashboard.css'; // 수정된 CSS 임포트
+import '../css/serverRoomDashboard.css'; 
 
 const ServerRoomDashboard: React.FC = () => {
   const [serverRooms, setServerRooms] = useState<ServerRoom[]>([]);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   useEffect(() => {
     setServerRooms(MOCK_SERVER_ROOMS);
@@ -22,17 +24,19 @@ const ServerRoomDashboard: React.FC = () => {
 
 
   return (
-    <div className="dashboard-layout">
+    <div className="tab-layout">
       {/* Header */}
-      <header className="dashboard-header">
+      <header className="tab-header">
         <div>
           {/* 텍스트 클래스 적용 */}
-          <h1 className="dashboard-title text-main-title">서버실 관리</h1>
+          <h1 className="tab-title text-main-title">서버실 관리</h1>
           {/* 텍스트 클래스 및 색상 조정 */}
-          <p className="dashboard-subtitle text-body-primary text-gray-400">데이터 센터 인프라를 모니터링하고 관리하세요</p>
+          <p className="tab-subtitle text-body-primary text-gray-400">데이터 센터 인프라를 모니터링하고 관리하세요</p>
         </div>
-        {/* 텍스트 클래스 적용 */}
-        <button className="add-room-button text-button">
+        <button 
+          className="btn-create px-4 py-3"
+          onClick={() => setIsCreateModalOpen(true)}
+        >
           + 새 서버실 추가
         </button>
       </header>
@@ -80,6 +84,12 @@ const ServerRoomDashboard: React.FC = () => {
           </div>
         </section>
       </main>
+
+      {/* 서버실 생성 모달 */}
+      <ServerRoomCreateModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+      />
     </div>
   );
 };
