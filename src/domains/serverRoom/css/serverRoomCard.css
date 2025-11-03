@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 .server-room-card {
+  /*  배경 투명도, 블러, 테두리 */
   @apply bg-white/10 backdrop-blur-md rounded-2xl border border-slate-300/40 p-6 flex flex-col justify-between transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(0,0,0,0.2)];
 }
 
@@ -9,7 +10,7 @@
 }
 
 .card-title {
-  @apply m-0 text-xl text-white;
+  @apply m-0; /* 텍스트 스타일은 컴포넌트에서 text-title 클래스 사용 */
 }
 
 .card-actions {
@@ -17,7 +18,8 @@
 }
 
 .icon-button {
-  @apply bg-transparent border-none text-[#A0A0A0] cursor-pointer text-base transition-colors hover:text-white;
+  /* 아이콘 버튼 색상 조정 */
+  @apply bg-transparent border-none text-gray-400 cursor-pointer text-base transition-colors hover:text-white p-1 rounded-full hover:bg-white/10;
 }
 
 .card-body {
@@ -25,36 +27,26 @@
 }
 
 .card-info {
-  @apply my-2 flex items-center gap-2;
+  @apply my-2 flex items-center gap-2; /* 텍스트 스타일은 컴포넌트에서 text-body-primary 사용 */
 }
 
 .info-icon {
-  @apply text-[#888];
+  @apply text-gray-500; /* 아이콘 색상 조정 */
 }
 
 .status-info {
-  @apply font-medium;
+ /* 텍스트 스타일은 컴포넌트에서 text-body-primary 사용 */
 }
 
 .status-dot {
   @apply w-2.5 h-2.5 rounded-full inline-block mr-2;
 }
 
-.status-dot.normal {
-  @apply bg-green-500;
-}
-
-.status-dot.warning {
-  @apply bg-yellow-500;
-}
-
-.status-dot.critical {
-  @apply bg-red-500;
-}
-
-.status-dot.maintenance {
-  @apply bg-cyan-500;
-}
+/* 상태별 색상  */
+.status-dot.normal { @apply bg-green-500; }
+.status-dot.warning { @apply bg-yellow-500; }
+.status-dot.critical { @apply bg-red-500; }
+.status-dot.maintenance { @apply bg-cyan-500; }
 
 .card-footer {
   @apply mt-6;

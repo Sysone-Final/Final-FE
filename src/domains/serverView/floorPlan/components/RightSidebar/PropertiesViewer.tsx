@@ -26,7 +26,7 @@ const PropertiesViewer: React.FC = () => {
   if (!selectedAsset) {
     return (
       <div className="properties-placeholder">
-        <p className="placeholder-text">자산을 클릭하면 정보가 표시됩니다.</p>
+        <p className="placeholder-text text-placeholder">자산을 클릭하면 정보가 표시됩니다.</p>
       </div>
     );
   }
@@ -36,40 +36,39 @@ const PropertiesViewer: React.FC = () => {
   return (
     <div className="properties-viewer-container">
       <div className="viewer-header">
-        <h3 className="viewer-title">속성 뷰어: {selectedAsset.name}</h3>
+        <h3 className="viewer-title text-heading">속성 뷰어: {selectedAsset.name}</h3>
       </div>
       <div className="viewer-section">
-        <h4 className="section-title">실시간 상태</h4>
+        <h4 className="section-title text-heading">실시간 상태</h4>
         <div className="info-row">
-          <span className="info-label">상태</span>
+          <span className="info-label text-label-form">상태</span>
           <div className="info-value">
             <span className={`status-dot ${statusInfo.className}`}></span>
-            <span>{statusInfo.text}</span>
+            <span className="text-body-primary">{statusInfo.text}</span>
           </div>
         </div>
         {selectedAsset.data?.temperature !== undefined && (
           <div className="info-row">
-            <span className="info-label">온도</span>
-            <span className="info-value">{selectedAsset.data.temperature}°C</span>
+            <span className="info-label text-label-form">온도</span>
+            <span className="info-value text-body-primary">{selectedAsset.data.temperature}°C</span>
           </div>
         )}
       </div>
       <div className="viewer-section">
-        <h4 className="section-title">기본 정보</h4>
+        <h4 className="section-title text-heading">기본 정보</h4>
         <div className="info-row">
-            <span className="info-label">자산 ID</span>
-            <span className="info-value">{selectedAsset.id}</span>
+            <span className="info-label text-label-form">자산 ID</span>
+            <span className="info-value text-body-primary">{selectedAsset.id}</span>
         </div>
         <div className="info-row">
-            <span className="info-label">타입</span>
-            {/*  selectedAsset.type -> selectedAsset.assetType */}
-            <span className="info-value">{selectedAsset.assetType.toUpperCase()}</span>
+            <span className="info-label text-label-form">타입</span>
+            <span className="info-value text-body-primary">{selectedAsset.assetType.toUpperCase()}</span>
         </div>
       </div>
       
       {selectedAsset.assetType === 'rack' && (
         <div className="viewer-footer">
-            <button className="detail-button">
+            <button className="detail-button text-button">
             랙 상세 보기
             </button>
         </div>
@@ -77,5 +76,4 @@ const PropertiesViewer: React.FC = () => {
     </div>
   );
 };
-
 export default PropertiesViewer;
