@@ -23,6 +23,7 @@
     "@tanstack/react-table": "^8.21.3",
     "@types/react": "^18.3.25",
     "axios": "^1.12.2",
+    "framer-motion": "^12.23.24",
     "konva": "^10.0.2",
     "lucide-react": "^0.546.0",
     "prettier": "^3.6.2",
