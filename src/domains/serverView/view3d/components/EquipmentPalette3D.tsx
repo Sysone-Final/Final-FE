@@ -12,7 +12,7 @@ function EquipmentPalette3D({ onAddEquipment }: EquipmentPalette3DProps) {
   };
 
   return (
-    <div className="h-full bg-gray-800/50 backdrop-blur-md rounded-2xl p-6 overflow-y-auto shadow-2xl border border-slate-300/40">
+    <div className="h-full bg-gray-500/10 backdrop-blur-md rounded-2xl p-6 overflow-y-auto shadow-2xl border border-slate-300/40">
       <h2 className="text-white text-xl font-bold mb-6 flex items-center gap-2">
         장비 목록
       </h2>
