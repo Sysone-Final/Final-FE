@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useBlocker, useLocation } from 'react-router-dom';
 import { useFloorPlanStore, useHasUnsavedChanges } from '../store/floorPlanStore';
-import { useConfirmationModal } from '../components/ConfirmationModal';
+import { useConfirmationModal } from './useConfirmationModal';
 
 /**
  * FloorPlan 편집 시 페이지 이탈을 방지하는 훅

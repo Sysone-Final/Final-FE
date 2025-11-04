@@ -14,7 +14,7 @@ import { Settings, Eye, Undo2, Redo2, ZoomIn, ZoomOut,
   // Palette 
 } from 'lucide-react';
 import { useSidebarStore } from '../floorPlan/store/useSidebarStore';
-import { useConfirmationModal } from '../floorPlan/components/ConfirmationModal';
+import { useConfirmationModal } from '../floorPlan/hooks/useConfirmationModal';
 interface ServerViewHeaderProps {
   serverRoomId?: string;
   viewDimension: '2D' | '3D';
