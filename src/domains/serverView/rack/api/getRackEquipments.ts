@@ -1,7 +1,7 @@
 import client from "@/api/client";
 import type { EquipmentType, EquipmentStatus } from "../types";
 
-export interface GetRackEquipmentsParmas {
+export interface GetRackEquipmentsParams {
   status?: EquipmentStatus;
   type?: EquipmentType;
   sortBy?: string;
@@ -9,7 +9,7 @@ export interface GetRackEquipmentsParmas {
 
 export const getRackEquipments = async (
   rackId: number,
-  params?: GetRackEquipmentsParmas
+  params?: GetRackEquipmentsParams
 ) => {
   const response = await client.get(`/equipments/rack/${rackId}`, { params });
   return response.data;

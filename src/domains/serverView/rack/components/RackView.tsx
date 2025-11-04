@@ -5,6 +5,7 @@ import RackHeader from "./RackHeader";
 import Button from "./Button";
 import { useState } from "react";
 import { typeColorMap } from "../utils/colorMap";
+import { useRackEquipments } from "../hooks/useRackEquipments";
 
 interface RackViewProps {
   onClose?: () => void;
@@ -12,10 +13,41 @@ interface RackViewProps {
 }
 
 function RackView({ rackName }: RackViewProps = {}) {
-  const rackManager = useRackManager();
   const [frontView, setFrontView] = useState(true);
   const [editMode, setEditMode] = useState(false);
 
+  const rackId = rackName
+    ? parseInt(rackName.split("-").pop() || "0", 10)
+    : undefined;
+
+  const {
+    data: rackEquipmentData,
+    isLoading,
+    error,
+  } = useRackEquipments(rackId || 0, {});
+
+  const rackManager = useRackManager({
+    initialDevices: rackEquipmentData?.data || [],
+  });
+
+  if (isLoading) {
+    return (
+      <div className="h-full flex justify-center items-center text-white">
+        <div className="text-lg">로딩 중...</div>
+      </div>
+    );
+  }
+
+  // 에러 발생
+  if (error) {
+    return (
+      <div className="h-full flex justify-center items-center text-white">
+        <div className="text-lg text-red-400">
+          데이터를 불러오는 중 오류가 발생했습니다.
+        </div>
+      </div>
+    );
+  }
   const deviceLegend = [
     { type: "SERVER", label: "서버" },
     { type: "SWITCH", label: "스위치" },
