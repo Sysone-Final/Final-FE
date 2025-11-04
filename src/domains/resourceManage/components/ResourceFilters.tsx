@@ -25,12 +25,12 @@ export default function ResourceFilters({
       {/* 필터 요소 감싸는 div */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-4">
         {/* 검색창 다크 모드 */}
-        <div className="relative w-full md:flex-1">
+        <div className="relative w-full md:flex-1 border border-slate-300/40 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 bg-gray-700/50 text-gray-50 placeholder-gray-400">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
           <input
-            type="search"
+            type="text"
             placeholder="자산명, 모델명, IP로 검색..."
-            className="w-full pl-10 pr-4 py-2 border border-slate-300/40 rounded-lg focus:outline-none bg-gray-700/50 text-gray-50 placeholder-gray-400"
+            className="w-full pl-10 pr-4 py-2 "
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
           />
