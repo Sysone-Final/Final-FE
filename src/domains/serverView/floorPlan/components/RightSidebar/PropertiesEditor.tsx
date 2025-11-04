@@ -10,7 +10,7 @@ import {
 } from '../../store/floorPlanStore';
 import type { Asset, UHeight } from '../../types';
 import { useParams } from 'react-router-dom';
-import { useConfirmationModal } from '../ConfirmationModal';
+import { useConfirmationModal } from '../../hooks/useConfirmationModal';
 
 const COLOR_PRESETS = [
   // ... (preset colors) ...
