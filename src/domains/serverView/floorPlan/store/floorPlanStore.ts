@@ -184,6 +184,7 @@ export const duplicateAsset = async (id: string) => {
   const original = useFloorPlanStore.getState().assets.find((a) => a.id === id);
   if (!original) return;
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { id: _, createdAt: __, updatedAt: ___, ...template } = original;
   const newAssetTemplate = {
     ...template,
