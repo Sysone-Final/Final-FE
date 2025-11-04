@@ -17,21 +17,25 @@ import {
   useUpdateResource,
   useGetDatacenters,
   useGetRacksByDatacenter,
+  useGetResourceById,
 } from "../hooks/useResourceQueries";
-import { X, ArrowLeft } from "lucide-react";
+import { X, ArrowLeft, Loader2 } from "lucide-react";
 
 // --- 공통 폼 필드 스타일 ---
 const inputStyle =
-  "bg-gray-900/20 border border-white border-opacity-30 text-white p-2 rounded w-full placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:bg-gray-700 disabled:bg-opacity-30 disabled:placeholder-gray-500";
-const labelStyle = "block text-sm font-medium text-white mb-1";
+  // "bg-gray-900/20 border-white border-opacity-30 text-white ..."; -> 배경/테두리 조정
+  "bg-gray-800 border border-gray-700 text-gray-50 p-2 rounded w-full placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:bg-gray-700 disabled:placeholder-gray-500";
+// 텍스트 클래스
+const labelStyle = "block mb-1 text-label-form"; 
 const gridContainerStyle = "grid grid-cols-1 md:grid-cols-2 gap-4";
 const gridSpanFullStyle = "md:col-span-2";
-const fieldGroupStyle = "mb-6 p-4 border-t border-white border-opacity-20";
-const fieldGroupTitleStyle = "text-lg font-semibold mb-3 text-white";
-const helperTextStyle = "text-xs text-white text-opacity-70 mt-1 pl-1";
+const fieldGroupStyle = "mb-6 p-4 border-t border-gray-700"; // 테두리 색상
+// 텍스트 클래스 
+const fieldGroupTitleStyle = "mb-3 text-heading"; 
+const helperTextStyle = "text-xs text-gray-400 mt-1 pl-1"; // 색상 조정
 const errorTextStyle = "text-xs text-red-400 mt-1";
 
-// (기존 Resource 타입과 거의 동일하지만, 명시적으로 사용)
+
 type FormValues = Partial<Resource>;
 
 // --- Step 컴포넌트들의 prop 타입을 react-hook-form 기준으로 변경 ---
@@ -76,14 +80,10 @@ const Step1Identity = ({
       </label>
       <input
         type="text"
-        {...register("equipmentName", {
-          required: "장비명은 필수 입력 항목입니다.",
-        })}
+        {...register("equipmentName", { required: "장비명은 필수 입력 항목입니다." })}
         className={`${inputStyle} ${errors.equipmentName ? "border-red-500 ring-red-500" : ""}`}
       />
-      {errors.equipmentName && (
-        <p className={errorTextStyle}>{errors.equipmentName.message}</p>
-      )}
+      {errors.equipmentName && <p className={errorTextStyle}>{errors.equipmentName.message}</p>}
     </div>
 
     <div>
@@ -91,9 +91,7 @@ const Step1Identity = ({
         장비 유형 (Equipment Type) <span className="text-red-500">*</span>
       </label>
       <select
-        {...register("equipmentType", {
-          required: "장비 유형을 선택하세요.",
-        })}
+        {...register("equipmentType", { required: "장비 유형을 선택하세요." })}
         className={`${inputStyle} ${errors.equipmentType ? "border-red-500 ring-red-500" : ""}`}
       >
         <option value="SERVER">SERVER</option>
@@ -102,9 +100,7 @@ const Step1Identity = ({
         <option value="PDU">PDU</option>
         <option value="UPS">UPS</option>
       </select>
-      {errors.equipmentType && (
-        <p className={errorTextStyle}>{errors.equipmentType.message}</p>
-      )}
+      {errors.equipmentType && <p className={errorTextStyle}>{errors.equipmentType.message}</p>}
     </div>
 
     {/* --- 선택 (모두 register 적용) --- */}
@@ -149,10 +145,11 @@ const Step1Identity = ({
         name="imageFrontFile"
         accept="image/*"
         onChange={handleFileChange} // RHF register 사용 안 함
-        className={`${inputStyle} text-sm`}
+        className={`${inputStyle} text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-blue-50 hover:file:bg-blue-700`}
       />
       {imageFrontPreview && (
-        <div className="mt-2 border border-white border-opacity-30 rounded p-1 inline-block">
+          // 이미지 미리보기 테두리
+        <div className="mt-2 border border-gray-700 rounded p-1 inline-block">
           <img
             src={imageFrontPreview}
             alt="앞면 미리보기"
@@ -168,11 +165,12 @@ const Step1Identity = ({
         name="imageRearFile"
         accept="image/*"
         onChange={handleFileChange} // RHF register 사용 안 함
-        className={`${inputStyle} text-sm`}
+        className={`${inputStyle} text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-blue-50 hover:file:bg-blue-700`}
       />
       {imageRearPreview && (
-        <div className="mt-2 border border-white border-opacity-30 rounded p-1 inline-block">
-          <img
+// 이미지 미리보기 테두리
+        <div className="mt-2 border border-gray-700 rounded p-1 inline-block">          
+        <img
             src={imageRearPreview}
             alt="뒷면 미리보기"
             className="max-h-32 max-w-full object-contain rounded"
@@ -616,13 +614,15 @@ const getDefaultFormData = (): Partial<Resource> => ({
 interface ResourceWizardModalProps {
   isOpen: boolean;
   onCloseHandler: () => void;
-  resource: Resource | null; // null이면 'Add', 객체면 'Edit'
+  // resource: Resource | null; // null이면 'Add', 객체면 'Edit'
+  resourceId: string | null;// null이면 'Add', ID가 있으면 'Edit'
 }
 
 export default function ResourceWizardModal({
   isOpen,
   onCloseHandler,
-  resource,
+  // resource,
+  resourceId,
 }: ResourceWizardModalProps) {
   const [step, setStep] = useState(1);
 
@@ -661,36 +661,49 @@ export default function ResourceWizardModal({
 
   const createResourceMutation = useCreateResource();
   const updateResourceMutation = useUpdateResource();
-  const isLoading =
-    createResourceMutation.isPending || updateResourceMutation.isPending;
+  const {
+  data: resourceDetailData,
+  isLoading: isLoadingDetail,
+  isError: isErrorDetail,
+ } = useGetResourceById(resourceId);
+
+const isLoadingMutation =
+  createResourceMutation.isPending || updateResourceMutation.isPending;
+
+  const isLoading = isLoadingDetail || isLoadingMutation;
 
   //  'Edit' 모드일 때 RHF의 reset 사용
   useEffect(() => {
-    if (isOpen) {
-      if (resource) {
-        // 'Edit' 모드: 기본값 + 리소스 데이터로 폼 채우기
-        reset({
-          ...getDefaultFormData(),
-          ...resource,
-        });
-        // 'Edit' 모드 시 기존 이미지 URL을 미리보기로 설정
-        setImageFrontPreview(resource.imageUrlFront || null);
-        setImageRearPreview(resource.imageUrlRear || null);
-      } else {
-        // 'Add' 모드: 폼 기본값으로 리셋
-        reset(getDefaultFormData());
-        // 'Add' 모드 시 미리보기 초기화
-        setImageFrontPreview(null);
-        setImageRearPreview(null);
-      }
-      setStep(1); // 모달 열릴 때 항상 1단계
+  if (isOpen) {
+      // 1. 'Add' 모드 (resourceId가 null)
+   if (!resourceId) {
+    // 'Add' 모드: 폼 기본값으로 리셋
+    reset(getDefaultFormData());
+    setImageFrontPreview(null);
+    setImageRearPreview(null);
+        setImageFrontFile(null); // 파일 상태도 초기화
+        setImageRearFile(null);
+    setStep(1); // 모달 열릴 때 항상 1단계
+   } 
+      
+      // 2. 'Edit' 모드 (resourceId가 있고, 데이터 로드 완료)
+      else if (resourceId && resourceDetailData) {
+    // 'Edit' 모드: API로 받은 상세 데이터로 폼 채우기
+    reset({
+     ...getDefaultFormData(),
+     ...resourceDetailData,
+    });
+    // 'Edit' 모드 시 기존 이미지 URL을 미리보기로 설정
+    setImageFrontPreview(resourceDetailData.imageUrlFront || null);
+    setImageRearPreview(resourceDetailData.imageUrlRear || null);
+        setImageFrontFile(null); // 파일 상태는 초기화
+        setImageRearFile(null);
+    setStep(1); 
+   }
+      // 'Edit' 모드 (로딩 중)일 때는 아무것도 하지 않음 (로딩 스피너 표시)
 
-      // 이미지 파일 상태는 항상 초기화
-      setImageFrontFile(null);
-      setImageRearFile(null);
-
-    } 
-  }, [resource, isOpen, reset]); // 의존성에 reset 추가
+  }
+ }, [resourceId, resourceDetailData, isOpen, reset]);
 // 모달이 닫힐 때(isOpen=false) 정리를 담당하는 useEffect
 useEffect(() => {
     if (!isOpen) {
@@ -806,11 +819,11 @@ useEffect(() => {
       submitFormData.append("imageRearFile", imageRearFile);
     }
     
-    if (resource) {
-      updateResourceMutation.mutate(
-        { id: resource.id, formData: submitFormData },
-        { onSuccess: handleClose },
-      );
+    if (resourceId) {
+   updateResourceMutation.mutate(
+    { id: resourceId, formData: submitFormData }, // resource.id -> resourceId
+    { onSuccess: handleClose },
+   );
     } else {
       createResourceMutation.mutate(submitFormData, { onSuccess: handleClose });
     }
@@ -854,14 +867,14 @@ useEffect(() => {
 
   return (
     // 모달 배경 블러
-    <div className="fixed inset-0 z-40 flex justify-center items-center p-4 backdrop-blur-sm bg-black/20">
+    <div className="modal-bg">
       {/* 모달창 스타일 */}
-      <div className="bg-gray-900 bg-opacity-60 backdrop-blur-lg border border-white border-opacity-20 rounded-lg shadow-xl w-full max-w-3xl z-50">
+      <div className="modal">
         <div className="p-6 md:p-8">
           {/* 헤더 */}
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-white">
-              {resource ? "장비 수정" : "새 장비 등록"}
+              {resourceId ? "장비 수정" : "새 장비 등록"}
             </h2>
             <button
               onClick={handleClose}
@@ -883,7 +896,7 @@ useEffect(() => {
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${
                   step >= 1
-                    ? "bg-blue-500 border-blue-500 text-white"
+                    ? "bg-green-500 border-blue-500 text-white"
                     : "border-gray-400 text-gray-400"
                 }`}
               >
@@ -909,7 +922,7 @@ useEffect(() => {
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${
                   step >= 2
-                    ? "bg-blue-500 border-blue-500 text-white"
+                    ? "bg-green-500 border-blue-500 text-white"
                     : "border-gray-400 text-gray-400"
                 }`}
               >
@@ -935,7 +948,7 @@ useEffect(() => {
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${
                   step >= 3
-                    ? "bg-blue-500 border-blue-500 text-white"
+                    ? "bg-green-500 border-green-500 text-white"
                     : "border-gray-400 text-gray-400"
                 }`}
               >
@@ -949,9 +962,20 @@ useEffect(() => {
 
           {/* 폼 */}
           <form onSubmit={handleSubmit(onSubmit)}>
-            <div className="mb-6 max-h-[50vh] overflow-y-auto pr-2">
-              {renderStepContent()}
-            </div>
+            {isLoadingDetail ? (
+              <div className="flex justify-center items-center min-h-[200px] text-white opacity-80">
+                <Loader2 size={32} className="animate-spin mr-2" />
+                상세 정보를 불러오는 중...
+              </div>
+            ) : isErrorDetail ? (
+              <div className="flex justify-center items-center min-h-[200px] text-red-400">
+                오류: 상세 정보를 불러오지 못했습니다.
+              </div>
+            ) : (
+              <div className="mb-6 max-h-[50vh] overflow-y-auto pr-2">
+                {renderStepContent()}
+              </div>
+            )}
 
             {/* 네비게이션 버튼 */}
             <div className="flex justify-between items-center mt-8">
@@ -992,16 +1016,19 @@ useEffect(() => {
 
                 {step === 3 && (
                   <button
-                    type="submit" // 'submit' 타입
-                    disabled={isLoading}
-                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-blue-300"
-                  >
-                    {isLoading
-                      ? "저장 중..."
-                      : resource
-                        ? "수정 완료"
-                        : "등록 완료"}
-                  </button>
+          type="submit"
+                      // 💡 상세 로딩/에러 시 '완료' 버튼 비활성화
+          disabled={isLoading || isErrorDetail}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-blue-300"
+         >
+                        {/* ▼▼▼ [11] 수정: 로딩 텍스트 분리 ▼▼▼ */}
+          {isLoadingMutation // 저장/수정 중일 때
+           ? "저장 중..."
+           : resourceId // 수정 모드일 때
+            ? "수정 완료"
+            : "등록 완료"}
+                        {/* ▲▲▲ [11] 수정 ▲▲▲ */}
+         </button>
                 )}
               </div>
             </div>

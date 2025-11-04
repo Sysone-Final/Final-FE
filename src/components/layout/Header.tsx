@@ -9,8 +9,8 @@ function Header() {
     {
       id: "dashboard",
       label: "대시보드",
-      path: "/",
-      icon: <LuLayoutDashboard className="text-2xl text-sky-500"/>,
+      path: "/dashboard",
+      icon: <LuLayoutDashboard className="text-2xl text-sky-500" />,
     },
     {
       id: "serverRoom",

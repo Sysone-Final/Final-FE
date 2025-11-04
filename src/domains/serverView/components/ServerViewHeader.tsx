@@ -1,9 +1,20 @@
 import { useNavigate } from 'react-router-dom';
 import { useStore } from 'zustand';
-import { useFloorPlanStore } from '../floorPlan/store/floorPlanStore';
-import { useBabylonDatacenterStore } from '../view3d/stores/useBabylonDatacenterStore';
-import { Settings, Eye, Undo2, Redo2, ZoomIn, ZoomOut, Palette } from 'lucide-react';
+import {
+  useFloorPlanStore,
+  toggleMode,
+  groupSelectedAssets,
+  setDisplayMode,
+  zoom,
+  // useHasUnsavedChanges,
+} from '../floorPlan/store/floorPlanStore';
 
+import { useBabylonDatacenterStore } from '../view3d/stores/useBabylonDatacenterStore';
+import { Settings, Eye, Undo2, Redo2, ZoomIn, ZoomOut, 
+  // Palette 
+} from 'lucide-react';
+import { useSidebarStore } from '../floorPlan/store/useSidebarStore';
+import { useConfirmationModal } from '../floorPlan/hooks/useConfirmationModal';
 interface ServerViewHeaderProps {
   serverRoomId?: string;
   viewDimension: '2D' | '3D';
@@ -17,48 +28,91 @@ function ServerViewHeader({
 }: ServerViewHeaderProps) {
   const navigate = useNavigate();
 
-  // FloorPlan store 상태들 
+  const { confirm } = useConfirmationModal();
+
+  // 스토어에서는 '데이터'만 가져옵니다.
   const mode = useFloorPlanStore((state) => state.mode);
-  const toggleMode = useFloorPlanStore((state) => state.toggleMode);
+  // const hasUnsavedChanges = useHasUnsavedChanges();
   const selectedAssetIds = useFloorPlanStore((state) => state.selectedAssetIds);
-  const groupSelectedAssets = useFloorPlanStore((state) => state.groupSelectedAssets);
   const displayMode = useFloorPlanStore((state) => state.displayMode);
-  const setDisplayMode = useFloorPlanStore((state) => state.setDisplayMode);
-  const zoom = useFloorPlanStore((state) => state.zoom);
+
+const handleBackNavigation = () => {
+    // 1. window.confirm() 로직을 '모두 삭제'합니다.
+    // 2. 히스토리 클리어 로직을 '삭제'합니다. (Gatekeeper가 처리)
+    
+    // 3. 오직 "나가겠다"는 신호(navigate)만 보냅니다.
+    //    이후의 모든 처리는 ServerViewPage.tsx의 useBlocker가 담당합니다.
+    navigate('/server-room-dashboard');
+  };
 
   const undo = useStore(useFloorPlanStore.temporal, (state) => state.undo);
   const redo = useStore(useFloorPlanStore.temporal, (state) => state.redo);
 
-  // 편집/보기 모드 전환 핸들러
-  const mode3d = useBabylonDatacenterStore((state) => state.mode);
-  const toggleMode3d = useBabylonDatacenterStore((state) => state.toggleMode);
+  const { setLeftSidebarOpen, setRightSidebarOpen } = useSidebarStore();
+  const mode3d = useBabylonDatacenterStore((state) => state.mode); 
+  const toggleMode3d = useBabylonDatacenterStore((state) => state.toggleMode); 
 
   const handleToggleMode2D = () => {
-    if (mode === 'view' && selectedAssetIds.length > 1) {
-      if (
-        window.confirm(
-          `여러 개의 자산(${selectedAssetIds.length}개)이 선택되었습니다.\n이 자산들을 하나의 그룹으로 묶으시겠습니까?`
-        )
-      ) {
-        groupSelectedAssets();
+    if (mode === 'view') {
+      // 공통으로 실행될 로직
+      const switchToEditMode = (shouldGroup: boolean) => {
+        if (shouldGroup) {
+          groupSelectedAssets();
+        }
+        setLeftSidebarOpen(true);
+        setRightSidebarOpen(true);
+        toggleMode(); // 2D 모드 전환 실행
+      };
+
+      if (selectedAssetIds.length > 1) {
+        // 5. window.confirm()을 confirm() 훅으로 대체
+        confirm({
+          title: '자산 그룹화',
+          message: (
+            <p>
+              여러 개의 자산(<strong>{selectedAssetIds.length}개</strong>)이
+              선택되었습니다.
+              <br />이 자산들을 하나의 그룹으로 묶으시겠습니까?
+            </p>
+          ),
+          confirmText: '그룹화',
+          confirmAction: () => switchToEditMode(true), // 확인 시 그룹화 후 전환
+          cancelAction: () => switchToEditMode(false), // 취소 시 그냥 전환
+        });
+      } else {
+        // 그룹화할 자산이 없으면 바로 전환
+        switchToEditMode(false);
       }
+    } else {
+      // "편집" -> "보기" 모드로 전환 시
+      setRightSidebarOpen(false);
+      toggleMode(); // 2D 모드 전환 실행
     }
-    toggleMode();
   };
 
-  const handleToggleMode3D = () => {
+
+  //  3D 토글 핸들러(main)와 Zoom 핸들러(HEAD)를 모두 유지합니다.
+  const handleToggleMode3D = () => { 
     toggleMode3d();
   };
+  
+  // 활성화된 'handleDisplayModeChange' 함수를 사용
+  // const handleDisplayModeChange = (
+  //   e: React.ChangeEvent<HTMLSelectElement>,
+  // ) => {
+  //   setDisplayMode(e.target.value as 'status' | 'customColor');
+  // };
 
-  const handleDisplayModeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setDisplayMode(e.target.value as 'status' | 'customColor');
-  };
+  const handleZoomIn = () => zoom('in'); 
+  const handleZoomOut = () => zoom('out'); 
 
   return (
-    <header className="bg-gray-800/50 backdrop-blur-sm border-b border-gray-700 px-6 py-2 flex items-center justify-between flex-shrink-0">
+    // 헤더 태그 
+    <header className="bg-gray-500/30 backdrop-blur-sm border-b border-gray-700 px-6 py-2 flex items-center justify-between flex-shrink-0">
       <div className="flex items-center gap-4">
+        {/* ... (뒤로가기 버튼 코드) ... */}
         <button
-          onClick={() => navigate('/server-room-dashboard')}
+          onClick={handleBackNavigation}
           className="flex items-center gap-2 text-gray-100 hover:text-white transition-colors"
         >
           <svg
@@ -67,12 +121,13 @@ function ServerViewHeader({
             stroke="currentColor"
             viewBox="0 0 24 24"
           >
+            {' '}
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
               d="M15 19l-7-7 7-7"
-            />
+            />{' '}
           </svg>
           <span>뒤로 가기</span>
         </button>
@@ -82,45 +137,59 @@ function ServerViewHeader({
         </h1>
       </div>
 
+      {/* 오른쪽 컨트롤 영역 */}
       <div className="flex items-center gap-4">
-        {/* 2D 뷰일 때만 표시되는 컨트롤들 */}
+        {/* 3D/2D 분기를 위해 '?' 삼항 연산자 사용  */}
         {viewDimension === '2D' ? (
           <>
             {/* 보기 모드 컨트롤 */}
             {mode === 'view' && (
               <>
-                {/* 보기 모드 선택 */}
-                <div className="flex items-center gap-2">
-                  <Palette className="w-5 h-5 text-gray-100" />
-                  <select
-                    value={displayMode}
-                    onChange={handleDisplayModeChange}
-                    className="border border-gray-600 bg-gray-700 text-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2"
-                  >
-                    <option value="status">상태 임계값</option>
-                    <option value="customColor">사용자 지정 색상</option>
-                  </select>
-                </div>
-
-                {/* 줌 컨트롤 */}
-                <div className="flex items-center border border-gray-600 rounded-lg p-1 bg-gray-700/50">
+                {/* Display Mode Select */}
+                <div className="flex items-center rounded-md p-1 bg-gray-700/50 border border-gray-600">
                   <button
-                    onClick={() => zoom('out')}
-                    className="p-1 rounded-md text-gray-100 hover:bg-gray-600 transition-colors"
+                    onClick={() => setDisplayMode('customColor')} // '상면도' 모드
+                    className={`px-3 py-1 rounded-md transition-colors ${
+                      displayMode === 'customColor'
+                        ? 'bg-gray-400 text-white shadow-lg'
+                        : 'text-gray-300 hover:text-white'
+                    }`}
                   >
-                    <ZoomOut className="w-5 h-5" />
+                    🖥️ 상면도
                   </button>
-                  <span className="px-2 select-none text-gray-100">Zoom</span>
                   <button
-                    onClick={() => zoom('in')}
-                    className="p-1 rounded-md text-gray-100 hover:bg-gray-600 transition-colors"
+                    onClick={() => setDisplayMode('status')} // '상태 임계값' 모드
+                    className={`px-3 py-1 rounded-md transition-colors ${
+                      displayMode === 'status'
+                        ? 'bg-gray-400 text-white shadow-lg'
+                        : 'text-gray-300 hover:text-white'
+                    }`}
                   >
-                    <ZoomIn className="w-5 h-5" />
+                    📊 상태 임계값
                   </button>
                 </div>
+                {/* Zoom Buttons */}
+                {displayMode === 'customColor' && (
+                  <div className="flex items-center border border-gray-600 rounded-lg p-1 bg-gray-700/50">
+                    <button
+                      onClick={handleZoomOut}
+                      className="p-1 rounded-md text-gray-100 hover:bg-gray-600 transition-colors"
+                    >
+                      {' '}
+                      <ZoomOut className="w-5 h-5" />{' '}
+                    </button>
+                    <span className="px-2 select-none text-gray-100">Zoom</span>
+                    <button
+                      onClick={handleZoomIn}
+                      className="p-1 rounded-md text-gray-100 hover:bg-gray-600 transition-colors"
+                    >
+                      {' '}
+                      <ZoomIn className="w-5 h-5" />{' '}
+                    </button>
+                  </div>
+                )}
               </>
             )}
-
             {/* 편집 모드 컨트롤 */}
             {mode === 'edit' && (
               <div className="flex items-center gap-2 border border-gray-600 rounded-lg p-1 bg-gray-700/50">
@@ -128,18 +197,19 @@ function ServerViewHeader({
                   onClick={() => undo()}
                   className="p-2 rounded-md flex items-center gap-1.5 text-gray-100 hover:bg-gray-600 transition-colors"
                 >
-                  <Undo2 className="w-4 h-4" /> 되돌리기
+                  {' '}
+                  <Undo2 className="w-4 h-4" /> 되돌리기{' '}
                 </button>
                 <button
                   onClick={() => redo()}
                   className="p-2 rounded-md flex items-center gap-1.5 text-gray-100 hover:bg-gray-600 transition-colors"
                 >
-                  <Redo2 className="w-4 h-4" /> 다시 실행
+                  {' '}
+                  <Redo2 className="w-4 h-4" /> 다시 실행{' '}
                 </button>
               </div>
             )}
-
-            {/* 편집/보기 모드 전환 버튼 */}
+            {/*  'handleToggleMode2D'를 호출하는 버튼 사용 (main) */}
             <button
               onClick={handleToggleMode2D}
               className="py-2 px-4 rounded-lg flex items-center gap-2 transition-colors bg-gray-700/50 text-gray-100 hover:bg-gray-600 border border-gray-600"
@@ -153,15 +223,19 @@ function ServerViewHeader({
             </button>
           </>
         ) : (
+          // 3D 뷰일 때 표시되는 컨트롤
           <button
             onClick={handleToggleMode3D}
             className="py-2 px-4 rounded-lg flex items-center gap-2 transition-colors bg-gray-700/50 text-gray-100 hover:bg-gray-600 border border-gray-600"
           >
-            {mode3d === 'view' ? <Settings className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            {mode3d === 'view' ? (
+              <Settings className="w-5 h-5" />
+            ) : (
+              <Eye className="w-5 h-5" />
+            )}
             {mode3d === 'view' ? '편집 모드' : '보기 모드'}
           </button>
         )}
-
         {/* 2D/3D 토글 버튼 */}
         <div className="flex items-center rounded-md p-1 bg-gray-700/50 border border-gray-600">
           <button
@@ -172,7 +246,8 @@ function ServerViewHeader({
                 : 'text-gray-300 hover:text-white'
             }`}
           >
-            2D
+            {' '}
+            2D{' '}
           </button>
           <button
             onClick={() => onViewDimensionChange('3D')}
@@ -182,7 +257,8 @@ function ServerViewHeader({
                 : 'text-gray-300 hover:text-white'
             }`}
           >
-            3D
+            {' '}
+            3D{' '}
           </button>
         </div>
       </div>
@@ -191,3 +267,4 @@ function ServerViewHeader({
 }
 
 export default ServerViewHeader;
+

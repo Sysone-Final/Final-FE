@@ -1,62 +1,75 @@
-import { type DragEndEvent } from '@dnd-kit/core';
-import { useFloorPlanStore } from './../store/floorPlanStore';
-import type { Asset } from './../types';
+import React from 'react';
+import { DndContext } from '@dnd-kit/core';
+import Canvas from '../components/Canvas';
+import FloatingSidebarPanel from '../components/FloatingSidebarPanel';
+import { useFloorPlanDragDrop } from '../hooks/useFloorPlanDragDrop';
+import { useFloorPlanInitializer } from '../hooks/useFloorPlanInitializer';
+import { useFloorPlanNavigationGuard } from '../hooks/useFloorPlanNavigationGuard';
+import { useFloorPlanStore } from '../store/floorPlanStore';
+import { useSidebarStore } from '../store/useSidebarStore';
 
-export const CELL_SIZE = 80;
-export const HEADER_PADDING = 40;
+// Sidebar components
+import LeftSidebar from '../components/LeftSidebar';
+import RightSidebar from '../components/RightSidebar';
+import StatusLegendAndFilters from '../components/LeftSidebar/StatusLegendAndFilters';
+import TopNWidget from '../components/TopNWidget';
+import { ConfirmationModal } from '../components/ConfirmationModal';
 
-//충돌 감지
-export const checkCollision = (targetAsset: Omit<Asset, 'id'>, allAssets: Asset[]): boolean => {
-  for (const asset of allAssets) {
-    if (asset.layer !== targetAsset.layer) {
-      continue;
-    }
-    if (
-      targetAsset.gridX < asset.gridX + asset.widthInCells &&
-      targetAsset.gridX + targetAsset.widthInCells > asset.gridX &&
-      targetAsset.gridY < asset.gridY + asset.heightInCells &&
-      targetAsset.gridY + targetAsset.heightInCells > asset.gridY
-    ) {
-      return true;
-    }
-  }
-  return false;
+interface FloorPlanPageProps {
+  containerRef: React.RefObject<HTMLDivElement>;
+  serverRoomId: string | undefined;
+}
+
+const FloorPlanPage: React.FC<FloorPlanPageProps> = ({ containerRef, serverRoomId }) => {
+  // FloorPlan 초기화
+  useFloorPlanInitializer(serverRoomId);
+  
+  // 페이지 이탈 방지
+  useFloorPlanNavigationGuard();
+  
+  const { handleDragEnd } = useFloorPlanDragDrop(containerRef);
+  const mode = useFloorPlanStore((state) => state.mode);
+  const displayMode = useFloorPlanStore((state) => state.displayMode);
+  
+  const {
+    isLeftSidebarOpen,
+    toggleLeftSidebar,
+    isRightSidebarOpen,
+    toggleRightSidebar,
+  } = useSidebarStore();
+
+  const isDashboardView = mode === 'view' && displayMode === 'status';
+
+  return (
+    <DndContext onDragEnd={handleDragEnd}>
+      <ConfirmationModal />
+      <div className="flex-1 relative overflow-hidden">
+        <Canvas containerRef={containerRef} />
+        
+        {isDashboardView && <TopNWidget />}
+
+        <FloatingSidebarPanel 
+          isOpen={isLeftSidebarOpen} 
+          onToggle={toggleLeftSidebar} 
+          position="left" 
+          title={isDashboardView ? '상태 범례 및 필터' : mode === 'edit' ? '자산 라이브러리' : '표시 옵션'}
+        >
+          {isDashboardView ? <StatusLegendAndFilters /> : <LeftSidebar />}
+        </FloatingSidebarPanel>
+        
+        {!isDashboardView && (
+          <FloatingSidebarPanel 
+            isOpen={isRightSidebarOpen} 
+            onToggle={toggleRightSidebar} 
+            position="right" 
+            title={mode === 'edit' ? '속성 편집' : '속성 정보'}
+          >
+            <RightSidebar />
+          </FloatingSidebarPanel>
+        )}
+      </div>
+    </DndContext>
+  );
 };
 
-export const useFloorPlanDragDrop = () => {
-  const addAsset = useFloorPlanStore((state) => state.addAsset);
-  const stage = useFloorPlanStore((state) => state.stage);
-  const assets = useFloorPlanStore((state) => state.assets);
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { over, active } = event;
-    if (!over || over.id !== 'canvas-drop-area' || !stage) {
-      return;
-    }
-    const template = active.data.current as Omit<Asset, 'id' | 'gridX' | 'gridY'>;
-    if (!template) return;
-
-    const dropX = active.rect.current.translated?.left ?? 0;
-    const dropY = active.rect.current.translated?.top ?? 0;
-
-    const stageX = (dropX - stage.x) / stage.scale;
-    const stageY = (dropY - stage.y) / stage.scale;
-
-    const gridX = Math.floor((stageX - HEADER_PADDING) / CELL_SIZE);
-    const gridY = Math.floor((stageY - HEADER_PADDING) / CELL_SIZE);
-
-    const newAsset: Omit<Asset, 'id'> = { ...template, gridX, gridY };
-
-    if (checkCollision(newAsset, assets)) {
-      alert(
-        `"${newAsset.name}"을(를) 해당 위치에 배치할 수 없습니다.\n동일한 레이어의 다른 자산과 겹칩니다.`
-      );
-      return;
-    }
-
-    addAsset(newAsset);
-  };
-
-  return { handleDragEnd };
-};
-
+export default FloorPlanPage;

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
-import RackView from '../../../rack/components/RackView';
-import { useBabylonDatacenterStore } from '../stores/useBabylonDatacenterStore';
+import RackView from '../rack/components/RackView';
+import { useBabylonDatacenterStore } from '../view3d/stores/useBabylonDatacenterStore';
 
 function RackModal() {
   const { isRackModalOpen, selectedServerId, closeRackModal } = useBabylonDatacenterStore();
@@ -32,7 +32,7 @@ function RackModal() {
       
       {/* 우측 슬라이드 패널 */}
       <div
-        className="fixed top-0 right-0 h-full w-full max-w-[700px] sm:w-[30vw] sm:max-w-[600px] z-50 animate-slideInRight overflow-hidden"
+        className="fixed top-16 right-0 h-[calc(100vh-4rem)] w-full max-w-[700px] sm:w-[30vw] sm:max-w-[600px] z-50 animate-slideInRight overflow-hidden"
       >
         <RackView 
           onClose={closeRackModal} 

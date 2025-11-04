@@ -1,13 +1,15 @@
+
 import type { ColumnDef } from '@tanstack/react-table';
 import type { Resource, ResourceStatus, ResourceTableMeta } from '../types/resource.types';
 import HeaderCheckbox from './HeaderCheckbox';
 import { Pencil, Trash2, ArrowUpDown } from 'lucide-react';
 
+// 상태 Badge 다크 모드 색상 맵
 const statusColorMap: Record<ResourceStatus, string> = {
- 'NORMAL': 'bg-green-100 text-green-800',
- 'MAINTENANCE': 'bg-orange-100 text-orange-800',
- 'INACTIVE': 'bg-gray-100 text-gray-800',
- 'DISPOSED': 'bg-red-100 text-red-800',
+  'NORMAL': 'bg-green-700 text-green-100',
+  'MAINTENANCE': 'bg-orange-700 text-orange-100',
+  'INACTIVE': 'bg-gray-700 text-gray-100',
+  'DISPOSED': 'bg-red-700 text-red-100',
 };
 
 // NOTE(user): 컬럼 정의 (새 타입 기준)
@@ -18,8 +20,7 @@ export const columns: ColumnDef<Resource>[] = [
   cell: ({ row }) => (
    <input
     type="checkbox"
-    className="rounded border-gray-300"
-    checked={row.getIsSelected()}
+    className="rounded border-gray-600 bg-gray-700 focus:ring-slate-300/40" // 다크 모드 스타일    checked={row.getIsSelected()}
     disabled={!row.getCanSelect()}
     onChange={row.getToggleSelectedHandler()}
    />
@@ -28,11 +29,11 @@ export const columns: ColumnDef<Resource>[] = [
   enableHiding: false, 
  },
  {
-  accessorKey: 'equipmentName', // assetName -> equipmentName
+  accessorKey: 'equipmentName', 
   header: ({ column }) => {
    return (
     <button
-     className="flex items-center hover:text-gray-700" 
+     className="flex items-center hover:text-gray-300 text-gray-400" 
      onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
     >
      장비명
@@ -79,7 +80,7 @@ export const columns: ColumnDef<Resource>[] = [
   cell: ({ row, table }) => (
    <div className="flex gap-2">
     <button
-     className="text-gray-600 hover:text-blue-600"
+     className="text-gray-400 hover:text-blue-400"
      onClick={() => 
       (table.options.meta as ResourceTableMeta)?.editResourceHandler(row.original)
      }
@@ -88,7 +89,7 @@ export const columns: ColumnDef<Resource>[] = [
      <Pencil size={16} />
     </button>
     <button
-     className="text-gray-600 hover:text-red-600"
+     className="text-gray-400 hover:text-red-400"
      onClick={() => 
       (table.options.meta as ResourceTableMeta)?.deleteResourceHandler(row.original.id)
      }
