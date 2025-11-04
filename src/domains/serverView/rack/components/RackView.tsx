@@ -28,7 +28,7 @@ function RackView({ rackName }: RackViewProps = {}) {
 
   return (
     <div className="h-full flex justify-center items-center text-white p-2 overflow-auto">
-      <div className="flex flex-col bg-[#404452]/90 backdrop-blur-sm border border-slate-300/40 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.5)] max-h-full w-full overflow-hidden">
+      <div className="flex flex-col bg-[#404452]/70 backdrop-blur-md border border-slate-300/40 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.5)] max-h-full w-full overflow-hidden">
         {/* 상단바 */}
         <header className="flex justify-between items-center px-6 py-4 border-b border-slate-300/40">
           {/* 왼쪽: RackHeader (전체 너비 차지) */}
