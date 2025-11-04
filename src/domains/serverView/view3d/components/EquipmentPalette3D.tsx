@@ -12,7 +12,7 @@ function EquipmentPalette3D({ onAddEquipment }: EquipmentPalette3DProps) {
   };
 
   return (
-    <div className="h-full bg-gray-800/50 backdrop-blur-md rounded-2xl p-6 overflow-y-auto shadow-2xl border border-slate-300/40">
+    <div className="h-full bg-gray-500/10 backdrop-blur-md rounded-2xl p-6 overflow-y-auto shadow-2xl border border-slate-300/40">
       <h2 className="text-white text-xl font-bold mb-6 flex items-center gap-2">
         장비 목록
       </h2>
@@ -24,12 +24,12 @@ function EquipmentPalette3D({ onAddEquipment }: EquipmentPalette3DProps) {
             onClick={() => onAddEquipment(item.type)}
             draggable
             onDragStart={(e) => handleDragStart(e, item.type)}
-            className="w-full bg-gray-700/80 hover:bg-gray-600 text-white rounded-lg p-4 
-                     transition-all duration-200 hover:scale-105 hover:shadow-lg
-                     border border-gray-600 hover:border-blue-500
+            className="w-full bg-gray-700/70 hover:bg-gray-600 text-white rounded-lg p-4 
+                     transition-all duration-200 hover:shadow-lg
+                     border border-gray-600 hover:border-slate-300/40
                      flex items-center gap-3 group cursor-grab active:cursor-grabbing"
           >
-            <span className="text-3xl group-hover:scale-110 transition-transform">
+            <span className="text-3xl transition-transform">
               {item.icon}
             </span>
             <div className="flex-1 text-left">

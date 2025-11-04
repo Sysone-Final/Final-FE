@@ -14,7 +14,7 @@ import { Settings, Eye, Undo2, Redo2, ZoomIn, ZoomOut,
   // Palette 
 } from 'lucide-react';
 import { useSidebarStore } from '../floorPlan/store/useSidebarStore';
-import { useConfirmationModal } from '../floorPlan/components/ConfirmationModal';
+import { useConfirmationModal } from '../floorPlan/hooks/useConfirmationModal';
 interface ServerViewHeaderProps {
   serverRoomId?: string;
   viewDimension: '2D' | '3D';
@@ -108,7 +108,7 @@ const handleBackNavigation = () => {
 
   return (
     // 헤더 태그 
-    <header className="bg-gray-800/50 backdrop-blur-sm border-b border-gray-700 px-6 py-2 flex items-center justify-between flex-shrink-0">
+    <header className="bg-gray-500/30 backdrop-blur-sm border-b border-gray-700 px-6 py-2 flex items-center justify-between flex-shrink-0">
       <div className="flex items-center gap-4">
         {/* ... (뒤로가기 버튼 코드) ... */}
         <button
