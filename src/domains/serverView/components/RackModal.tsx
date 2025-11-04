@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
-import RackView from '../../../rack/components/RackView';
-import { useBabylonDatacenterStore } from '../stores/useBabylonDatacenterStore';
+import RackView from '../rack/components/RackView';
+import { useBabylonDatacenterStore } from '../view3d/stores/useBabylonDatacenterStore';
 
 function RackModal() {
   const { isRackModalOpen, selectedServerId, closeRackModal } = useBabylonDatacenterStore();

@@ -1,6 +1,7 @@
 import { create, type StateCreator } from 'zustand';
 import { temporal } from 'zundo';
 import { useStore } from 'zustand';
+import { CELL_SIZE, HEADER_PADDING } from '../utils/constants';
 import type {
   FloorPlanState,
   Asset,
@@ -374,9 +375,6 @@ export const zoomToAsset = (assetId: string) => {
 
   const { width: stageWidth, height: stageHeight } =
     stageNode.getBoundingClientRect();
-
-  const CELL_SIZE = 160;
-  const HEADER_PADDING = 80;
 
   const assetCenterX =
     HEADER_PADDING + (asset.gridX + asset.widthInCells / 2) * CELL_SIZE;

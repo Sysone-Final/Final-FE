@@ -10,18 +10,18 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 const queryClient = new QueryClient();
 
-async function enableMocking() {
-  if (import.meta.env.MODE !== 'development') {
-    return;
-  }
-  const { worker } = await import('./mocks/browser');
+// async function enableMocking() {
+//   if (import.meta.env.MODE !== 'development') {
+//     return;
+//   }
+//   const { worker } = await import('./mocks/browser');
  
-  return worker.start({
-    onUnhandledRequest: 'bypass',
-  });
-}
+//   return worker.start({
+//     onUnhandledRequest: 'bypass',
+//   });
+// }
 
-enableMocking().then(() => {
+// enableMocking().then(() => {
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <QueryClientProvider client={queryClient}>
@@ -38,4 +38,4 @@ enableMocking().then(() => {
       </QueryClientProvider>
     </StrictMode>,
   );
-});
+// });

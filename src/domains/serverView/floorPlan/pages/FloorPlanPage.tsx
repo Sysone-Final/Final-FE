@@ -1,94 +1,75 @@
-import { type DragEndEvent } from '@dnd-kit/core';
-import { useFloorPlanStore, addAsset } from './../store/floorPlanStore';
-import type { Asset } from './../types';
-import toast from 'react-hot-toast';
-import React from 'react'; 
+import React from 'react';
+import { DndContext } from '@dnd-kit/core';
+import Canvas from '../components/Canvas';
+import FloatingSidebarPanel from '../components/FloatingSidebarPanel';
+import { useFloorPlanDragDrop } from '../hooks/useFloorPlanDragDrop';
+import { useFloorPlanInitializer } from '../hooks/useFloorPlanInitializer';
+import { useFloorPlanNavigationGuard } from '../hooks/useFloorPlanNavigationGuard';
+import { useFloorPlanStore } from '../store/floorPlanStore';
+import { useSidebarStore } from '../store/useSidebarStore';
 
-export const CELL_SIZE = 160;
-export const HEADER_PADDING = 80;
+// Sidebar components
+import LeftSidebar from '../components/LeftSidebar';
+import RightSidebar from '../components/RightSidebar';
+import StatusLegendAndFilters from '../components/LeftSidebar/StatusLegendAndFilters';
+import TopNWidget from '../components/TopNWidget';
+import { ConfirmationModal } from '../components/ConfirmationModal';
 
-export const checkCollision = (
- targetAsset: Omit<Asset, 'id'>,
- allAssets: Asset[],
-): boolean => {
- for (const asset of allAssets) {
-  if (asset.layer !== targetAsset.layer) {
-   continue;
-  }
-  if (
-   targetAsset.gridX < asset.gridX + asset.widthInCells &&
-   targetAsset.gridX + targetAsset.widthInCells > asset.gridX &&
-   targetAsset.gridY < asset.gridY + asset.heightInCells &&
-   targetAsset.gridY + targetAsset.heightInCells > asset.gridY
-  ) {
-   return true;
-  }
- }
- return false;
+interface FloorPlanPageProps {
+  containerRef: React.RefObject<HTMLDivElement>;
+  serverRoomId: string | undefined;
+}
+
+const FloorPlanPage: React.FC<FloorPlanPageProps> = ({ containerRef, serverRoomId }) => {
+  // FloorPlan 초기화
+  useFloorPlanInitializer(serverRoomId);
+  
+  // 페이지 이탈 방지
+  useFloorPlanNavigationGuard();
+  
+  const { handleDragEnd } = useFloorPlanDragDrop(containerRef);
+  const mode = useFloorPlanStore((state) => state.mode);
+  const displayMode = useFloorPlanStore((state) => state.displayMode);
+  
+  const {
+    isLeftSidebarOpen,
+    toggleLeftSidebar,
+    isRightSidebarOpen,
+    toggleRightSidebar,
+  } = useSidebarStore();
+
+  const isDashboardView = mode === 'view' && displayMode === 'status';
+
+  return (
+    <DndContext onDragEnd={handleDragEnd}>
+      <ConfirmationModal />
+      <div className="flex-1 relative overflow-hidden">
+        <Canvas containerRef={containerRef} />
+        
+        {isDashboardView && <TopNWidget />}
+
+        <FloatingSidebarPanel 
+          isOpen={isLeftSidebarOpen} 
+          onToggle={toggleLeftSidebar} 
+          position="left" 
+          title={isDashboardView ? '상태 범례 및 필터' : mode === 'edit' ? '자산 라이브러리' : '표시 옵션'}
+        >
+          {isDashboardView ? <StatusLegendAndFilters /> : <LeftSidebar />}
+        </FloatingSidebarPanel>
+        
+        {!isDashboardView && (
+          <FloatingSidebarPanel 
+            isOpen={isRightSidebarOpen} 
+            onToggle={toggleRightSidebar} 
+            position="right" 
+            title={mode === 'edit' ? '속성 편집' : '속성 정보'}
+          >
+            <RightSidebar />
+          </FloatingSidebarPanel>
+        )}
+      </div>
+    </DndContext>
+  );
 };
 
-
-// 2. 훅이 캔버스 컨테이너의 ref를 인자로 받도록 수정
-export const useFloorPlanDragDrop = (
- containerRef: React.RefObject<HTMLDivElement>,
-) => {
- const handleDragEnd = (event: DragEndEvent) => {
-  const { over, active } = event;
-  const { stage, assets } = useFloorPlanStore.getState();
-
-  // 3. 캔버스 ref가 없거나, 드롭 영역이 아니면 중단
-  if (
-   !over ||
-   over.id !== 'canvas-drop-area' ||
-   !stage ||
-   !containerRef.current
-  ) {
-   return;
-  }
-
-  const template = active.data.current as Omit<
-   Asset,
-   'id' | 'gridX' | 'gridY'
-  >;
-  if (!template) return;
-
-  // 4. 캔버스 영역의 화면상 실제 위치(offset)를 가져옵니다.
-  const { top: containerTop, left: containerLeft } =
-   containerRef.current.getBoundingClientRect();
-
-  // 5. dnd-kit이 반환한 *화면(Viewport) 기준* 좌표
-  const dropX_viewport = active.rect.current.translated?.left ?? 0;
-  const dropY_viewport = active.rect.current.translated?.top ?? 0;
-
-  // 6. 화면 기준 좌표에서 캔버스 offset을 빼서 *캔버스 기준* 좌표로 변환
-  const dropX_relative = dropX_viewport - containerLeft;
-  const dropY_relative = dropY_viewport - containerTop;
-
-  // 7. *캔버스 기준* 좌표를 사용하여 stage 좌표로 변환
-  const stageX = (dropX_relative - stage.x) / stage.scale;
-  const stageY = (dropY_relative - stage.y) / stage.scale;
-
-  // 8. Stage 좌표를 그리드 좌표로 변환 (Math.round 유지)
-  const gridX = Math.round((stageX - HEADER_PADDING) / CELL_SIZE);
-  const gridY = Math.round((stageY - HEADER_PADDING) / CELL_SIZE);
-
-  const newAsset: Omit<Asset, 'id'> = { ...template, gridX, gridY };
-
-  // --- (이하는 동일) ---
-  if (checkCollision(newAsset, assets)) {
-   toast.error(
-    `"${newAsset.name}"을(를) 배치할 수 없습니다. 다른 자산과 겹칩니다.`,
-    {
-     id: 'asset-collision-error',
-    },
-   );
-   return;
-  }
-
-  addAsset(newAsset);
-
-  toast.success(`"${newAsset.name}" 자산이 추가되었습니다.`);
- };
-
- return { handleDragEnd };
-};
+export default FloorPlanPage;
