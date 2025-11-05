@@ -1,6 +1,6 @@
 import { Group, Rect, Text, Line, Image } from "react-konva";
 import { useState } from "react";
-import type { RackDevice } from "../types";
+import type { Equipments } from "../types";
 import { deviceImageMap } from "../utils/deviceImageMap";
 import { useImageLoad } from "../hooks/useImageLoad";
 import { dragBound } from "../utils/dragBound";
@@ -8,7 +8,7 @@ import { UNIT_COUNT, RACK_CONFIG } from "../constants/rackConstants";
 import deleteIcon from "../assets/delete.svg";
 
 interface DeviceProps {
-  device: RackDevice;
+  device: Equipments;
   y: number;
   x: number;
   height: number;

@@ -1,7 +1,7 @@
 import { Stage, Layer, Rect, Line, Text } from "react-konva";
 import { useMemo, Fragment } from "react";
 import type { KonvaEventObject } from "konva/lib/Node";
-import type { RackDevice, FloatingDevice } from "../types";
+import type { Equipments, FloatingDevice } from "../types";
 import Device from "./Device";
 import { RACK_CONFIG, UNIT_COUNT } from "../constants/rackConstants";
 import {
@@ -12,7 +12,7 @@ import {
 import { rackLayout } from "../utils/rackLayout";
 
 interface RackProps {
-  devices: RackDevice[];
+  devices: Equipments[];
   floatingDevice: FloatingDevice | null;
   onMouseMove: (mouseY: number) => void;
   onRackClick: (position: number) => void;
@@ -160,14 +160,15 @@ function Rack({
                 equipmentName: floatingDevice.card.label,
                 equipmentCode: `TEMP-${Date.now()}`,
                 equipmentType: floatingDevice.card.type,
-                status: "NORMAL",
                 startUnit: floatingInfo.position,
                 unitSize: floatingDevice.card.height,
-                rackName: "TEMP",
-                modelName: "Unknown",
+                positionType: "FRONT",
+                status: "NORMAL",
                 manufacturer: "Unknown",
+                modelName: "Unknown",
                 ipAddress: "0.0.0.0",
-                powerConsumption: 0,
+                rackName: "RACK_A02",
+                powerConsumption: 500.0,
               }}
               y={floatingInfo.y}
               height={floatingInfo.height}
