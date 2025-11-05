@@ -1,57 +1,26 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import type { RackDevice, FloatingDevice, DeviceCard } from "../types";
 import { checkCollision } from "../utils/rackCollisionDetection";
 
-export function useRackManager() {
-  const [installedDevices, setInstalledDevices] = useState<RackDevice[]>([
-    {
-      equipmentId: 1,
-      equipmentName: "Dell PowerEdge R740",
-      equipmentCode: "EQ-001",
-      equipmentType: "SERVER",
-      status: "NORMAL",
-      startUnit: 1,
-      unitSize: 2,
-      rackName: "RACK-A01",
-      modelName: "R740",
-      manufacturer: "Dell",
-      ipAddress: "192.168.1.10",
-      powerConsumption: 500.0,
-    },
-    {
-      equipmentId: 2,
-      equipmentName: "HP ProLiant DL380",
-      equipmentCode: "EQ-002",
-      equipmentType: "SERVER",
-      status: "WARNING",
-      startUnit: 3,
-      unitSize: 2,
-      rackName: "RACK-A01",
-      modelName: "DL380",
-      manufacturer: "HP",
-      ipAddress: "192.168.1.11",
-      powerConsumption: 450.0,
-    },
-    {
-      equipmentId: 3,
-      equipmentName: "Cisco Catalyst 9300",
-      equipmentCode: "EQ-003",
-      equipmentType: "SWITCH",
-      status: "NORMAL",
-      startUnit: 5,
-      unitSize: 1,
-      rackName: "RACK-A01",
-      modelName: "Catalyst 9300",
-      manufacturer: "Cisco",
-      ipAddress: "192.168.1.20",
-      powerConsumption: 200.0,
-    },
-  ]);
+interface UseRackManagerProps {
+  initialDevices?: RackDevice[];
+}
+
+export function useRackManager({
+  initialDevices = [],
+}: UseRackManagerProps = {}) {
+  const [installedDevices, setInstalledDevices] = useState<RackDevice[]>([]);
 
   const [floatingDevice, setFloatingDevice] = useState<FloatingDevice | null>(
-    null,
+    null
   );
   const [resetKey, setResetKey] = useState(0);
+
+  useEffect(() => {
+    if (initialDevices.length > 0) {
+      setInstalledDevices(initialDevices);
+    }
+  }, [initialDevices]);
 
   // 카드 클릭 핸들러
   const handleCardClick = useCallback((card: DeviceCard) => {
@@ -71,7 +40,7 @@ export function useRackManager() {
     (deviceId: number, newPosition: number) => {
       setInstalledDevices((prevDevices) => {
         const draggedDevice = prevDevices.find(
-          (d) => d.equipmentId === deviceId,
+          (d) => d.equipmentId === deviceId
         );
         if (!draggedDevice) return prevDevices;
 
@@ -85,7 +54,7 @@ export function useRackManager() {
             height: draggedDevice.unitSize,
           },
           prevDevices,
-          deviceId,
+          deviceId
         );
 
         if (hasCollision) {
@@ -97,11 +66,11 @@ export function useRackManager() {
         return prevDevices.map((device) =>
           device.equipmentId === deviceId
             ? { ...device, position: newPosition }
-            : device,
+            : device
         );
       });
     },
-    [],
+    []
   );
 
   // 랙 클릭 핸들러
@@ -130,7 +99,7 @@ export function useRackManager() {
             position,
             height: prevFloating.card.height,
           },
-          prevDevices,
+          prevDevices
         );
 
         if (hasCollision) {
@@ -147,7 +116,7 @@ export function useRackManager() {
   //장비 삭제 함수 추가
   const removeDevice = (deviceId: number) => {
     setInstalledDevices((prev) =>
-      prev.filter((d) => d.equipmentId !== deviceId),
+      prev.filter((d) => d.equipmentId !== deviceId)
     );
   };
 

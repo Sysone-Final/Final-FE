@@ -64,7 +64,6 @@ function LoginPage() {
       <div className="login-container">
         <div className="login-form-container">
           <img src="/logo.svg" alt="logo" className="login-logo" />
-          <div className="text-title">로그인</div>
           <div className="login-form">
             <Input
               label="아이디"
@@ -108,16 +107,9 @@ function LoginPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.3 }}
             >
-              <span className="hero-text-white">원격으로</span>
+              <span className="hero-text-gradient">Serverway</span>
             </motion.div>
-            <motion.div
-              className="hero-text"
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-            >
-              <span className="hero-text-gradient">완벽하게</span>
-            </motion.div>
+
             <motion.div
               className="hero-subtext"
               initial={{ opacity: 0, y: 20 }}
