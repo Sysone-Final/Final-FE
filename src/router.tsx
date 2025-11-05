@@ -4,6 +4,7 @@ import ServerRoomDashboard from "./domains/serverRoom/pages/ServerRoomDashboard"
 import ServerViewPage from "./domains/serverView/pages/ServerViewPage";
 import ResourceManagePage from "./domains/resourceManage/pages/ResourceManagePage";
 import LoginPage from "./domains/login/LoginPage";
+import HumanResource from "./domains/humanResource/pages/HumanResource";
 
 const router = createBrowserRouter([
   {
@@ -29,6 +30,10 @@ const router = createBrowserRouter([
       {
         path: "assets",
         element: <ResourceManagePage />,
+      },
+      {
+        path: "hr",
+        element: <HumanResource />,
       },
     ],
   },

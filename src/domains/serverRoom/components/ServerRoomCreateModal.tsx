@@ -18,7 +18,7 @@ type FormValues = {
   name: string;
   code: string;
   location: string;
-  floor: string;
+  floor: number;
   rows: number;
   columns: number;
   description?: string;
@@ -39,7 +39,6 @@ function ServerRoomCreateModal({
       name: "",
       code: "",
       location: "",
-      floor: "",
       rows: 10,
       columns: 10,
       description: "",
@@ -118,7 +117,7 @@ function ServerRoomCreateModal({
                       required: "IDC 필수 입력 항목입니다.",
                     })}
                     className={`modal-input ${errors.name ? "border-red-500 " : ""}`}
-                    placeholder="예: 서울 데이터센터"
+                    placeholder="서울 데이터센터"
                   />
                   {errors.name && (
                     <p className={errorTextStyle}>{errors.name.message}</p>
@@ -136,7 +135,7 @@ function ServerRoomCreateModal({
                       required: "코드는 필수 입력 항목입니다.",
                     })}
                     className={`modal-input ${errors.code ? "border-red-500" : ""}`}
-                    placeholder="예: DC-BSN-001"
+                    placeholder="DC-BSN-001"
                   />
                   {errors.code && (
                     <p className={errorTextStyle}>{errors.code.message}</p>
@@ -144,7 +143,7 @@ function ServerRoomCreateModal({
                 </div>
 
                 {/* 위치 */}
-                <div className="md:col-span-2">
+                <div className="md:col-span-1">
                   <label className={labelStyle}>
                     위치 <span className="text-red-500">*</span>
                   </label>
@@ -154,7 +153,7 @@ function ServerRoomCreateModal({
                       required: "위치는 필수 입력 항목입니다.",
                     })}
                     className={`modal-input ${errors.location ? "border-red-500" : ""}`}
-                    placeholder="예: 부산시 해운대구 센텀중앙로 48"
+                    placeholder="서울특별시 마포구 월드컵대로"
                   />
                   {errors.location && (
                     <p className={errorTextStyle}>{errors.location.message}</p>
@@ -167,19 +166,19 @@ function ServerRoomCreateModal({
                     층 <span className="text-red-500">*</span>
                   </label>
                   <input
-                    type="text"
+                    type="number"
                     {...register("floor", {
                       required: "층 정보는 필수 입력 항목입니다.",
                     })}
                     className={`modal-input ${errors.floor ? "border-red-500" : ""}`}
-                    placeholder="예: 지하 1층"
+                    placeholder="1"
                   />
                   {errors.floor && (
                     <p className={errorTextStyle}>{errors.floor.message}</p>
                   )}
                 </div>
 
-                {/* 담당자 ID */}
+                {/* 담당자 ID
                 <div>
                   <label className={labelStyle}>담당자 ID</label>
                   <input
@@ -188,7 +187,7 @@ function ServerRoomCreateModal({
                     className="modal-input"
                     placeholder="예: 2"
                   />
-                </div>
+                </div> */}
 
                 {/* 행 수 */}
                 <div>
