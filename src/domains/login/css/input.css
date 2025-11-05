@@ -31,6 +31,10 @@ input:active {
   @apply text-sm text-red-600;
 }
 
+.input-error-container {
+  @apply h-[1.2rem];
+}
+
 /* Autofill 스타일 */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
@@ -42,4 +46,22 @@ input:-webkit-autofill:active {
   background-color: transparent !important;
   background-image: none !important;
   transition: background-color 5000s ease-in-out 0s;
+}
+
+input::placeholder {
+  @apply text-gray-50;
+}
+
+.input-field {
+  @apply appearance-none text-sm font-medium text-gray-50 bg-transparent outline-none;
+}
+
+input::-webkit-input-placeholder {
+  @apply text-gray-50;
+}
+input::-moz-placeholder {
+  @apply text-gray-50;
+}
+input:-ms-input-placeholder {
+  @apply text-gray-50;
 }
