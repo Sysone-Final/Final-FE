@@ -1,0 +1,24 @@
+import { useQuery } from "@tanstack/react-query";
+import {
+  getRackEquipments,
+  type GetRackEquipmentsParams,
+} from "../api/getRackEquipments";
+import type { RackDevice } from "../types";
+
+interface RackEquipmentResponse {
+  status: number;
+  message: string;
+  data: RackDevice[];
+}
+
+export const useRackEquipments = (
+  rackId: number,
+  params?: GetRackEquipmentsParams
+) => {
+  const { data, isLoading, error } = useQuery<RackEquipmentResponse>({
+    queryKey: ["rackEquipments", rackId, params],
+    queryFn: () => getRackEquipments(rackId, params),
+    enabled: !!rackId,
+  });
+  return { data, isLoading, error };
+};
