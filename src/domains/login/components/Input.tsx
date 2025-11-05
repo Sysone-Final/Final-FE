@@ -32,15 +32,17 @@ function Input({
         <div className="input-icon">{icon}</div>
         <input
           id={id}
-          className="text-placeholder"
           type={type}
           value={value}
           onChange={onChange}
           placeholder={placeholder}
           disabled={disabled}
+          className="input-field"
         />
       </div>
-      {error && <div className="input-error">{error}</div>}
+      <div className="input-error-container">
+        <div className="input-error">{error || ""}</div>
+      </div>
     </div>
   );
 }
