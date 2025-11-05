@@ -72,7 +72,7 @@ function RackView({ rackName }: RackViewProps = {}) {
           <div className="flex items-center gap-4 ml-4">
             {/* 편집/뷰어 토글 */}
             <Button
-              label={editMode ? "편집" : "보기"}
+              label={editMode ? "보기" : "편집"}
               onClick={() => setEditMode(!editMode)}
               active={editMode}
             />
