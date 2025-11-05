@@ -1,10 +1,24 @@
-import axios from "axios";
-import type { ServerRoom } from "../types";
+import client from "@api/client";
+import type { ServerRoom, CompanyDataCentersResponse } from "../types";
 
-const apiClient = axios.create({
-  baseURL:
-    import.meta.env.VITE_API_BASE_URL || "https://api.serverway.shop/api",
-});
+/**
+ * 회사의 전산실 매핑 조회 (GET)
+ * @param companyId 회사 ID
+ */
+export const getCompanyDataCenters = async (companyId: number): Promise<ServerRoom[]> => {
+  const response = await client.get<CompanyDataCentersResponse>(
+    `/company-datacenters/company/${companyId}`
+  );
+  
+  // API 응답을 ServerRoom 형태로 변환
+  return response.data.result.map((item) => ({
+    id: item.dataCenterId.toString(),
+    name: item.dataCenterName,
+    location: item.description || "위치 정보 없음",
+    rackCount: 0, // API에 rack count 정보가 없으므로 기본값 설정
+    status: "Normal" as const, // 기본값으로 설정
+  }));
+};
 
 /**
  * 서버실 생성 (POST)
@@ -13,18 +27,10 @@ const apiClient = axios.create({
 export const createServerRoom = async (
   serverRoomData: CreateServerRoomRequest,
 ): Promise<ServerRoom> => {
-  const response = await apiClient.post<ServerRoom>(
+  const response = await client.post<ServerRoom>(
     "/serverrooms",
     serverRoomData,
   );
-  return response.data;
-};
-
-/**
- * 서버실 목록 조회 (GET)
- */
-export const getServerRooms = async (): Promise<ServerRoom[]> => {
-  const response = await apiClient.get<ServerRoom[]>("/serverrooms");
   return response.data;
 };
 
@@ -33,7 +39,7 @@ export interface CreateServerRoomRequest {
   name: string;
   code: string;
   location: string;
-  floor: string;
+  floor: number;
   rows: number;
   columns: number;
   status?: string;
