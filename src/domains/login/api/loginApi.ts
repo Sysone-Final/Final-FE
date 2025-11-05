@@ -10,5 +10,5 @@ interface LoginApiResponse {
 export const loginApi = async (data: LoginRequest): Promise<LoginResponse> => {
   console.log("Using client:", client.defaults.withCredentials);
   const response = await client.post<LoginApiResponse>("/auth/login", data);
-  return response.data.result.result;
+  return response.data.result;
 };
