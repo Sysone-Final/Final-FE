@@ -1,15 +1,15 @@
 import { useState, useCallback, useEffect } from "react";
-import type { RackDevice, FloatingDevice, DeviceCard } from "../types";
+import type { Equipments, FloatingDevice, DeviceCard } from "../types";
 import { checkCollision } from "../utils/rackCollisionDetection";
 
 interface UseRackManagerProps {
-  initialDevices?: RackDevice[];
+  initialDevices?: Equipments[];
 }
 
 export function useRackManager({
   initialDevices = [],
 }: UseRackManagerProps = {}) {
-  const [installedDevices, setInstalledDevices] = useState<RackDevice[]>([]);
+  const [installedDevices, setInstalledDevices] = useState<Equipments[]>([]);
 
   const [floatingDevice, setFloatingDevice] = useState<FloatingDevice | null>(
     null
@@ -65,7 +65,7 @@ export function useRackManager({
 
         return prevDevices.map((device) =>
           device.equipmentId === deviceId
-            ? { ...device, position: newPosition }
+            ? { ...device, startUnit: newPosition }
             : device
         );
       });
@@ -78,19 +78,20 @@ export function useRackManager({
     setFloatingDevice((prevFloating) => {
       if (!prevFloating) return null;
 
-      const newDevice: RackDevice = {
+      const newDevice: Equipments = {
         equipmentId: Date.now(),
         equipmentName: prevFloating.card.label,
         equipmentCode: `EQ-${Date.now()}`,
         equipmentType: prevFloating.card.type,
         status: "NORMAL",
         startUnit: position,
+        positionType: "FRONT",
         unitSize: prevFloating.card.height,
-        rackName: "RACK-A01",
         modelName: "Unknown",
         manufacturer: "Unknown",
+        rackName: "RACK-A01",
         ipAddress: "0.0.0.0",
-        powerConsumption: 0,
+        powerConsumption: 500.0,
       };
 
       setInstalledDevices((prevDevices) => {
@@ -114,11 +115,11 @@ export function useRackManager({
   }, []);
 
   //장비 삭제 함수 추가
-  const removeDevice = (deviceId: number) => {
+  const removeDevice = useCallback((deviceId: number) => {
     setInstalledDevices((prev) =>
       prev.filter((d) => d.equipmentId !== deviceId)
     );
-  };
+  }, []);
 
   return {
     installedDevices,
