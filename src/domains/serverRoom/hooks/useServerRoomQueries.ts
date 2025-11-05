@@ -1,6 +1,17 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createServerRoom } from "../api/serverRoomApi";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getCompanyDataCenters, createServerRoom } from "../api/serverRoomApi";
 import type { CreateServerRoomRequest } from "../api/serverRoomApi";
+
+/**
+ * 회사의 전산실 목록 조회 query
+ * @param companyId 회사 ID
+ */
+export const useServerRooms = (companyId: number) => {
+  return useQuery({
+    queryKey: ["serverRooms", companyId],
+    queryFn: () => getCompanyDataCenters(companyId),
+  });
+};
 
 /**
  * 서버실 생성 mutation

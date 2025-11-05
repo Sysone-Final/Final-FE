@@ -4,6 +4,7 @@ import ServerRoomDashboard from "./domains/serverRoom/pages/ServerRoomDashboard"
 import ServerViewPage from "./domains/serverView/pages/ServerViewPage";
 import ResourceManagePage from "./domains/resourceManage/pages/ResourceManagePage";
 import LoginPage from "./domains/login/LoginPage";
+import HumanResource from "./domains/humanResource/pages/HumanResource";
 import RackView from "./domains/serverView/rack/components/RackView";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -38,6 +39,10 @@ const router = createBrowserRouter([
           {
             path: "rack",
             element: <RackView />,
+          },
+          {
+            path: "hr",
+            element: <HumanResource />,
           },
         ],
       },

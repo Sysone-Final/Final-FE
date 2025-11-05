@@ -1,4 +1,3 @@
-import React from 'react';
 import { useFloorPlanStore } from '../../store/floorPlanStore';
 import type { Asset } from '../../types';
 
