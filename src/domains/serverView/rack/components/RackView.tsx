@@ -4,7 +4,6 @@ import Sidebar from "./Sidebar";
 import RackHeader from "./RackHeader";
 import Button from "./Button";
 import { useState } from "react";
-import { useRackEquipments } from "../hooks/useRackEquipments";
 
 interface RackViewProps {
   onClose?: () => void;
@@ -19,17 +18,9 @@ function RackView({ rackName }: RackViewProps = {}) {
     ? parseInt(rackName.split("-").pop() || "0", 10)
     : undefined;
 
-  const {
-    data: rackEquipmentData,
-    isLoading,
-    error,
-  } = useRackEquipments(rackId || 0, {});
+  const rackManager = useRackManager({ rackId });
 
-  const rackManager = useRackManager({
-    initialDevices: rackEquipmentData?.data || [],
-  });
-
-  if (isLoading) {
+  if (rackManager.isLoading) {
     return (
       <div className="h-full flex justify-center items-center text-white">
         <div className="text-lg">로딩 중...</div>
@@ -38,7 +29,7 @@ function RackView({ rackName }: RackViewProps = {}) {
   }
 
   // 에러 발생
-  if (error) {
+  if (rackManager.error) {
     return (
       <div className="h-full flex justify-center items-center text-white">
         <div className="text-lg text-red-400">
