@@ -22,7 +22,7 @@ import type {
 //  true : 목업 데이터를 사용 (API 호출 안 함)
 //  false: 실제 API를 호출
 //
-const USE_MOCK_DATA = false;
+const USE_MOCK_DATA = true ;
 
 // 위에서 생성한 목업 데이터 파일을 import 합니다.
 import {
@@ -60,12 +60,18 @@ export const useGetResourceList = (
     if (filters.status) {
       filteredData = filteredData.filter((r) => r.status === filters.status);
     }
+    if (filters.type) {
+      filteredData = filteredData.filter(
+        (r) => r.equipmentType === filters.type,
+      );
+    }
 
     const start = page * size;
     const end = start + size;
     const paginatedContent = filteredData.slice(start, end);
     const totalPages = Math.ceil(filteredData.length / size);
 
+    // 실제 API 응답(PaginatedResourceResponse)과 동일한 구조로 만듭니다.
     const mockPaginatedResponse: PaginatedResourceResponse = {
       content: paginatedContent,
       totalElements: filteredData.length,
@@ -75,13 +81,15 @@ export const useGetResourceList = (
       number: page,
     };
 
-
+    // useQuery가 반환하는 객체와 동일한 형태로 반환합니다.
+    // (isLoading: false로 즉시 데이터를 보여줍니다)
     return {
       data: mockPaginatedResponse,
       isLoading: false,
       isFetching: false,
       isError: false,
       isSuccess: true,
+      // (useQuery가 반환하는 다른 상태값들... 필요시 추가)
     };
   }
 
@@ -189,7 +197,11 @@ export const useGetResourceById = (resourceId: string | null) => {
   });
 };
 
-
+// --- CUD (Create, Update, Delete) 훅 ---
+// CUD 훅은 (GET과 달리) 버튼 클릭 시점에만 동작하므로,
+// 지금 당장 "데이터를 띄우는" 목적에는 수정하지 않아도 괜찮습니다.
+// (만약 USE_MOCK_DATA=true일 때 CUD 버튼을 누르면,
+//  실제 API로 요청이 가고 401/404 오류 토스트가 뜰 것입니다.)
 
 export const useCreateResource = () => {
   const queryClient = useQueryClient();

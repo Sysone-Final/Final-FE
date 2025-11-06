@@ -36,7 +36,8 @@ export default function ResourceManagePage() {
  // 검색/필터 상태
  const [keyword, setkeyword] = useState('');
  const [statusFilter, setStatusFilter] = useState('');
- // TODO(user): typeFilter, locationFilter 상태 추가
+ const [typeFilter, setTypeFilter] = useState("");
+  // TODO(user): locationFilter 상태 추가
  
  // API 호출 지연을 위한 Debounce
  const debouncedkeyword = useDebounce(keyword, 300);
@@ -45,9 +46,9 @@ export default function ResourceManagePage() {
  const filters = useMemo((): ResourceListFilters => ({
   keyword: debouncedkeyword,
   status: statusFilter,
-  // type: typeFilter, // TODO
+  type: typeFilter,
   // location: locationFilter, // TODO
- }), [debouncedkeyword, statusFilter /* TODO: typeFilter, locationFilter */]);
+ }), [debouncedkeyword, statusFilter ,typeFilter,/* TODO:  locationFilter */]);
 
  // --- 데이터 페칭 ---
  const { 
@@ -180,7 +181,9 @@ export default function ResourceManagePage() {
      onSearchChange={setkeyword}
      statusFilter={statusFilter}
      onStatusChange={setStatusFilter}
-     // TODO: type, location 필터 props 전달
+    typeFilter={typeFilter}
+        onTypeChange={setTypeFilter}
+        // TODO: type, location 필터 props 전달
     />
 
     {/* 테이블 (위아래 간격 추가) */}
