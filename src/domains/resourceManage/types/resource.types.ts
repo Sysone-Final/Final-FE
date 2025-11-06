@@ -91,7 +91,7 @@ export interface PaginatedResourceResponse {
 
 // NOTE(user): 검색/필터링을 위한 필터 타입
 export interface ResourceListFilters {
-  searchTerm?: string;
+  keyword?: string;
   status?: string;
   type?: string; // TODO(user): 실제 타입 필터 구현 시 사용
   location?: string; // TODO(user): 실제 위치 필터 구현 시 사용
