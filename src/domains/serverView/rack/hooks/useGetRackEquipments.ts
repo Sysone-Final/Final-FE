@@ -11,7 +11,7 @@ interface RackEquipmentResponse {
   data: Equipments[];
 }
 
-export const useRackEquipments = (
+export const useGetRackEquipments = (
   rackId: number,
   params?: GetRackEquipmentsParams
 ) => {
