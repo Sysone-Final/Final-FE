@@ -28,14 +28,14 @@ const errorTextStyle = "text-xs text-red-400 mt-1";
 
 type FormValues = Partial<Resource>;
 
-type FileChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => void;
+// type FileChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => void;
 
 interface Step1Props {
   register: UseFormRegister<FormValues>;
   errors: FieldErrors<FormValues>;
-  handleFileChange: FileChangeHandler;
-  imageFrontPreview: string | null;
-  imageRearPreview: string | null;
+  // handleFileChange: FileChangeHandler;
+  // imageFrontPreview: string | null;
+  // imageRearPreview: string | null;
 }
 
 interface Step2Props {
@@ -55,9 +55,9 @@ interface Step3Props {
 const Step1Identity = ({
   register,
   errors,
-  handleFileChange,
-  imageFrontPreview,
-  imageRearPreview,
+  // handleFileChange,
+  // imageFrontPreview,
+  // imageRearPreview,
 }: Step1Props) => (
   // 3. inputStyle 대신 modal-input 적용
   <div className={gridContainerStyle}>
@@ -615,10 +615,10 @@ export default function ResourceWizardModal({
     }
   }, [watchedDatacenterId, dirtyFields.datacenterId, setValue]);
 
-  const [imageFrontFile, setImageFrontFile] = useState<File | null>(null);
-  const [imageRearFile, setImageRearFile] = useState<File | null>(null);
-  const [imageFrontPreview, setImageFrontPreview] = useState<string | null>(null);
-  const [imageRearPreview, setImageRearPreview] = useState<string | null>(null);
+  // const [imageFrontFile, setImageFrontFile] = useState<File | null>(null);
+  // const [imageRearFile, setImageRearFile] = useState<File | null>(null);
+  // const [imageFrontPreview, setImageFrontPreview] = useState<string | null>(null);
+  // const [imageRearPreview, setImageRearPreview] = useState<string | null>(null);
 
   const createResourceMutation = useCreateResource();
   const updateResourceMutation = useUpdateResource();
@@ -638,70 +638,68 @@ export default function ResourceWizardModal({
     if (isOpen) {
       if (!resourceId) {
         reset(getDefaultFormData());
-        setImageFrontPreview(null);
-        setImageRearPreview(null);
-        setImageFrontFile(null);
-        setImageRearFile(null);
+        // setImageFrontPreview(null);
+        // setImageRearPreview(null);
+        // setImageFrontFile(null);
+        // setImageRearFile(null);
         setStep(1);
       } else if (resourceId && resourceDetailData) {
         reset({
           ...getDefaultFormData(),
           ...resourceDetailData,
         });
-        setImageFrontPreview(resourceDetailData.imageUrlFront || null);
-        setImageRearPreview(resourceDetailData.imageUrlRear || null);
-        setImageFrontFile(null);
-        setImageRearFile(null);
+        // setImageFrontPreview(resourceDetailData.imageUrlFront || null);
+        // setImageRearPreview(resourceDetailData.imageUrlRear || null);
+        // setImageFrontFile(null);
+        // setImageRearFile(null);
         setStep(1);
       }
     }
   }, [resourceId, resourceDetailData, isOpen, reset]);
 
-  useEffect(() => {
-    if (!isOpen) {
-      reset(getDefaultFormData());
-      if (imageFrontPreview && imageFrontPreview.startsWith("blob:")) {
-        URL.revokeObjectURL(imageFrontPreview);
-      }
-      if (imageRearPreview && imageRearPreview.startsWith("blob:")) {
-        URL.revokeObjectURL(imageRearPreview);
-      }
-      setImageFrontPreview(null);
-      setImageRearPreview(null);
-    }
-  }, [isOpen, reset, imageFrontPreview, imageRearPreview]);
+  // useEffect(() => {
+  //   if (!isOpen) {
+  //     reset(getDefaultFormData());
+  //     if (imageFrontPreview && imageFrontPreview.startsWith("blob:")) {
+  //       URL.revokeObjectURL(imageFrontPreview);
+  //     }
+  //     if (imageRearPreview && imageRearPreview.startsWith("blob:")) {
+  //       URL.revokeObjectURL(imageRearPreview);
+  //     }
+  //     setImageFrontPreview(null);
+  //     setImageRearPreview(null);
+  //   }
+  // }, [isOpen, reset, imageFrontPreview, imageRearPreview]);
 
-  useEffect(() => {
-    return () => {
-      if (imageFrontPreview && imageFrontPreview.startsWith("blob:")) URL.revokeObjectURL(imageFrontPreview);
-      if (imageRearPreview && imageRearPreview.startsWith("blob:")) URL.revokeObjectURL(imageRearPreview);
-    };
-  }, [imageFrontPreview, imageRearPreview]);
+  // useEffect(() => {
+  //   return () => {
+  //     if (imageFrontPreview && imageFrontPreview.startsWith("blob:")) URL.revokeObjectURL(imageFrontPreview);
+  //     if (imageRearPreview && imageRearPreview.startsWith("blob:")) URL.revokeObjectURL(imageRearPreview);
+  //   };
+  // }, [imageFrontPreview, imageRearPreview]);
 
   if (!isOpen) return null;
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // ... (이전과 동일)
-    const { name, files } = e.target;
-    const file = files && files.length > 0 ? files[0] : null;
+  // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const { name, files } = e.target;
+  //   const file = files && files.length > 0 ? files[0] : null;
 
-    if (name === "imageFrontFile") {
-      if (imageFrontPreview && imageFrontPreview.startsWith("blob:")) {
-        URL.revokeObjectURL(imageFrontPreview);
-      }
-      setImageFrontFile(file);
-      setImageFrontPreview(file ? URL.createObjectURL(file) : null);
-    } else if (name === "imageRearFile") {
-      if (imageRearPreview && imageRearPreview.startsWith("blob:")) {
-        URL.revokeObjectURL(imageRearPreview);
-      }
-      setImageRearFile(file);
-      setImageRearPreview(file ? URL.createObjectURL(file) : null);
-    }
-  };
+  //   if (name === "imageFrontFile") {
+  //     if (imageFrontPreview && imageFrontPreview.startsWith("blob:")) {
+  //       URL.revokeObjectURL(imageFrontPreview);
+  //     }
+  //     setImageFrontFile(file);
+  //     setImageFrontPreview(file ? URL.createObjectURL(file) : null);
+  //   } else if (name === "imageRearFile") {
+  //     if (imageRearPreview && imageRearPreview.startsWith("blob:")) {
+  //       URL.revokeObjectURL(imageRearPreview);
+  //     }
+  //     setImageRearFile(file);
+  //     setImageRearPreview(file ? URL.createObjectURL(file) : null);
+  //   }
+  // };
 
   const nextStep = async () => {
-    // ... (이전과 동일)
     let fieldsToValidate: (keyof FormValues)[] = [];
     if (step === 1) {
       fieldsToValidate = ['equipmentName', 'equipmentType'];
@@ -733,28 +731,27 @@ export default function ResourceWizardModal({
   };
 
   const onSubmit: SubmitHandler<FormValues> = (data) => {
-    // ... (이전과 동일)
-    const submitFormData = new FormData();
-    for (const [key, value] of Object.entries(data)) {
-      if (value !== null && value !== undefined) {
-        submitFormData.append(key, String(value));
-      }
-    }
-    if (imageFrontFile) {
-      submitFormData.append("imageFrontFile", imageFrontFile);
-    }
-    if (imageRearFile) {
-      submitFormData.append("imageRearFile", imageRearFile);
-    }
-    if (resourceId) {
-      updateResourceMutation.mutate(
-        { id: resourceId, formData: submitFormData },
-        { onSuccess: handleClose },
-      );
-    } else {
-      createResourceMutation.mutate(submitFormData, { onSuccess: handleClose });
-    }
-  };
+    // const submitFormData = new FormData();
+    // for (const [key, value] of Object.entries(data)) {
+    //   if (value !== null && value !== undefined) {
+    //     submitFormData.append(key, String(value));
+    //   }
+    // }
+    // if (imageFrontFile) {
+    //   submitFormData.append("imageFrontFile", imageFrontFile);
+    // }
+    // if (imageRearFile) {
+    //   submitFormData.append("imageRearFile", imageRearFile);
+    // }
+if (resourceId) {
+  updateResourceMutation.mutate(
+   { id: resourceId, data: data }, 
+   { onSuccess: handleClose }
+  );
+ } else {
+  createResourceMutation.mutate(data, { onSuccess: handleClose }); 
+ }
+ };
 
   const renderStepContent = () => {
     switch (step) {
@@ -763,9 +760,9 @@ export default function ResourceWizardModal({
           <Step1Identity
             register={register}
             errors={errors}
-            handleFileChange={handleFileChange}
-            imageFrontPreview={imageFrontPreview}
-            imageRearPreview={imageRearPreview}
+            // handleFileChange={handleFileChange}
+            // imageFrontPreview={imageFrontPreview}
+            // imageRearPreview={imageRearPreview}
           />
         );
       case 2:

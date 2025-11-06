@@ -45,36 +45,28 @@ export const getResourceList = async (
 /**
 * 신규 자원 등록 (POST)
 */
-export const createResource = async (formData: FormData): Promise<Resource> => {
-  //  '포장지'로 감싸기
- const response = await client.post<ApiResponseWrapper<Resource>>(RESOURCE_API_URL, formData, { 
-  headers: {
-   "Content-Type": "multipart/form-data",
-  },
- });
-  // '내용물' 꺼내기
- return response.data.result; 
+export const createResource = async (data: Resource): Promise<Resource> => { 
+  const response = await client.post<ApiResponseWrapper<Resource>>(
+    RESOURCE_API_URL, 
+    data, 
+    // { headers: { "Content-Type": "multipart/form-data" } } 
+  );
+  return response.data.result;
 };
 
 /**
 * 자원 정보 수정 (PUT)
 */
 export const updateResource = async (
- id: string,
- formData: FormData,
+  id: string,
+  data: Resource, 
 ): Promise<Resource> => {
-  //  '포장지'로 감싸기
- const response = await client.put<ApiResponseWrapper<Resource>>( 
-  `${RESOURCE_API_URL}/${id}`,
-  formData,
-  {
-   headers: {
-    "Content-Type": "multipart/form-data",
-   },
-  },
- );
-  //  '내용물' 꺼내기
- return response.data.result; 
+  const response = await client.put<ApiResponseWrapper<Resource>>(
+    `${RESOURCE_API_URL}/${id}`,
+    data, 
+    // { headers: { "Content-Type": "multipart/form-data" } } 
+  );
+  return response.data.result;
 };
 
 /**
