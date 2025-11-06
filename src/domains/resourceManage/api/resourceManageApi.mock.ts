@@ -1,4 +1,4 @@
-import { http, HttpResponse, delay } from "msw";
+
 import type {
   Resource,
   ResourceStatus,
@@ -8,8 +8,8 @@ import type {
   Rack,
 } from "../types/resource.types";
 
-// Datacenter 목 데이터 (API 3.1 기준) ---
-const MOCK_DATACENTERS: Datacenter[] = [
+// --- Datacenter 목 데이터 ---
+export const MOCK_DATACENTERS: Datacenter[] = [
   {
     id: "dc1",
     name: "서울 데이터센터",
@@ -30,8 +30,8 @@ const MOCK_DATACENTERS: Datacenter[] = [
   },
 ];
 
-// --- Rack 목 데이터 (API 5.1 기준) ---
-const MOCK_RACKS: Rack[] = [
+// --- Rack 목 데이터 ---
+export const MOCK_RACKS: Rack[] = [
   {
     id: "rack1",
     rackName: "RACK-A01",
@@ -85,8 +85,8 @@ const MOCK_RACKS: Rack[] = [
   },
 ];
 
-// --- [수정됨] 상세 필드를 포함한 20개의 MOCK_DATA ---
-let MOCK_DATA: Resource[] = [
+// --- Resource (Equipment) 목 데이터 ---
+export let MOCK_DATA: Resource[] = [
   // --- 1. Dell Server (NORMAL, dc1/rack1) ---
   {
     id: "1",
@@ -767,294 +767,4 @@ let MOCK_DATA: Resource[] = [
     imageUrlFront: null,
     imageUrlRear: null,
   },
-];
-
-const API_BASE_URL = "https://api.serverway.shop/api";
-
-export const handlers = [
-  // --- GET /datacenters ---
-  http.get(`${API_BASE_URL}/datacenters`, async () => {
-    await delay(300);
-    // API 3.1의 응답 형식(result 키)에 맞게 수정
-    return HttpResponse.json({
-      status_code: 200,
-      status_message: "전산실 목록 조회 완료",
-      result: MOCK_DATACENTERS,
-    });
-  }),
-
-  // --- GET /racks/datacenter/:datacenterId ---
-  http.get(
-    `${API_BASE_URL}/racks/datacenter/:datacenterId`,
-    async ({ params }) => {
-      await delay(400);
-      const { datacenterId } = params;
-      const filteredRacks = MOCK_RACKS.filter(
-        (r) => r.datacenterId === datacenterId,
-      );
-      // API 5.1의 응답 형식(result 키)에 맞게 수정
-      return HttpResponse.json({
-        status_code: 200,
-        status_message: "랙 목록 조회 완료",
-        result: filteredRacks,
-      });
-    },
-  ),
-
-  // --- GET /resourceManage (목록 조회) ---
-  http.get(`${API_BASE_URL}/resourceManage`, async ({ request }) => {
-    await delay(500);
-    const url = new URL(request.url);
-    const page = parseInt(url.searchParams.get("page") || "0");
-    const size = parseInt(url.searchParams.get("size") || "10");
-    const searchTerm = url.searchParams.get("searchTerm") || "";
-    const status = url.searchParams.get("status") || "";
-    // const type = url.searchParams.get('type') || '';
-    // const location = url.searchParams.get('location') || '';
-
-    let filteredData = MOCK_DATA;
-
-    if (searchTerm) {
-      filteredData = filteredData.filter(
-        (r) =>
-          // 필드명 변경
-          r.equipmentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (r.modelName &&
-            r.modelName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-          (r.ipAddress && r.ipAddress.includes(searchTerm)),
-      );
-    }
-    if (status) {
-      filteredData = filteredData.filter((r) => r.status === status);
-    }
-
-    const start = page * size;
-    const end = start + size;
-    const paginatedContent = filteredData.slice(start, end);
-
-    return HttpResponse.json({
-      content: paginatedContent,
-      totalElements: filteredData.length,
-      totalPages: Math.ceil(filteredData.length / size),
-      last: end >= filteredData.length,
-      size: size,
-      number: page,
-    });
-  }),
-
-  // --- [추가/수정됨] GET /resourceManage/:id (자원 상세 조회) ---
-  http.get(`${API_BASE_URL}/resourceManage/:id`, async ({ params }) => {
-    await delay(300);
-    const { id } = params;
-    // MOCK_DATA에서 id로 해당 자원을 찾습니다.
-    const resource = MOCK_DATA.find((r) => r.id === id);
-
-    if (resource) {
-      // MOCK_DATA에 상세 필드가 모두 포함되어 있으므로, 찾은 객체를 그대로 반환합니다.
-      return HttpResponse.json(resource);
-    } else {
-      // 일치하는 자원이 없으면 404 Not Found 응답을 보냅니다.
-      return new HttpResponse(null, { status: 404 });
-    }
-  }),
-
-  // --- DELETE /resourceManage/:id ---
-  http.delete(`${API_BASE_URL}/resourceManage/:id`, async ({ params }) => {
-    await delay(300);
-    const { id } = params;
-    const initialLength = MOCK_DATA.length;
-    MOCK_DATA = MOCK_DATA.filter((r) => r.id !== id);
-    console.log(`[MSW] 자원 삭제됨 (ID: ${id})`);
-    if (MOCK_DATA.length < initialLength) {
-      return new HttpResponse(null, { status: 204 });
-    } else {
-      return new HttpResponse(null, { status: 404 });
-    }
-  }),
-
-  // --- POST /resourceManage (새 자원 등록) ---
-  http.post(`${API_BASE_URL}/resourceManage`, async ({ request }) => {
-    await delay(500);
-    const formData = await request.formData();
-
-    // 3단계 폼의 모든 필드를 받도록 수정
-    // 폼 데이터가 null일 경우를 대비해 기본값을 확실히 지정합니다.
-    const newResource: Resource = {
-      id: `new-${Date.now()}`,
-      // 1단계 (필수 항목은 '||' 연산자로 기본값 보장)
-      equipmentName:
-        (formData.get("equipmentName") as string) || "이름 없는 장비",
-      equipmentType:
-        (formData.get("equipmentType") as EquipmentType) || "SERVER",
-      unitSize: Number(formData.get("unitSize")) || 1,
-      status: (formData.get("status") as ResourceStatus) || "INACTIVE",
-
-      // 1단계 (선택 항목)
-      manufacturer: (formData.get("manufacturer") as string) || null,
-      modelName: (formData.get("modelName") as string) || null,
-      serialNumber: (formData.get("serialNumber") as string) || null,
-      equipmentCode: (formData.get("equipmentCode") as string) || null,
-      imageUrlFront: formData.get("imageFrontFile")
-        ? `https://via.placeholder.com/150?text=Front`
-        : null,
-      imageUrlRear: formData.get("imageRearFile")
-        ? `https://via.placeholder.com/150?text=Rear`
-        : null,
-
-      // 2단계 (선택 항목 - Number 변환 및 null 처리)
-      datacenterId: (formData.get("datacenterId") as string) || null,
-      rackId: (formData.get("rackId") as string) || null,
-      startUnit: formData.get("startUnit")
-        ? Number(formData.get("startUnit"))
-        : null,
-      positionType: (formData.get("positionType") as PositionType) || null,
-      os: (formData.get("os") as string) || null,
-      cpuSpec: (formData.get("cpuSpec") as string) || null,
-      memorySpec: (formData.get("memorySpec") as string) || null,
-      diskSpec: (formData.get("diskSpec") as string) || null,
-      ipAddress: (formData.get("ipAddress") as string) || null,
-      macAddress: (formData.get("macAddress") as string) || null,
-
-      // 3단계 (선택 항목)
-      managerId: (formData.get("managerId") as string) || null,
-      installationDate: (formData.get("installationDate") as string) || null,
-      notes: (formData.get("notes") as string) || null,
-      monitoringEnabled: formData.get("monitoringEnabled") === "true",
-
-      // 3단계 (모니터링 - Number 변환 및 null 처리)
-      cpuThresholdWarning: formData.get("cpuThresholdWarning")
-        ? Number(formData.get("cpuThresholdWarning"))
-        : null,
-      cpuThresholdCritical: formData.get("cpuThresholdCritical")
-        ? Number(formData.get("cpuThresholdCritical"))
-        : null,
-      memoryThresholdWarning: formData.get("memoryThresholdWarning")
-        ? Number(formData.get("memoryThresholdWarning"))
-        : null,
-      memoryThresholdCritical: formData.get("memoryThresholdCritical")
-        ? Number(formData.get("memoryThresholdCritical"))
-        : null,
-      diskThresholdWarning: formData.get("diskThresholdWarning")
-        ? Number(formData.get("diskThresholdWarning"))
-        : null,
-      diskThresholdCritical: formData.get("diskThresholdCritical")
-        ? Number(formData.get("diskThresholdCritical"))
-        : null,
-
-      location: "미지정 (생성됨)", // (임시)
-    };
-    MOCK_DATA.unshift(newResource);
-    console.log("[MSW] 자원 생성됨:", newResource);
-    return HttpResponse.json(newResource, { status: 201 });
-  }),
-
-  // --- PUT /resourceManage/:id (자원 수정) ---
-  http.put(
-    `${API_BASE_URL}/resourceManage/:id`,
-    async ({ params, request }) => {
-      await delay(500);
-      const { id } = params;
-      const formData = await request.formData();
-      const index = MOCK_DATA.findIndex((r) => r.id === id);
-
-      if (index > -1) {
-        const existingResource = MOCK_DATA[index];
-
-        // 폼에서 넘어온 모든 키-값을 처리합니다.
-        // const updatedData: Partial<Resource> = {};
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const updatedData: any = {};
-
-        formData.forEach((value, key) => {
-          // 'null' 또는 'undefined' 문자열로 오는 경우, 실제 null 값으로 변환
-          if (value === "null" || value === "undefined") {
-            // updatedData[key as keyof Resource] = null;
-            updatedData[key] = null;
-            return;
-          }
-
-          // 숫자형 필드 변환
-          if (
-            [
-              "unitSize",
-              "startUnit",
-              "cpuThresholdWarning",
-              "cpuThresholdCritical",
-              "memoryThresholdWarning",
-              "memoryThresholdCritical",
-              "diskThresholdWarning",
-              "diskThresholdCritical",
-            ].includes(key) &&
-            value !== ""
-          ) {
-            // updatedData[key as keyof Resource] = Number(value);
-            updatedData[key] = Number(value);
-            return;
-          }
-
-          // boolean 필드 변환
-          if (key === "monitoringEnabled") {
-            updatedData[key] = value === "true";
-            return;
-          }
-
-          // 빈 문자열을 null로 처리해야 할 수 있는 선택적 필드
-          if (
-            [
-              "positionType",
-              "datacenterId",
-              "rackId",
-              /* ...기타 빈 문자열 대신 null이 되어야 하는 필드... */
-            ].includes(key) &&
-            value === ""
-          ) {
-            // updatedData[key as keyof Resource] = null;
-            updatedData[key] = null;
-            return;
-          }
-
-          // 나머지 문자열 필드
-          //  updatedData[key as keyof Resource] = value as string;
-          updatedData[key] = value as string;
-        });
-
-        const updatedResource: Resource = {
-          ...existingResource,
-          ...updatedData, // 폼에서 받은 값으로 덮어쓰기
-          // 이미지 파일 처리
-          imageUrlFront: formData.get("imageFrontFile")
-            ? `https://via.placeholder.com/150?text=Front-Upd`
-            : existingResource.imageUrlFront,
-          imageUrlRear: formData.get("imageRearFile")
-            ? `https://via.placeholder.com/150?text=Rear-Upd`
-            : existingResource.imageUrlRear,
-          // (임시) 위치 정보 업데이트
-          location: `${updatedData.datacenterId || "N/A"} / ${updatedData.rackId || "N/A"} / ${updatedData.startUnit || "N/A"}U`,
-        };
-
-        MOCK_DATA[index] = updatedResource;
-        console.log("[MSW] 자원 수정됨:", updatedResource);
-        return HttpResponse.json(updatedResource);
-      } else {
-        console.error(`[MSW] 수정할 자원 없음 (ID: ${id})`);
-        return new HttpResponse(null, { status: 404 });
-      }
-    },
-  ),
-
-  // --- DELETE /resourceManage (Batch) ---
-  http.delete(`${API_BASE_URL}/resourceManage`, async ({ request }) => {
-    await delay(400);
-    const { ids } = (await request.json()) as { ids?: string[] };
-    if (!ids || ids.length === 0) {
-      return new HttpResponse("삭제할 ID 목록이 없습니다.", { status: 400 });
-    }
-    const initialLength = MOCK_DATA.length;
-    MOCK_DATA = MOCK_DATA.filter((r) => !ids.includes(r.id));
-    const deletedCount = initialLength - MOCK_DATA.length;
-    console.log(
-      `[MSW] 자원 ${deletedCount}개 대량 삭제됨 (요청 IDs: ${ids.join(", ")})`,
-    );
-    return new HttpResponse(null, { status: 204 });
-  }),
 ];

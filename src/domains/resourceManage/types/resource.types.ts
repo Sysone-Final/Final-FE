@@ -91,10 +91,11 @@ export interface PaginatedResourceResponse {
 
 // NOTE(user): 검색/필터링을 위한 필터 타입
 export interface ResourceListFilters {
-  searchTerm?: string;
+  keyword?: string;
   status?: string;
-  type?: string; // TODO(user): 실제 타입 필터 구현 시 사용
-  location?: string; // TODO(user): 실제 위치 필터 구현 시 사용
+  type?: string;
+  // location?: string; // TODO(user): 삭제
+  datacenterId?: string; //  "위치" 필터용으로 추가
 }
 
 //  3.1 접근 가능한 전산실 목록 조회 (GET /datacenters) - 전체 필드
