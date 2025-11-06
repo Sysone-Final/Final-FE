@@ -15,6 +15,8 @@ export function useRackManager({
     null
   );
   const [resetKey, setResetKey] = useState(0);
+  const [editingDeviceId, setEditingDeviceId] = useState<number | null>(null);
+  const [tempDeviceName, setTempDeviceName] = useState("");
 
   useEffect(() => {
     if (initialDevices.length > 0) {
@@ -78,10 +80,11 @@ export function useRackManager({
     setFloatingDevice((prevFloating) => {
       if (!prevFloating) return null;
 
+      const newDeviceId = Date.now();
       const newDevice: Equipments = {
-        equipmentId: Date.now(),
-        equipmentName: prevFloating.card.label,
-        equipmentCode: `EQ-${Date.now()}`,
+        equipmentId: newDeviceId,
+        equipmentName: "", // 빈 이름으로 시작
+        equipmentCode: `EQ-${newDeviceId}`,
         equipmentType: prevFloating.card.type,
         status: "NORMAL",
         startUnit: position,
@@ -110,8 +113,40 @@ export function useRackManager({
 
         return [...prevDevices, newDevice];
       });
+
+      // 편집 모드 활성화
+      setEditingDeviceId(newDeviceId);
+      setTempDeviceName("");
+
       return null;
     });
+  }, []);
+
+  const handleDeviceNameChange = useCallback((name: string) => {
+    setTempDeviceName(name);
+  }, []);
+
+  const handleDeviceNameConfirm = useCallback(
+    (deviceId: number, name: string) => {
+      setInstalledDevices((prevDevices) =>
+        prevDevices.map((device) =>
+          device.equipmentId === deviceId
+            ? { ...device, equipmentName: name.trim() || device.equipmentType }
+            : device
+        )
+      );
+      setEditingDeviceId(null);
+      setTempDeviceName("");
+    },
+    []
+  );
+
+  const handleDeviceNameCancel = useCallback((deviceId: number) => {
+    setInstalledDevices((prevDevices) =>
+      prevDevices.filter((device) => device.equipmentId !== deviceId)
+    );
+    setEditingDeviceId(null);
+    setTempDeviceName("");
   }, []);
 
   //장비 삭제 함수 추가
@@ -125,10 +160,15 @@ export function useRackManager({
     installedDevices,
     floatingDevice,
     resetKey,
+    editingDeviceId,
+    tempDeviceName,
     handleCardClick,
     handleMouseMove,
     handleDeviceDragEnd,
     handleRackClick,
+    handleDeviceNameChange,
+    handleDeviceNameConfirm,
+    handleDeviceNameCancel,
     removeDevice,
   };
 }
