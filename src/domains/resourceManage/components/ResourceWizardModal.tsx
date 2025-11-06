@@ -415,7 +415,6 @@ const Step3Management = ({ register, errors, watch }: Step3Props) => {
   const watchedMonitoringEnabled = watch("monitoringEnabled");
 
   return (
-    // 3. <fieldset>, <legend> 제거
     <div>
       {/* 3-1. 관리 정보 */}
       <div className={gridContainerStyle}>
@@ -465,29 +464,28 @@ const Step3Management = ({ register, errors, watch }: Step3Props) => {
         </div>
       </div>
 
-      {/* 3-2. 모니터링 설정 (fieldset 제거, 여백 추가) */}
-      
-      {/* 체크박스 UI를 grid 밖으로 빼거나, 
-          '새 서버실' 모달처럼 명확한 구분선 없이 배치합니다.
-          여기서는 '새 서버실' 모달에 없는 UI이므로, 
-          기존 grid 구조를 활용하되 fieldset만 제거합니다.
-      */}
-      <div className="flex items-center my-4"> 
-        <input
-          type="checkbox"
-          id="monitoringEnabled"
-          {...register("monitoringEnabled")}
-          className="h-4 w-4 text-blue-600 border-gray-300 rounded mr-2"
-        />
-        <label
-          htmlFor="monitoringEnabled"
-          className="font-medium text-white"
-        >
-          실시간 모니터링 활성화
-        </label>
-      </div>
+      {/* 3-2. 모니터링 설정  */}
 
-      <div className={gridContainerStyle}>
+
+      <div className={`${gridContainerStyle} mt-4`}>
+        <div className={`${gridSpanFullStyle} mb-2`}>
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="monitoringEnabled"
+              {...register("monitoringEnabled")}
+              className="h-4 w-4 text-blue-600 border-gray-300 rounded mr-2"
+            />
+            <label
+              htmlFor="monitoringEnabled"
+              className="font-medium text-white"
+            >
+              실시간 모니터링 활성화
+            </label>
+          </div>
+        </div>
+
+        {/* 임계치 입력란들 */}
         <div>
           <label className={labelStyle}>CPU 경고 임계치 (%)</label>
           <input
