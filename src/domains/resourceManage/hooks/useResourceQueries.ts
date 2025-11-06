@@ -65,6 +65,11 @@ export const useGetResourceList = (
         (r) => r.equipmentType === filters.type,
       );
     }
+    if (filters.datacenterId) {
+      filteredData = filteredData.filter(
+        (r) => r.datacenterId === filters.datacenterId,
+      );
+    }
 
     const start = page * size;
     const end = start + size;

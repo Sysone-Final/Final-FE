@@ -1,4 +1,3 @@
-// src/domains/resourceManage/api/resourceManageApi.mock.ts
 
 import type {
   Resource,

@@ -1,17 +1,21 @@
-import { Search } from 'lucide-react'; // Plus 아이콘 제거
+import { Search } from 'lucide-react'; 
 import {
   EQUIPMENT_TYPE_OPTIONS,
   RESOURCE_STATUS_OPTIONS,
 } from "../constants/resource.constants";
+import type { Datacenter } from "../types/resource.types";
 
 interface ResourceFiltersProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
   statusFilter: string;
   onStatusChange: (value: string) => void;
-  typeFilter: string; // ⬅️ 추가
-  onTypeChange: (value: string) => void; // ⬅️ 추가
-  // TODO(user): location 필터 상태 및 핸들러 props 추가
+  typeFilter: string; 
+  onTypeChange: (value: string) => void; 
+ datacenterFilter: string;
+  onDatacenterChange: (value: string) => void;
+  datacenters: Datacenter[];
+  isLoadingDatacenters: boolean;
 }
 
 export default function ResourceFilters({
@@ -21,7 +25,10 @@ export default function ResourceFilters({
   onStatusChange,
   typeFilter,
   onTypeChange,
-  // TODO: typeFilter, onTypeChange, locationFilter, onLocationChange
+  datacenterFilter,
+  onDatacenterChange,
+  datacenters,
+  isLoadingDatacenters,
 }: ResourceFiltersProps) {
   return (
     <div>
@@ -47,11 +54,11 @@ export default function ResourceFilters({
         <div className="flex items-center gap-2">
           <select
             className="border border-slate-300/40 rounded-lg py-2.5 px-3 focus:outline-none bg-gray-700/50 text-gray-50"
-            value={typeFilter} // ⬅️ 이제 정상
-            onChange={(e) => onTypeChange(e.target.value)} // ⬅️ 이제 정상
+            value={typeFilter} 
+            onChange={(e) => onTypeChange(e.target.value)} 
           >
             <option value="">유형: 전체</option>
-            {EQUIPMENT_TYPE_OPTIONS.map((option) => ( // ⬅️ 이제 정상
+            {EQUIPMENT_TYPE_OPTIONS.map((option) => ( 
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
@@ -63,20 +70,29 @@ export default function ResourceFilters({
             onChange={(e) => onStatusChange(e.target.value)}
           >
             <option value="">상태: 전체</option>
-            {RESOURCE_STATUS_OPTIONS.map((option) => ( // ⬅️ 이제 정상
+            {RESOURCE_STATUS_OPTIONS.map((option) => ( 
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
             ))}
           </select>
           <select
-            className="border border-slate-300/40 rounded-lg py-2.5 px-3 focus:outline-none bg-gray-700/50 text-gray-50"
-            // value={locationFilter} // TODO
-            // onChange={(e) => onLocationChange(e.target.value)} // TODO
-          >
-            <option value="">위치: 전체</option>
-            {/* TODO(user): 실제 위치 옵션 추가 */}
-          </select>
+          className="border border-slate-300/40 rounded-lg py-2.5 px-3 focus:outline-none bg-gray-700/50 text-gray-50"
+          value={datacenterFilter}
+          onChange={(e) => onDatacenterChange(e.target.value)}
+          disabled={isLoadingDatacenters} //  로딩 중 비활성화
+        >
+          <option value="">위치: 전체</option>
+          {isLoadingDatacenters ? (
+            <option disabled>불러오는 중...</option>
+          ) : (
+            datacenters.map((dc) => (
+              <option key={dc.id} value={dc.id}>
+                {dc.name}
+              </option>
+            ))
+          )}
+        </select>
         </div>
 
         {/* "자산 추가" 버튼 제거 */}

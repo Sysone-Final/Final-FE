@@ -20,7 +20,8 @@ import { columns } from '../components/resourceTable.config';
 import {
  useGetResourceList,
  useDeleteResource,
- useDeleteMultipleResources
+ useDeleteMultipleResources,
+ useGetDatacenters,
 } from '../hooks/useResourceQueries';
 import type { ResourceListFilters, Resource, ResourceTableMeta } from '../types/resource.types';
 import { useDebounce } from '../hooks/useDebounce';
@@ -37,7 +38,7 @@ export default function ResourceManagePage() {
  const [keyword, setkeyword] = useState('');
  const [statusFilter, setStatusFilter] = useState('');
  const [typeFilter, setTypeFilter] = useState("");
-  // TODO(user): locationFilter 상태 추가
+const [datacenterFilter, setDatacenterFilter] = useState("");
  
  // API 호출 지연을 위한 Debounce
  const debouncedkeyword = useDebounce(keyword, 300);
@@ -47,20 +48,25 @@ export default function ResourceManagePage() {
   keyword: debouncedkeyword,
   status: statusFilter,
   type: typeFilter,
-  // location: locationFilter, // TODO
- }), [debouncedkeyword, statusFilter ,typeFilter,/* TODO:  locationFilter */]);
+  datacenterId: datacenterFilter,
+ }), [debouncedkeyword, statusFilter, typeFilter, datacenterFilter], 
+  );
 
  // --- 데이터 페칭 ---
  const { 
   data: paginatedData, 
-  isLoading, // ⬅️ 캐시/placeholderData가 없을 때 (최초 로딩)
-  isFetching, // ⬅️ 백그라운드 갱신 포함 모든 API 호출 시
-  isError, // ⬅️ [리팩토링 1] 에러 상태 추가
+  isLoading, //  캐시/placeholderData가 없을 때 (최초 로딩)
+  isFetching, //  백그라운드 갱신 포함 모든 API 호출 시
+  isError, // 에러 상태 추가
  } = useGetResourceList(
   pagination.pageIndex,
   pagination.pageSize,
   filters
  );
+
+const { data: datacenters, isLoading: isLoadingDatacenters } =
+    useGetDatacenters();
+
  const deleteResourceMutation = useDeleteResource();
  const deleteMultipleResourcesMutation = useDeleteMultipleResources();
  // TODO(user): 대량 상태 변경을 위한 useMutation 추가
@@ -113,7 +119,7 @@ export default function ResourceManagePage() {
 
  // --- 테이블 인스턴스 ---
  const table = useReactTable({
-  data: resourceData, // ⬅️ placeholderData 덕분에 isFetching 중에도 이전 데이터 유지
+  data: resourceData, //  placeholderData 덕분에 isFetching 중에도 이전 데이터 유지
   columns,
   state: { pagination, rowSelection, sorting },
   onPaginationChange: setPagination,
@@ -139,10 +145,10 @@ export default function ResourceManagePage() {
  
 
  return (
-  // 전체 레이아웃 (ServerRoomDashboard와 동일)
+  // 전체 레이아웃 
   <div className="tab-layout">
 
-   {/* 헤더 스타일 적용 (ServerRoomDashboard와 동일) */}
+   {/* 헤더 스타일 */}
    <header className="tab-header">
     <div>
      {/* 제목 */}
@@ -151,7 +157,7 @@ export default function ResourceManagePage() {
      <p className="tab-subtitle text-body-primary text-gray-400">데이터 센터의 모든 하드웨어 자산을 효율적으로 관리하세요.</p>
     </div>
     
-    {/* --- ⬇️ [리팩토링 1] 버튼과 스피너를 묶기 위한 div --- */}
+    {/* ---  버튼과 스피너를 묶기 위한 div --- */}
     <div className="flex items-center gap-4">
      {/* 백그라운드 로딩 스피너 */}
      {isBackgroundFetching && (
@@ -170,25 +176,26 @@ export default function ResourceManagePage() {
       자산 추가
      </button>
     </div>
-    {/* --- ⬆️ [리팩토링 1] --- */}
    </header>
 
    {/* 메인 컨텐츠 영역 */}
    <main className="flex-1 overflow-y-auto p-8">
     {/* 필터 (제목과 버튼 없음) */}
     <ResourceFilters
-     keyword={keyword}
-     onSearchChange={setkeyword}
-     statusFilter={statusFilter}
-     onStatusChange={setStatusFilter}
-    typeFilter={typeFilter}
-        onTypeChange={setTypeFilter}
-        // TODO: type, location 필터 props 전달
-    />
+          keyword={keyword}
+          onSearchChange={setkeyword}
+          statusFilter={statusFilter}
+          onStatusChange={setStatusFilter}
+          typeFilter={typeFilter}
+          onTypeChange={setTypeFilter}
+          datacenterFilter={datacenterFilter}
+          onDatacenterChange={setDatacenterFilter}
+          datacenters={datacenters ?? []}
+          isLoadingDatacenters={isLoadingDatacenters}
+        />
 
     {/* 테이블 (위아래 간격 추가) */}
     <div className="mt-6">
-     {/* --- ⬇️ [리팩토링 1] 로딩 UI 로직 변경 --- */}
      {isInitialLoading ? (
       // 1. 최초 로딩: 스켈레톤 UI를 보여주기 위해 isLoading=true 전달
       <ResourceTable table={table} isLoading={true} />
@@ -205,7 +212,6 @@ export default function ResourceManagePage() {
        <ResourceTable table={table} isLoading={false} />
       </div>
      )}
-     {/* --- ⬆️ [리팩토링 1] --- */}
     </div>
 
     {/* 페이지네이션 및 액션 (위아래 간격 추가) */}
@@ -213,9 +219,8 @@ export default function ResourceManagePage() {
      <ResourcePaginationActions
       table={table}
       onDeleteSelectedHandler={deleteSelectedHandler}
-      // --- ⬇️ [리팩토링 1] 로딩/뮤테이션 중 페이지네이션 비활성화 ---
+      // --- 로딩/뮤테이션 중 페이지네이션 비활성화 ---
       disabled={isInitialLoading || isMutating}
-      // --- ⬆️ [리팩토링 1] ---
       // TODO: onStatusChangeSelectedHandler 전달
      />
     </div>
