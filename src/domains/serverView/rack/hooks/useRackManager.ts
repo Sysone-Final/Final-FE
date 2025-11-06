@@ -60,74 +60,65 @@ export function useRackManager({ rackId }: UseRackManagerProps) {
   // 드래그 종료 핸들러
   const handleDeviceDragEnd = useCallback(
     (deviceId: number, newPosition: number) => {
-      setInstalledDevices((prevDevices) => {
-        const draggedDevice = prevDevices.find(
-          (d) => d.equipmentId === deviceId
-        );
-        if (!draggedDevice || !rackId) return prevDevices;
+      const draggedDevice = installedDevices.find(
+        (d) => d.equipmentId === deviceId
+      );
 
-        if (draggedDevice.startUnit === newPosition) {
-          return prevDevices;
-        }
+      if (!draggedDevice || !rackId) return;
+      if (draggedDevice.startUnit === newPosition) return;
 
-        const hasCollision = checkCollision(
-          {
-            position: newPosition,
-            height: draggedDevice.unitSize,
+      // 충돌 체크
+      const hasCollision = checkCollision(
+        { position: newPosition, height: draggedDevice.unitSize },
+        installedDevices,
+        deviceId
+      );
+
+      if (hasCollision) {
+        console.log("이동할 수 없습니다. 다른 장비와 겹칩니다.");
+        setResetKey((prev) => prev + 1);
+        return;
+      }
+
+      // 낙관적 업데이트
+      setInstalledDevices((prev) =>
+        prev.map((d) =>
+          d.equipmentId === deviceId ? { ...d, startUnit: newPosition } : d
+        )
+      );
+
+      // API 호출
+      const updateData: UpdateRackEquipmentRequest = {
+        equipmentName: draggedDevice.equipmentName,
+        equipmentType: draggedDevice.equipmentType,
+        startUnit: newPosition,
+        unitSize: draggedDevice.unitSize,
+        positionType: draggedDevice.positionType,
+        status: draggedDevice.status,
+        rackId: rackId,
+        updateAt: new Date(),
+        del_yn: "N",
+      };
+
+      updateEquipment(
+        { id: deviceId, data: updateData },
+        {
+          onError: (error) => {
+            console.error("위치 수정 실패", error);
+            // 실패 시 원래대로 되돌림
+            setInstalledDevices((prev) =>
+              prev.map((d) =>
+                d.equipmentId === deviceId
+                  ? { ...d, startUnit: draggedDevice.startUnit }
+                  : d
+              )
+            );
+            setResetKey((prev) => prev + 1);
           },
-          prevDevices,
-          deviceId
-        );
-
-        if (hasCollision) {
-          console.log("이동할 수 없습니다. 다른 장비와 겹칩니다.");
-          setResetKey((prev) => prev + 1);
-          return prevDevices;
         }
-
-        const updateData: UpdateRackEquipmentRequest = {
-          equipmentName: draggedDevice.equipmentName,
-          equipmentType: draggedDevice.equipmentType,
-          startUnit: newPosition,
-          unitSize: draggedDevice.unitSize,
-          positionType: draggedDevice.positionType,
-          status: draggedDevice.status,
-          rackId: rackId,
-          updateAt: new Date(),
-          del_yn: "N",
-        };
-
-        updateEquipment(
-          {
-            id: deviceId,
-            data: updateData,
-          },
-          {
-            onSuccess: () => {
-              setInstalledDevices((prev) =>
-                prev.map((d) =>
-                  d.equipmentId === deviceId
-                    ? { ...d, startUnit: newPosition }
-                    : d
-                )
-              );
-              console.log("위치 수정 성공");
-            },
-            onError: (error) => {
-              console.error("위치 수정 실패", error);
-              setResetKey((prev) => prev + 1);
-            },
-          }
-        );
-
-        return prevDevices.map((device) =>
-          device.equipmentId === deviceId
-            ? { ...device, startUnit: newPosition }
-            : device
-        );
-      });
+      );
     },
-    [rackId, updateEquipment]
+    [installedDevices, rackId, updateEquipment]
   );
 
   // 랙 클릭 핸들러
