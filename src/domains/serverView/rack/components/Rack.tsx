@@ -20,6 +20,11 @@ interface RackProps {
   onDeviceDelete: (deviceId: number) => void;
   frontView: boolean;
   editMode: boolean;
+  editingDeviceId: number | null;
+  tempDeviceName: string;
+  onDeviceNameChange: (name: string) => void;
+  onDeviceNameConfirm: (deviceId: number, name: string) => void;
+  onDeviceNameCancel: (deviceId: number) => void;
 }
 
 const FLOATING_DEVICE_ID = -1;
@@ -33,6 +38,11 @@ function Rack({
   onDeviceDelete,
   frontView,
   editMode,
+  editingDeviceId,
+  tempDeviceName,
+  onDeviceNameChange,
+  onDeviceNameConfirm,
+  onDeviceNameCancel,
 }: RackProps) {
   const { width: rackWidth, unitHeight } = RACK_CONFIG;
 
@@ -148,6 +158,11 @@ function Rack({
                 onDelete={onDeviceDelete}
                 frontView={frontView}
                 editMode={editMode}
+                isEditing={editingDeviceId === device.equipmentId}
+                tempDeviceName={tempDeviceName}
+                onDeviceNameChange={onDeviceNameChange}
+                onDeviceNameConfirm={onDeviceNameConfirm}
+                onDeviceNameCancel={onDeviceNameCancel}
               />
             );
           })}

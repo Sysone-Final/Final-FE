@@ -109,6 +109,11 @@ function RackView({ rackName }: RackViewProps = {}) {
                   onDeviceDelete={rackManager.removeDevice}
                   frontView={!frontView}
                   editMode={editMode}
+                  editingDeviceId={rackManager.editingDeviceId}
+                  tempDeviceName={rackManager.tempDeviceName}
+                  onDeviceNameChange={rackManager.handleDeviceNameChange}
+                  onDeviceNameConfirm={rackManager.handleDeviceNameConfirm}
+                  onDeviceNameCancel={rackManager.handleDeviceNameCancel}
                 />
               </div>
             </div>
