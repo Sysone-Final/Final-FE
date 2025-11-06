@@ -15,15 +15,15 @@ export const useUpdateRackEquipmetns = () => {
       id: number;
       data: UpdateRackEquipmentRequest;
     }) => {
-      updateRackEquipments(id, data);
+      return updateRackEquipments(id, data);
     },
     onSuccess: (_, variables) => {
       if (variables.data?.rackId) {
         queryClient.invalidateQueries({
-          queryKey: ["rack-equipments", variables.data.rackId],
+          queryKey: ["rackEquipments", variables.data.rackId],
         });
       } else {
-        queryClient.invalidateQueries({ queryKey: ["equipments"] });
+        queryClient.invalidateQueries({ queryKey: ["rackEquipments"] });
       }
       console.log("장비 수정 성공");
     },
