@@ -1,17 +1,18 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import ServerRoomList from '../components/ServerRoomList';
 import ServerRoomCreateModal from '../components/ServerRoomCreateModal';
-import { MOCK_SERVER_ROOMS } from '../constants/mockData';
-import type { ServerRoom } from '../types';
+import { useServerRooms } from '../hooks/useServerRoomQueries';
+import { useAuthStore } from '../../login/store/useAuthStore';
 import '../css/serverRoomDashboard.css'; 
 
 const ServerRoomDashboard: React.FC = () => {
-  const [serverRooms, setServerRooms] = useState<ServerRoom[]>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-
-  useEffect(() => {
-    setServerRooms(MOCK_SERVER_ROOMS);
-  }, []);
+  
+  // 로그인한 사용자의 회사 ID 가져오기
+  const { user } = useAuthStore();
+  const companyId = user?.companyId;
+  
+  const { data: serverRooms = [], isLoading, isError, error } = useServerRooms(companyId!);
 
   const stats = useMemo(() => {
     const totalRooms = serverRooms.length;
@@ -22,6 +23,42 @@ const ServerRoomDashboard: React.FC = () => {
     return { totalRooms, totalRacks, normalStatus, needAttention };
   }, [serverRooms]);
 
+  // companyId! (변경예정)
+  if (!companyId) {
+    return (
+      <div className="tab-layout">
+        <div className="flex items-center justify-center h-full">
+          <p className="text-body-primary text-red-400">
+            회사 정보를 불러올 수 없습니다. 다시 로그인해주세요.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // 로딩 상태 처리 (변경예정)
+  if (isLoading) {
+    return (
+      <div className="tab-layout">
+        <div className="flex items-center justify-center h-full">
+          <p className="text-body-primary text-gray-400">서버실 목록을 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 에러 상태 처리 (변경예정)
+  if (isError) {
+    return (
+      <div className="tab-layout">
+        <div className="flex items-center justify-center h-full">
+          <p className="text-body-primary text-red-400">
+            서버실 목록을 불러오는데 실패했습니다: {error instanceof Error ? error.message : '알 수 없는 오류'}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="tab-layout">
