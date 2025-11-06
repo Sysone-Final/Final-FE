@@ -85,6 +85,8 @@ export function useRackManager({ rackId }: UseRackManagerProps) {
         return;
       }
 
+      const previousPosition = draggedDevice.startUnit;
+
       setInstalledDevices((prev) =>
         prev.map((d) =>
           d.equipmentId === deviceId ? { ...d, startUnit: newPosition } : d
@@ -110,17 +112,17 @@ export function useRackManager({ rackId }: UseRackManagerProps) {
         },
         {
           onSuccess: () => {
-            setInstalledDevices((prev) =>
-              prev.map((d) =>
-                d.equipmentId === deviceId
-                  ? { ...d, startUnit: newPosition }
-                  : d
-              )
-            );
             console.log("위치 수정 성공");
           },
           onError: (error) => {
             console.error("위치 수정 실패", error);
+            setInstalledDevices((prev) =>
+              prev.map((d) =>
+                d.equipmentId === deviceId
+                  ? { ...d, startUnit: previousPosition }
+                  : d
+              )
+            );
             setResetKey((prev) => prev + 1);
           },
         }
@@ -182,48 +184,50 @@ export function useRackManager({ rackId }: UseRackManagerProps) {
 
   const handleDeviceNameConfirm = useCallback(
     (deviceId: number, name: string) => {
-      setInstalledDevices((prevDevices) => {
-        const device = prevDevices.find((d) => d.equipmentId === deviceId);
-        if (!device || !rackId) return prevDevices;
+      const device = installedDevices.find((d) => d.equipmentId === deviceId);
+      if (!device || !rackId) return;
 
-        const finalName = name.trim() || device.equipmentType;
+      const finalName = name.trim() || device.equipmentType;
 
-        if (device.equipmentCode.startsWith("TEMP-")) {
-          const newEquipmentRequest: PostEquipmentRequest = {
-            equipmentName: finalName,
-            equipmentType: device.equipmentType,
-            startUnit: device.startUnit,
-            unitSize: device.unitSize,
-            positionType: device.positionType,
-            status: device.status,
-            rackId: rackId,
-            del_yn: "N",
-            createdAt: new Date(),
-          };
+      if (device.equipmentCode.startsWith("TEMP-")) {
+        setInstalledDevices((prev) =>
+          prev.map((d) =>
+            d.equipmentId === deviceId ? { ...d, equipmentName: finalName } : d
+          )
+        );
 
-          postEquipment(newEquipmentRequest, {
-            onSuccess: (response) => {
-              setInstalledDevices((prev) =>
-                prev.map((d) =>
-                  d.equipmentId === deviceId ? response.data : d
-                )
-              );
-              console.log("장비 생성 성공");
-            },
-            onError: (error) => {
-              console.error("장비 생성 실패", error);
-              setInstalledDevices((prev) =>
-                prev.filter((d) => d.equipmentId !== deviceId)
-              );
-            },
-          });
-        }
-        return prevDevices;
-      });
-      setEditingDeviceId(null);
-      setTempDeviceName("");
+        setEditingDeviceId(null);
+        setTempDeviceName("");
+
+        const newEquipmentRequest: PostEquipmentRequest = {
+          equipmentName: finalName,
+          equipmentType: device.equipmentType,
+          startUnit: device.startUnit,
+          unitSize: device.unitSize,
+          positionType: device.positionType,
+          status: device.status,
+          rackId: rackId,
+          del_yn: "N",
+          createdAt: new Date(),
+        };
+
+        postEquipment(newEquipmentRequest, {
+          onSuccess: (response) => {
+            setInstalledDevices((prev) =>
+              prev.map((d) => (d.equipmentId === deviceId ? response.data : d))
+            );
+            console.log("장비 생성 성공");
+          },
+          onError: (error) => {
+            console.error("장비 생성 실패", error);
+            setInstalledDevices((prev) =>
+              prev.filter((d) => d.equipmentId !== deviceId)
+            );
+          },
+        });
+      }
     },
-    [rackId]
+    [rackId, postEquipment, installedDevices]
   );
 
   const handleDeviceNameCancel = useCallback((deviceId: number) => {
@@ -235,19 +239,29 @@ export function useRackManager({ rackId }: UseRackManagerProps) {
   }, []);
 
   //장비 삭제 함수 추가
-  const removeDevice = useCallback((deviceId: number) => {
-    deleteEquipment(deviceId, {
-      onSuccess: () => {
-        setInstalledDevices((prev) =>
-          prev.filter((d) => d.equipmentId !== deviceId)
-        );
-        console.log("장비 삭제 성공");
-      },
-      onError: (error) => {
-        console.error("장비 삭제 실패", error);
-      },
-    });
-  }, []);
+  const removeDevice = useCallback(
+    (deviceId: number) => {
+      const deviceToDelete = installedDevices.find(
+        (d) => d.equipmentId === deviceId
+      );
+
+      if (!deviceToDelete) return;
+
+      setInstalledDevices((prev) =>
+        prev.filter((d) => d.equipmentId !== deviceId)
+      );
+      deleteEquipment(deviceId, {
+        onSuccess: () => {
+          console.log("장비 삭제 성공");
+        },
+        onError: (error) => {
+          setInstalledDevices((prev) => [...prev, deviceToDelete]);
+          console.error("장비 삭제 실패", error);
+        },
+      });
+    },
+    [deleteEquipment, installedDevices]
+  );
 
   return {
     installedDevices,

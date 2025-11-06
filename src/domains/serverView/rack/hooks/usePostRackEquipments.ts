@@ -10,7 +10,7 @@ export const usePostEquipment = () => {
       postRackEquipment(equipment),
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["equipments"] });
+      queryClient.invalidateQueries({ queryKey: ["rackEquipments"] });
     },
     onError: (error) => {
       console.error("장비 생성 실패:", error);

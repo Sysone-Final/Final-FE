@@ -8,7 +8,7 @@ export const useDeleteEquipments = () => {
     mutationFn: (id: number) => deleteRackEquipments(id),
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["equipments"] });
+      queryClient.invalidateQueries({ queryKey: ["rackEquipments"] });
     },
   });
   return mutation;
