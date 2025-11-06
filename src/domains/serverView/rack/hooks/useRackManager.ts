@@ -4,7 +4,9 @@ import { checkCollision } from "../utils/rackCollisionDetection";
 import { useGetRackEquipments } from "./useGetRackEquipments";
 import { useDeleteEquipments } from "./useDeleteRackEquipments";
 import { usePostEquipment } from "./usePostRackEquipments";
+import { useUpdateRackEquipmetns } from "./useUpdateRackEquipments";
 import type { PostEquipmentRequest } from "../api/postRackEquipments";
+import type { UpdateRackEquipmentRequest } from "../api/updateRackEquipments";
 
 interface UseRackManagerProps {
   rackId?: number;
@@ -33,6 +35,9 @@ export function useRackManager({ rackId }: UseRackManagerProps) {
   //DELETE
   const { mutate: deleteEquipment } = useDeleteEquipments();
 
+  //UPDATE
+  const { mutate: updateEquipment } = useUpdateRackEquipmetns();
+
   useEffect(() => {
     if (rackEquipmentData?.data) {
       setInstalledDevices(rackEquipmentData.data);
@@ -59,7 +64,7 @@ export function useRackManager({ rackId }: UseRackManagerProps) {
         const draggedDevice = prevDevices.find(
           (d) => d.equipmentId === deviceId
         );
-        if (!draggedDevice) return prevDevices;
+        if (!draggedDevice || !rackId) return prevDevices;
 
         if (draggedDevice.startUnit === newPosition) {
           return prevDevices;
@@ -80,6 +85,41 @@ export function useRackManager({ rackId }: UseRackManagerProps) {
           return prevDevices;
         }
 
+        const updateData: UpdateRackEquipmentRequest = {
+          equipmentName: draggedDevice.equipmentName,
+          equipmentType: draggedDevice.equipmentType,
+          startUnit: newPosition,
+          unitSize: draggedDevice.unitSize,
+          positionType: draggedDevice.positionType,
+          status: draggedDevice.status,
+          rackId: rackId,
+          updateAt: new Date(),
+          del_yn: "N",
+        };
+
+        updateEquipment(
+          {
+            id: deviceId,
+            data: updateData,
+          },
+          {
+            onSuccess: () => {
+              setInstalledDevices((prev) =>
+                prev.map((d) =>
+                  d.equipmentId === deviceId
+                    ? { ...d, startUnit: newPosition }
+                    : d
+                )
+              );
+              console.log("위치 수정 성공");
+            },
+            onError: (error) => {
+              console.error("위치 수정 실패", error);
+              setResetKey((prev) => prev + 1);
+            },
+          }
+        );
+
         return prevDevices.map((device) =>
           device.equipmentId === deviceId
             ? { ...device, startUnit: newPosition }
@@ -87,7 +127,7 @@ export function useRackManager({ rackId }: UseRackManagerProps) {
         );
       });
     },
-    []
+    [rackId, updateEquipment]
   );
 
   // 랙 클릭 핸들러
