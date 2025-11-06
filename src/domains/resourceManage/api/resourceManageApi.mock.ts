@@ -118,8 +118,8 @@ export let MOCK_DATA: Resource[] = [
     memoryThresholdCritical: 95,
     diskThresholdWarning: 70,
     diskThresholdCritical: 90,
-    imageUrlFront: "https://i.imgur.com/gA2ANEV.png", // 예시 이미지
-    imageUrlRear: "https://i.imgur.com/v4o6nVL.png", // 예시 이미지
+    // imageUrlFront: "https://i.imgur.com/gA2ANEV.png", // 예시 이미지
+    // imageUrlRear: "https://i.imgur.com/v4o6nVL.png", // 예시 이미지
   },
   // --- 2. HP Server (MAINTENANCE, dc1/rack2) ---
   {
@@ -152,8 +152,8 @@ export let MOCK_DATA: Resource[] = [
     memoryThresholdCritical: 90,
     diskThresholdWarning: 80,
     diskThresholdCritical: 95,
-    imageUrlFront: null,
-    imageUrlRear: null,
+    // imageUrlFront: null,
+    // imageUrlRear: null,
   },
   // --- 3. Cisco Switch (NORMAL, dc2/rack3) ---
   {
@@ -186,8 +186,8 @@ export let MOCK_DATA: Resource[] = [
     memoryThresholdCritical: 90,
     diskThresholdWarning: null, // 모니터링 안 함
     diskThresholdCritical: null,
-    imageUrlFront: null,
-    imageUrlRear: null,
+    // imageUrlFront: null,
+    // imageUrlRear: null,
   },
   // --- 4. NetApp Storage (INACTIVE, Unassigned) ---
   {
@@ -220,8 +220,8 @@ export let MOCK_DATA: Resource[] = [
     memoryThresholdCritical: 90,
     diskThresholdWarning: 70,
     diskThresholdCritical: 90,
-    imageUrlFront: null,
-    imageUrlRear: null,
+    // imageUrlFront: null,
+    // imageUrlRear: null,
   },
   // --- 5. Cisco Router (NORMAL, dc1/rack1) ---
   {
@@ -254,8 +254,8 @@ export let MOCK_DATA: Resource[] = [
     memoryThresholdCritical: 80,
     diskThresholdWarning: null,
     diskThresholdCritical: null,
-    imageUrlFront: null,
-    imageUrlRear: null,
+    // imageUrlFront: null,
+    // imageUrlRear: null,
   },
   // --- 6. APC PDU (NORMAL, dc1/rack1) ---
   {
@@ -288,8 +288,8 @@ export let MOCK_DATA: Resource[] = [
     memoryThresholdCritical: null,
     diskThresholdWarning: null,
     diskThresholdCritical: null,
-    imageUrlFront: null,
-    imageUrlRear: null,
+    // imageUrlFront: null,
+    // imageUrlRear: null,
   },
   // --- 7. Eaton UPS (NORMAL, dc1/rack2) ---
   {
@@ -322,8 +322,8 @@ export let MOCK_DATA: Resource[] = [
     memoryThresholdCritical: null,
     diskThresholdWarning: null,
     diskThresholdCritical: null,
-    imageUrlFront: null,
-    imageUrlRear: null,
+    // imageUrlFront: null,
+    // imageUrlRear: null,
   },
   // --- 8. Juniper Switch (NORMAL, dc2/rack3) ---
   {
@@ -356,8 +356,8 @@ export let MOCK_DATA: Resource[] = [
     memoryThresholdCritical: 90,
     diskThresholdWarning: null,
     diskThresholdCritical: null,
-    imageUrlFront: null,
-    imageUrlRear: null,
+    // imageUrlFront: null,
+    // imageUrlRear: null,
   },
   // --- 9. Lenovo Server (NORMAL, dc1/rack2) ---
   {
@@ -390,8 +390,8 @@ export let MOCK_DATA: Resource[] = [
     memoryThresholdCritical: 95,
     diskThresholdWarning: 80,
     diskThresholdCritical: 90,
-    imageUrlFront: null,
-    imageUrlRear: null,
+    // imageUrlFront: null,
+    // imageUrlRear: null,
   },
   // --- 10. Supermicro Server (DISPOSED, Unassigned) ---
   {
@@ -424,8 +424,8 @@ export let MOCK_DATA: Resource[] = [
     memoryThresholdCritical: 90,
     diskThresholdWarning: 70,
     diskThresholdCritical: 90,
-    imageUrlFront: null,
-    imageUrlRear: null,
+    // imageUrlFront: null,
+    // imageUrlRear: null,
   },
   // --- 11. Arista Switch (NORMAL, dc1/rack1) ---
   {
@@ -458,8 +458,8 @@ export let MOCK_DATA: Resource[] = [
     memoryThresholdCritical: 90,
     diskThresholdWarning: null,
     diskThresholdCritical: null,
-    imageUrlFront: null,
-    imageUrlRear: null,
+    // imageUrlFront: null,
+    // imageUrlRear: null,
   },
   // --- 12. Dell Server (NORMAL, dc2/rack3) ---
   {
@@ -492,8 +492,8 @@ export let MOCK_DATA: Resource[] = [
     memoryThresholdCritical: 98,
     diskThresholdWarning: 85,
     diskThresholdCritical: 95,
-    imageUrlFront: null,
-    imageUrlRear: null,
+    // imageUrlFront: null,
+    // imageUrlRear: null,
   },
   // --- 13. HP Server (NORMAL, dc1/rack1) ---
   {
@@ -526,8 +526,8 @@ export let MOCK_DATA: Resource[] = [
     memoryThresholdCritical: 90,
     diskThresholdWarning: 80,
     diskThresholdCritical: 95,
-    imageUrlFront: null,
-    imageUrlRear: null,
+    // imageUrlFront: null,
+    // imageUrlRear: null,
   },
   // --- 14. APC PDU (NORMAL, dc2/rack3) ---
   {
@@ -560,8 +560,8 @@ export let MOCK_DATA: Resource[] = [
     memoryThresholdCritical: null,
     diskThresholdWarning: null,
     diskThresholdCritical: null,
-    imageUrlFront: null,
-    imageUrlRear: null,
+    // imageUrlFront: null,
+    // imageUrlRear: null,
   },
   // --- 15. Lenovo Server (INACTIVE, Unassigned) ---
   {
@@ -594,8 +594,8 @@ export let MOCK_DATA: Resource[] = [
     memoryThresholdCritical: 95,
     diskThresholdWarning: 80,
     diskThresholdCritical: 90,
-    imageUrlFront: null,
-    imageUrlRear: null,
+    // imageUrlFront: null,
+    // imageUrlRear: null,
   },
   // --- 16. Cisco Router (MAINTENANCE, dc2/rack3) ---
   {
@@ -628,8 +628,8 @@ export let MOCK_DATA: Resource[] = [
     memoryThresholdCritical: 80,
     diskThresholdWarning: null,
     diskThresholdCritical: null,
-    imageUrlFront: null,
-    imageUrlRear: null,
+    // imageUrlFront: null,
+    // imageUrlRear: null,
   },
   // --- 17. Dell Server (NORMAL, dc1/rack2) ---
   {
@@ -662,8 +662,8 @@ export let MOCK_DATA: Resource[] = [
     memoryThresholdCritical: 95,
     diskThresholdWarning: 70,
     diskThresholdCritical: 90,
-    imageUrlFront: null,
-    imageUrlRear: null,
+    // imageUrlFront: null,
+    // imageUrlRear: null,
   },
   // --- 18. HP Server (NORMAL, dc1/rack2) ---
   {
@@ -696,8 +696,8 @@ export let MOCK_DATA: Resource[] = [
     memoryThresholdCritical: 95,
     diskThresholdWarning: 70,
     diskThresholdCritical: 90,
-    imageUrlFront: null,
-    imageUrlRear: null,
+    // imageUrlFront: null,
+    // imageUrlRear: null,
   },
   // --- 19. Juniper Switch (NORMAL, dc1/rack2) ---
   {
@@ -730,8 +730,8 @@ export let MOCK_DATA: Resource[] = [
     memoryThresholdCritical: 90,
     diskThresholdWarning: null,
     diskThresholdCritical: null,
-    imageUrlFront: null,
-    imageUrlRear: null,
+    // imageUrlFront: null,
+    // imageUrlRear: null,
   },
   // --- 20. Dell Server (NORMAL, dc2/rack3) ---
   {
@@ -764,7 +764,7 @@ export let MOCK_DATA: Resource[] = [
     memoryThresholdCritical: 95,
     diskThresholdWarning: 90,
     diskThresholdCritical: 98,
-    imageUrlFront: null,
-    imageUrlRear: null,
+    // imageUrlFront: null,
+    // imageUrlRear: null,
   },
 ];

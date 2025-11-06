@@ -25,8 +25,8 @@ export interface Resource {
   modelName?: string | null;
   serialNumber?: string | null;
   equipmentCode?: string | null;
-  imageUrlFront?: string | null; // 앞면 이미지 URL
-  imageUrlRear?: string | null; // 뒷면 이미지 URL
+  // imageUrlFront?: string | null; // 앞면 이미지 URL
+  // imageUrlRear?: string | null; // 뒷면 이미지 URL
 
   // 2단계: 위치 및 사양
   // 2-1. 물리적 위치 (Nullable)

@@ -211,7 +211,7 @@ export const useGetResourceById = (resourceId: string | null) => {
 export const useCreateResource = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (formData: FormData) => createResource(formData),
+    mutationFn: (data: Resource) => createResource(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [RESOURCE_QUERY_KEY] });
       toast.success("새로운 자원이 등록되었습니다.");
@@ -227,8 +227,8 @@ export const useCreateResource = () => {
 export const useUpdateResource = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, formData }: { id: string; formData: FormData }) =>
-      updateResource(id, formData),
+    mutationFn: ({ id, data }: { id: string; data: Resource }) =>
+      updateResource(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [RESOURCE_QUERY_KEY] });
       toast.success("자원 정보가 수정되었습니다.");
