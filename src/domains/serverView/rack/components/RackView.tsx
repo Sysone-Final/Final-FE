@@ -4,7 +4,6 @@ import Sidebar from "./Sidebar";
 import RackHeader from "./RackHeader";
 import Button from "./Button";
 import { useState } from "react";
-import { typeColorMap } from "../utils/colorMap";
 import { useRackEquipments } from "../hooks/useRackEquipments";
 
 interface RackViewProps {
@@ -48,15 +47,6 @@ function RackView({ rackName }: RackViewProps = {}) {
       </div>
     );
   }
-  const deviceLegend = [
-    { type: "SERVER", label: "서버" },
-    { type: "SWITCH", label: "스위치" },
-    { type: "ROUTER", label: "라우터" },
-    { type: "STORAGE", label: "스토리지" },
-    { type: "FIREWALL", label: "방화벽" },
-    { type: "LOAD_BALANCER", label: "로드밸런서" },
-    { type: "KVM", label: "KVM" },
-  ];
 
   return (
     <div className="h-full flex justify-center items-center text-white p-2 overflow-auto">
@@ -117,28 +107,6 @@ function RackView({ rackName }: RackViewProps = {}) {
                 />
               </div>
             </div>
-
-            {/* Footer - 범례 */}
-            {editMode && (
-              <footer className="px-2 py-2 border-t border-slate-700 bg-slate-800/30 flex justify-center items-center">
-                <div className="flex items-center gap-2 justify-center">
-                  {deviceLegend.map((item) => (
-                    <div
-                      key={item.type}
-                      className="flex items-center gap-1 whitespace-nowrap"
-                    >
-                      <div
-                        className="w-2 h-2 rounded-sm flex-shrink-0"
-                        style={{ backgroundColor: typeColorMap[item.type] }}
-                      />
-                      <span className="text-xs text-slate-300">
-                        {item.label}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </footer>
-            )}
           </div>
         </div>
       </div>
