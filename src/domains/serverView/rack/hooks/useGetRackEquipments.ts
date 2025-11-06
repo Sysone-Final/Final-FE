@@ -3,15 +3,15 @@ import {
   getRackEquipments,
   type GetRackEquipmentsParams,
 } from "../api/getRackEquipments";
-import type { RackDevice } from "../types";
+import type { Equipments } from "../types";
 
 interface RackEquipmentResponse {
   status: number;
   message: string;
-  data: RackDevice[];
+  data: Equipments[];
 }
 
-export const useRackEquipments = (
+export const useGetRackEquipments = (
   rackId: number,
   params?: GetRackEquipmentsParams
 ) => {
