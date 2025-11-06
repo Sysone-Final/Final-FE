@@ -65,11 +65,16 @@ export function useRackManager({ rackId }: UseRackManagerProps) {
       );
 
       if (!draggedDevice || !rackId) return;
-      if (draggedDevice.startUnit === newPosition) return;
 
-      // 충돌 체크
+      if (draggedDevice.startUnit === newPosition) {
+        return;
+      }
+
       const hasCollision = checkCollision(
-        { position: newPosition, height: draggedDevice.unitSize },
+        {
+          position: newPosition,
+          height: draggedDevice.unitSize,
+        },
         installedDevices,
         deviceId
       );
@@ -80,14 +85,12 @@ export function useRackManager({ rackId }: UseRackManagerProps) {
         return;
       }
 
-      // 낙관적 업데이트
       setInstalledDevices((prev) =>
         prev.map((d) =>
           d.equipmentId === deviceId ? { ...d, startUnit: newPosition } : d
         )
       );
 
-      // API 호출
       const updateData: UpdateRackEquipmentRequest = {
         equipmentName: draggedDevice.equipmentName,
         equipmentType: draggedDevice.equipmentType,
@@ -101,24 +104,29 @@ export function useRackManager({ rackId }: UseRackManagerProps) {
       };
 
       updateEquipment(
-        { id: deviceId, data: updateData },
         {
-          onError: (error) => {
-            console.error("위치 수정 실패", error);
-            // 실패 시 원래대로 되돌림
+          id: deviceId,
+          data: updateData,
+        },
+        {
+          onSuccess: () => {
             setInstalledDevices((prev) =>
               prev.map((d) =>
                 d.equipmentId === deviceId
-                  ? { ...d, startUnit: draggedDevice.startUnit }
+                  ? { ...d, startUnit: newPosition }
                   : d
               )
             );
+            console.log("위치 수정 성공");
+          },
+          onError: (error) => {
+            console.error("위치 수정 실패", error);
             setResetKey((prev) => prev + 1);
           },
         }
       );
     },
-    [installedDevices, rackId, updateEquipment]
+    [rackId, updateEquipment, installedDevices]
   );
 
   // 랙 클릭 핸들러
