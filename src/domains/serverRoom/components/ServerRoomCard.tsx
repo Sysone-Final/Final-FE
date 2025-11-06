@@ -1,7 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { ServerRoom } from '../types';
-import { FaMapMarkerAlt, FaServer, FaPencilAlt, FaTrash } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaPencilAlt, FaTrash } from 'react-icons/fa';
+import { MdOutlineDescription } from "react-icons/md";
+import { RiBarcodeLine } from "react-icons/ri";
 import '../css/serverRoomCard.css'; // 수정된 CSS 임포트
 
 interface Props {
@@ -10,16 +12,6 @@ interface Props {
 
 const ServerRoomCard: React.FC<Props> = ({ room }) => {
   const navigate = useNavigate();
-
-  const getStatusClassName = (status: ServerRoom['status']) => {
-    // CSS 클래스 이름과 상태값 맞추기 (소문자)
-    const statusLower = status.toLowerCase();
-    if (['normal', 'warning', 'critical', 'maintenance'].includes(statusLower)) {
-      return `status-dot ${statusLower}`;
-    }
-    return 'status-dot normal'; // 기본값 또는 알 수 없는 상태 처리
-  };
-
 
   const handleViewLayout = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -38,16 +30,17 @@ const ServerRoomCard: React.FC<Props> = ({ room }) => {
         </div>
       </div>
       <div className="card-body">
-        {/* 텍스트 클래스 적용 */}
+        {/* 서버실 코드 */}
+        <p className="card-info text-body-primary">
+          <RiBarcodeLine className="info-icon" />{room.code}
+        </p>
+        {/* 위치 정보 */}
         <p className="card-info text-body-primary">
           <FaMapMarkerAlt className="info-icon" /> {room.location}
         </p>
+        {/* 설명 */}
         <p className="card-info text-body-primary">
-          <FaServer className="info-icon" /> {room.rackCount} 개 랙
-        </p>
-        <p className="card-info status-info text-body-primary">
-          <span className={getStatusClassName(room.status)}></span>
-          {room.status}
+         <MdOutlineDescription className="info-icon" />{room.description}
         </p>
       </div>
       <div className="card-footer">

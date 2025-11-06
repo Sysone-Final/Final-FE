@@ -3,7 +3,7 @@ import { LiaCubesSolid } from "react-icons/lia";
 import { GrResources } from "react-icons/gr";
 import { LuLayoutDashboard } from "react-icons/lu";
 import { MdOutlinePeopleAlt, MdLogout } from "react-icons/md";
-import { useAuthStore } from "../../domains/login/store/useAuthStore";
+import { useAuthStore } from "@domains/login/store/useAuthStore";
 
 function Header() {
   const navigate = useNavigate();
@@ -48,7 +48,7 @@ function Header() {
           {/* 로고 */}
           <div className="flex items-center gap-2 mr-8">
             <img src="/logo.svg" alt="SERVERWAY" className="w-8 h-8" />
-            <span className="text-xl font-bold text-gray-50">SERVERWAY</span>
+            <span className="hidden sm:block text-xl font-bold text-gray-50">SERVERWAY</span>
           </div>
 
           {/* 네비게이션 메뉴 */}
@@ -67,22 +67,18 @@ function Header() {
               >
                 <span className="text-lg font-semibold flex items-center gap-2">
                   {item.icon}
-                  {item.label}
+                  <span className="hidden sm:inline">{item.label}</span>
                 </span>
               </NavLink>
             ))}
           </nav>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="hidden sm:flex items-center gap-4">
           {/* 사용자 메뉴 */}
-          <div className="flex items-center bg-white/20 text-white rounded-xl px-4 py-2 space-x-2">
-            <div className="w-8 h-8 rounded-full bg-white/30 flex items-center justify-center text-sm font-bold">
-              {user?.name?.[0] || 'U'}
-            </div>
-            <div className="flex flex-col">
-              <span className="font-semibold text-sm">{user?.name || '사용자'}</span>
-              <span className="text-xs text-gray-300">{user?.companyName || ''}</span>
+          <div className="flex text-white rounded-xl space-x-2">
+            <div className="flex flex-row text-lg font-bold">
+              <span>{user?.name || '사용자'} | {user?.companyName || ''}</span>
             </div>
           </div>
 

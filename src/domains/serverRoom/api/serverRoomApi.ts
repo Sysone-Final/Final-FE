@@ -14,9 +14,9 @@ export const getCompanyDataCenters = async (companyId: number): Promise<ServerRo
   return response.data.result.map((item) => ({
     id: item.dataCenterId.toString(),
     name: item.dataCenterName,
-    location: item.description || "위치 정보 없음",
-    rackCount: 0, // API에 rack count 정보가 없으므로 기본값 설정
-    status: "Normal" as const, // 기본값으로 설정
+    code: item.code || "N/A",
+    location: item.location || "위치 정보 없음",
+    description: item.description || "설명 없음",
   }));
 };
 
