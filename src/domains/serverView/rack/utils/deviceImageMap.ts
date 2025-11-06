@@ -20,5 +20,5 @@ export const deviceImageMap: Record<string, { front: string; back: string }> = {
   ROUTER: { front: routerFrontImg, back: routerBackImg },
   KVM: { front: kvmFrontImg, back: kvmBackImg },
   FIREWALL: { front: firewallFrontImg, back: firewallBackImg },
-  LOAD_BALANCER: { front: loadBalanceFrontImg, back: loadBalanceBackImg },
+  LOAD_BALANCE: { front: loadBalanceFrontImg, back: loadBalanceBackImg },
 };
