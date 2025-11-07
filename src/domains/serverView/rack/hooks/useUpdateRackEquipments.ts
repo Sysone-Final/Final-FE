@@ -3,8 +3,9 @@ import {
   updateRackEquipments,
   type UpdateRackEquipmentRequest,
 } from "../api/updateRackEquipments";
+import type { Equipments } from "../types";
 
-export const useUpdateRackEquipmetns = () => {
+export const useUpdateRackEquipments = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
@@ -17,6 +18,28 @@ export const useUpdateRackEquipmetns = () => {
     }) => {
       return updateRackEquipments(id, data);
     },
+
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({
+        queryKey: ["rackEquipments", data.rackId],
+      });
+
+      const previousData =
+        queryClient.getQueryData<Equipments[]>([
+          "rackEquipments",
+          data.rackId,
+        ]) || [];
+
+      queryClient.setQueryData<Equipments[]>(
+        ["rackEquipments", data.rackId],
+        (old) =>
+          old?.map((item) =>
+            item.equipmentId === id ? { ...item, ...data } : item
+          ) || []
+      );
+      return { previousData, rackId: data.rackId };
+    },
+
     onSuccess: (_, variables) => {
       if (variables.data?.rackId) {
         queryClient.invalidateQueries({
