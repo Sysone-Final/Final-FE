@@ -18,7 +18,15 @@ function RackView({ rackName }: RackViewProps = {}) {
     ? parseInt(rackName.split("-").pop() || "0", 10)
     : undefined;
 
-  const rackManager = useRackManager({ rackId });
+  if (!rackId) {
+    return (
+      <div className="h-full flex justify-center items-center text-white">
+        <div className="text-lg">올바른 랙 정보가 없습니다.</div>
+      </div>
+    );
+  }
+
+  const rackManager = useRackManager({ rackId, frontView });
 
   if (rackManager.isLoading) {
     return (
@@ -87,7 +95,7 @@ function RackView({ rackName }: RackViewProps = {}) {
                   onMouseMove={rackManager.handleMouseMove}
                   onRackClick={rackManager.handleRackClick}
                   onDeviceDragEnd={rackManager.handleDeviceDragEnd}
-                  onDeviceDelete={rackManager.removeDevice}
+                  onDeviceDelete={rackManager.handleDeviceDelete}
                   frontView={!frontView}
                   editMode={editMode}
                   editingDeviceId={rackManager.editingDeviceId}
