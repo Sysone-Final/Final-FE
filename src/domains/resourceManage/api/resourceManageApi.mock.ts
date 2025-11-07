@@ -17,6 +17,7 @@ export const mockDeleteMultipleResources = (ids: string[]) => {
   MOCK_DATA = MOCK_DATA.filter((r) => !ids.includes(r.id));
 };
 
+
 /**
  *  목업: 자원 대량 상태 변경
  */
