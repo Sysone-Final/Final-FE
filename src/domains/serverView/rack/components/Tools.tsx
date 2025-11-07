@@ -5,9 +5,9 @@ import routerImg from "../assets/router.svg";
 import kvmImg from "../assets/kvm.svg";
 import firewallImg from "../assets/firewall.svg";
 import loadBalanceImg from "../assets/loadbalance.svg";
-
 import type { DeviceCard } from "../types";
 import { typeColorMap } from "../utils/colorMap";
+import Tooltip from "./Tooltip";
 
 interface ToolsProps {
   onCardClick: (card: DeviceCard) => void;
@@ -69,7 +69,7 @@ function Tools({ onCardClick }: ToolsProps) {
       size: "1U",
       img: loadBalanceImg,
       height: 1,
-      type: "LOAD_BALANCER",
+      type: "LOAD_BALANCE",
     },
   ];
 
@@ -78,10 +78,11 @@ function Tools({ onCardClick }: ToolsProps) {
       {deviceCards.map((card) => {
         const color = typeColorMap[card.type] || "#64748b";
         return (
-          <div
-            key={card.key}
-            onClick={() => onCardClick(card)}
-            className="
+          <Tooltip key={card.key} content={card.label}>
+            <div
+              key={card.key}
+              onClick={() => onCardClick(card)}
+              className="
               flex items-center justify-center
               w-10 h-10 m-2 p-2
               rounded-[4px]
@@ -90,16 +91,17 @@ function Tools({ onCardClick }: ToolsProps) {
               hover:scale-105 active:scale-95
               shadow-md
             "
-            style={{
-              backgroundColor: color,
-            }}
-          >
-            <img
-              src={card.img}
-              alt={`${card.label} icon`}
-              className="w-7 h-7 filter brightness-0 invert"
-            />
-          </div>
+              style={{
+                backgroundColor: color,
+              }}
+            >
+              <img
+                src={card.img}
+                alt={`${card.label} icon`}
+                className="w-7 h-7 filter brightness-0 invert"
+              />
+            </div>
+          </Tooltip>
         );
       })}
     </div>

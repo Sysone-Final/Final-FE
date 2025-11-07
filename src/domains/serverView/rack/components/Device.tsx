@@ -1,14 +1,17 @@
 import { Group, Rect, Text, Line, Image } from "react-konva";
 import { useState } from "react";
-import type { RackDevice } from "../types";
+import { Html } from "react-konva-utils";
+import type { Equipments } from "../types";
 import { deviceImageMap } from "../utils/deviceImageMap";
 import { useImageLoad } from "../hooks/useImageLoad";
 import { dragBound } from "../utils/dragBound";
 import { UNIT_COUNT, RACK_CONFIG } from "../constants/rackConstants";
 import deleteIcon from "../assets/delete.svg";
+import checkIcon from "../assets/check.svg";
+import ClickableIcon from "./ClickableIcon";
 
 interface DeviceProps {
-  device: RackDevice;
+  device: Equipments;
   y: number;
   x: number;
   height: number;
@@ -19,6 +22,11 @@ interface DeviceProps {
   editMode: boolean;
   onDragEnd?: (deviceId: number, newY: number) => void;
   onDelete?: (deviceId: number) => void;
+  isEditing?: boolean;
+  tempDeviceName?: string;
+  onDeviceNameChange?: (name: string) => void;
+  onDeviceNameConfirm?: (deviceId: number, name: string) => void;
+  onDeviceNameCancel?: (deviceId: number) => void;
 }
 
 function Device({
@@ -33,6 +41,11 @@ function Device({
   frontView,
   editMode,
   onDelete,
+  isEditing = false,
+  tempDeviceName = "",
+  onDeviceNameChange,
+  onDeviceNameConfirm,
+  onDeviceNameCancel,
 }: DeviceProps) {
   const [dragging, setIsDragging] = useState(false);
 
@@ -45,6 +58,7 @@ function Device({
   const image = useImageLoad(imageUrl);
 
   const deleteImage = useImageLoad(deleteIcon);
+  const checkImage = useImageLoad(checkIcon);
 
   const handleDragBound = (pos: { x: number; y: number }) => {
     return dragBound(pos, {
@@ -90,38 +104,77 @@ function Device({
       {/* 하단 테두리 */}
       <Line points={[x, height, x + rackWidth, height]} strokeWidth={2} />
 
-      {/* 장비 이름 */}
-      <Text
-        x={x + 10}
-        y={height / 2 - 6}
-        text={device.equipmentType}
-        fontSize={12}
-        fill="#fff"
-      />
+      {/* 장비 이름 또는 입력 필드 */}
+      {isEditing ? (
+        <>
+          {/* 입력 필드만 HTML */}
+          <Html
+            divProps={{
+              style: {
+                position: "absolute",
+                top: `${height / 2 - 15}px`,
+                left: `${x + 10}px`,
+                width: `${rackWidth - 55}px`,
+              },
+            }}
+          >
+            <input
+              type="text"
+              value={tempDeviceName}
+              onChange={(e) => onDeviceNameChange?.(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  onDeviceNameConfirm?.(device.equipmentId, tempDeviceName);
+                } else if (e.key === "Escape") {
+                  e.preventDefault();
+                  onDeviceNameCancel?.(device.equipmentId);
+                }
+              }}
+              placeholder="장비명 입력"
+              className="w-full px-2 py-1 text-xs bg-slate-700 text-black border border-slate-500 rounded focus:outline-none"
+              autoFocus
+              onClick={(e) => e.stopPropagation()}
+            />
+          </Html>
 
-      {editMode && !isFloating && deleteImage && (
-        <Group
+          <ClickableIcon
+            image={checkImage}
+            x={x + rackWidth - 55}
+            y={5}
+            width={20}
+            height={20}
+            onClick={() =>
+              onDeviceNameConfirm?.(device.equipmentId, tempDeviceName)
+            }
+          />
+          <ClickableIcon
+            image={deleteImage}
+            x={x + rackWidth - 30}
+            y={5}
+            width={20}
+            height={20}
+            onClick={() => onDeviceNameCancel?.(device.equipmentId)}
+          />
+        </>
+      ) : (
+        <Text
+          x={x + 10}
+          y={height / 2 - 6}
+          text={device.equipmentName || device.equipmentType}
+          fontSize={12}
+          fill="#fff"
+        />
+      )}
+      {editMode && !isFloating && !isEditing && (
+        <ClickableIcon
+          image={deleteImage}
           x={x + rackWidth - 30}
           y={5}
-          onClick={(e) => {
-            e.cancelBubble = true;
-            onDelete?.(device.equipmentId);
-          }}
-          onMouseEnter={(e) => {
-            const container = e.target.getStage()?.container();
-            if (container) {
-              container.style.cursor = "pointer";
-            }
-          }}
-          onMouseLeave={(e) => {
-            const container = e.target.getStage()?.container();
-            if (container) {
-              container.style.cursor = "default";
-            }
-          }}
-        >
-          <Image image={deleteImage} x={0} y={0} width={24} height={24} />
-        </Group>
+          width={20}
+          height={20}
+          onClick={() => onDelete?.(device.equipmentId)}
+        />
       )}
     </Group>
   );
