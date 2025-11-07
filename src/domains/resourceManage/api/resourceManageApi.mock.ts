@@ -7,6 +7,37 @@ import type {
   Datacenter,
   Rack,
 } from "../types/resource.types";
+export const mockDeleteResource = (id: string) => {
+  console.warn(`MOCK: Deleting resource ${id}`);
+  MOCK_DATA = MOCK_DATA.filter((r) => r.id !== id);
+};
+
+export const mockDeleteMultipleResources = (ids: string[]) => {
+  console.warn(`MOCK: Deleting multiple resources ${ids.join(", ")}`);
+  MOCK_DATA = MOCK_DATA.filter((r) => !ids.includes(r.id));
+};
+
+
+/**
+ *  목업: 자원 대량 상태 변경
+ */
+export const mockUpdateMultipleResourceStatus = (
+  ids: string[],
+  status: ResourceStatus, 
+) => {
+  console.warn(
+    `MOCK: Updating status to ${status} for resources ${ids.join(', ')}`,
+  );
+  
+  // MOCK_DATA 배열을 순회하며 ID가 일치하는 항목의 status를 변경
+  MOCK_DATA = MOCK_DATA.map((r) => {
+    if (ids.includes(r.id)) {
+      return { ...r, status: status }; // 새 객체를 반환하여 불변성 유지
+    }
+    return r;
+  });
+};
+
 
 // --- Datacenter 목 데이터 ---
 export const MOCK_DATACENTERS: Datacenter[] = [

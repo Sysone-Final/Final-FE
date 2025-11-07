@@ -63,7 +63,7 @@ export const columns: ColumnDef<Resource>[] = [
   header: 'IP 주소',
  },
  {
-  accessorKey: 'modelName', // model -> modelName
+  accessorKey: 'modelName', 
   header: '모델명',
  },
   {
@@ -84,19 +84,19 @@ export const columns: ColumnDef<Resource>[] = [
      onClick={() => 
       (table.options.meta as ResourceTableMeta)?.editResourceHandler(row.original)
      }
-     aria-label={`${row.original.equipmentName} 수정`} //  assetName -> equipmentName
+     aria-label={`${row.original.equipmentName} 수정`} 
     >
      <Pencil size={16} />
     </button>
     <button
-     className="text-gray-400 hover:text-red-400"
-     onClick={() => 
-      (table.options.meta as ResourceTableMeta)?.deleteResourceHandler(row.original.id)
-     }
-     aria-label={`${row.original.equipmentName} 삭제`} //  assetName -> equipmentName
-    >
-     <Trash2 size={16} />
-    </button>
+  className="text-gray-400 hover:text-red-400"
+  onClick={() => 
+   (table.options.meta as ResourceTableMeta)?.openDeleteModal(row.original)
+  }
+  aria-label={`${row.original.equipmentName} 삭제`}
+  >
+  <Trash2 size={16} />
+  </button>
    </div>
   ),
   enableSorting: false, 

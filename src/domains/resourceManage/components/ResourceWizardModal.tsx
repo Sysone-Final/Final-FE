@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   useForm,
   useFormState,
@@ -55,9 +55,7 @@ interface Step3Props {
 const Step1Identity = ({
   register,
   errors,
-  // handleFileChange,
-  // imageFrontPreview,
-  // imageRearPreview,
+
 }: Step1Props) => (
   // 3. inputStyle 대신 modal-input 적용
   <div className={gridContainerStyle}>
@@ -125,47 +123,7 @@ const Step1Identity = ({
       />
     </div>
 
-    {/* --- 이미지 (파일 입력) --- */}
-    {/* <div className={gridSpanFullStyle}>
-      <label className={labelStyle}>장비 이미지 (앞면)</label>
-      <input
-        type="file"
-        name="imageFrontFile"
-        accept="image/*"
-        onChange={handleFileChange} // RHF register 사용 안 함
-        className={`${inputStyle} text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-blue-50 hover:file:bg-blue-700`}
-      />
-      {imageFrontPreview && (
-          // 이미지 미리보기 테두리
-        <div className="mt-2 border border-gray-700 rounded p-1 inline-block">
-          <img
-            src={imageFrontPreview}
-            alt="앞면 미리보기"
-            className="max-h-32 max-w-full object-contain rounded"
-          />
-        </div>
-      )}
-    </div>
-    <div className={gridSpanFullStyle}>
-      <label className={labelStyle}>장비 이미지 (뒷면)</label>
-      <input
-        type="file"
-        name="imageRearFile"
-        accept="image/*"
-        onChange={handleFileChange} // RHF register 사용 안 함
-        className={`${inputStyle} text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-blue-50 hover:file:bg-blue-700`}
-      />
-      {imageRearPreview && (
-// 이미지 미리보기 테두리
-        <div className="mt-2 border border-gray-700 rounded p-1 inline-block">          
-        <img
-            src={imageRearPreview}
-            alt="뒷면 미리보기"
-            className="max-h-32 max-w-full object-contain rounded"
-          />
-        </div>
-      )} */}
-    {/* </div> */}
+    
   </div>
 );
 
@@ -193,7 +151,6 @@ const Step2Location = ({ register, errors, watch, getValues }: Step2Props) => {
   const maxUnits = selectedRack?.totalUnits || 48;
 
   return (
-    // 3. <fieldset>, <legend> 제거. 
     //    div에 grid 스타일을 바로 적용하여 평평하게 만듦
     <div>
       {/* 2-1. 물리적 위치 */}
@@ -551,7 +508,6 @@ const getDefaultFormData = (): Partial<Resource> => ({
   equipmentType: "SERVER",
   unitSize: 1,
   status: "INACTIVE",
-  // ... (이하 동일)
   manufacturer: "",
   modelName: "",
   serialNumber: "",
@@ -657,47 +613,10 @@ export default function ResourceWizardModal({
     }
   }, [resourceId, resourceDetailData, isOpen, reset]);
 
-  // useEffect(() => {
-  //   if (!isOpen) {
-  //     reset(getDefaultFormData());
-  //     if (imageFrontPreview && imageFrontPreview.startsWith("blob:")) {
-  //       URL.revokeObjectURL(imageFrontPreview);
-  //     }
-  //     if (imageRearPreview && imageRearPreview.startsWith("blob:")) {
-  //       URL.revokeObjectURL(imageRearPreview);
-  //     }
-  //     setImageFrontPreview(null);
-  //     setImageRearPreview(null);
-  //   }
-  // }, [isOpen, reset, imageFrontPreview, imageRearPreview]);
 
-  // useEffect(() => {
-  //   return () => {
-  //     if (imageFrontPreview && imageFrontPreview.startsWith("blob:")) URL.revokeObjectURL(imageFrontPreview);
-  //     if (imageRearPreview && imageRearPreview.startsWith("blob:")) URL.revokeObjectURL(imageRearPreview);
-  //   };
-  // }, [imageFrontPreview, imageRearPreview]);
 
   if (!isOpen) return null;
 
-  // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const { name, files } = e.target;
-  //   const file = files && files.length > 0 ? files[0] : null;
-
-  //   if (name === "imageFrontFile") {
-  //     if (imageFrontPreview && imageFrontPreview.startsWith("blob:")) {
-  //       URL.revokeObjectURL(imageFrontPreview);
-  //     }
-  //     setImageFrontFile(file);
-  //     setImageFrontPreview(file ? URL.createObjectURL(file) : null);
-  //   } else if (name === "imageRearFile") {
-  //     if (imageRearPreview && imageRearPreview.startsWith("blob:")) {
-  //       URL.revokeObjectURL(imageRearPreview);
-  //     }
-  //     setImageRearFile(file);
-  //     setImageRearPreview(file ? URL.createObjectURL(file) : null);
-  //   }
-  // };
 
   const nextStep = async () => {
     let fieldsToValidate: (keyof FormValues)[] = [];
@@ -731,18 +650,7 @@ export default function ResourceWizardModal({
   };
 
   const onSubmit: SubmitHandler<FormValues> = (data) => {
-    // const submitFormData = new FormData();
-    // for (const [key, value] of Object.entries(data)) {
-    //   if (value !== null && value !== undefined) {
-    //     submitFormData.append(key, String(value));
-    //   }
-    // }
-    // if (imageFrontFile) {
-    //   submitFormData.append("imageFrontFile", imageFrontFile);
-    // }
-    // if (imageRearFile) {
-    //   submitFormData.append("imageRearFile", imageRearFile);
-    // }
+
 if (resourceId) {
   updateResourceMutation.mutate(
    { id: resourceId, data: data }, 
@@ -760,9 +668,7 @@ if (resourceId) {
           <Step1Identity
             register={register}
             errors={errors}
-            // handleFileChange={handleFileChange}
-            // imageFrontPreview={imageFrontPreview}
-            // imageRearPreview={imageRearPreview}
+
           />
         );
       case 2:
@@ -788,7 +694,7 @@ if (resourceId) {
   };
 
   return (
-    // 4. 모달 배경 스타일 '새 서버실'과 일치
+    //  모달 배경 스타일 
     <div className="fixed inset-0 z-50 flex justify-center items-center p-4 backdrop-blur-sm bg-black/20">
       {/* 모달창 스타일 */}
       <div className="modal">
@@ -908,7 +814,6 @@ if (resourceId) {
                     type="button"
                     onClick={prevStep}
                     disabled={isLoading}
-                    // 6. '이전' 버튼 스타일 btn-cancel로 변경
                     className="flex items-center px-4 py-2 btn-cancel" 
                   >
                     <ArrowLeft size={16} className="mr-1" />
@@ -932,7 +837,7 @@ if (resourceId) {
                     type="button"
                     onClick={nextStep}
                     disabled={isLoading}
-                    className="px-4 py-2 btn-create" // '다음' 버튼은 녹색(btn-create) 유지
+                    className="px-4 py-2 btn-create" 
                   >
                     다음
                   </button>
@@ -942,7 +847,6 @@ if (resourceId) {
                   <button
                     type="submit"
                     disabled={isLoading || isErrorDetail}
-                    // 7. '완료' 버튼 스타일 btn-create로 변경
                     className="px-4 py-2 btn-create" 
                   >
                     {isLoadingMutation
