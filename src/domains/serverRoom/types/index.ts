@@ -1,5 +1,5 @@
 export interface ServerRoom {
-  id: string;
+  id: number; // dataCenterId
   name: string; // dataCenterName
   code: string; // 서버실 코드
   location: string; // 위치 정보

@@ -28,23 +28,26 @@ export interface EquipmentMetadata {
 
 // 백엔드 API 응답 타입
 export interface ServerRoomEquipmentResponse {
-  serverRoomId: string;
-  serverRoomName: string;
-  equipment: BackendEquipment[];
+  status_code: number;
+  status_message: string;
+  result: BackendEquipment[];
 }
 
 // 백엔드에서 받는 장비 데이터 구조
 export interface BackendEquipment {
-  equipmentId: string; // DB의 UUID
-  equipmentType: EquipmentType;
-  rackId?: string;
-  gridPosition: {
-    x: number;
-    y: number;
-    z: number;
-  };
-  rotation: number;
-  metadata?: EquipmentMetadata;
+  id: number; // 장비 ID
+  deviceName: string; // 장비명
+  deviceCode: string; // 장비 코드
+  deviceType: EquipmentType; // 장비 타입
+  gridX: number; // X 좌표
+  gridY: number; // Y 좌표
+  gridZ: number; // Z 좌표
+  rotation: number; // 회전값 (degree)
+  status: string; // 상태 (NORMAL, WARNING, CRITICAL 등)
+  datacenterName: string; // 데이터센터명
+  datacenterId: number; // 데이터센터 ID
+  rackName: string | null; // 랙명
+  rackId: number | null; // 랙 ID
 }
 
 // 격자 설정

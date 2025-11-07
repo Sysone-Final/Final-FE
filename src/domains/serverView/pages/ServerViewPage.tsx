@@ -10,9 +10,9 @@ function ServerViewPage() {
   const [viewDimension, setViewDimension] = useState<'2D' | '3D'>('3D');
   const canvasContainerRef = useRef<HTMLDivElement>(null);
 
-
-
-
+  // URL 파라미터를 number로 변환
+  const datacenterId = id ? parseInt(id, 10) : undefined;
+  
   return (
     <div className="h-full w-full flex flex-col overflow-hidden">
       <ServerViewHeader
@@ -25,7 +25,7 @@ function ServerViewPage() {
         <>
           {/* 3D View Container: flex-1 */}
           <div className="flex-1 overflow-hidden">
-            <BabylonDatacenterView mode="view" serverRoomId={id} />
+            <BabylonDatacenterView mode="view" datacenterId={datacenterId} />
           </div>
           <RackModal />
         </>

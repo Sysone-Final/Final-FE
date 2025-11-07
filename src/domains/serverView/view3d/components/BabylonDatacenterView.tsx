@@ -8,21 +8,24 @@ import ContextMenu from './ContextMenu';
 import SelectionBox from './SelectionBox';
 import { useBabylonDatacenterStore } from '../stores/useBabylonDatacenterStore';
 import { CAMERA_CONFIG, EQUIPMENT_PALETTE } from '../constants/config';
-import { getServerRoomEquipment } from '../data/mockServerRoomEquipment';
+import { useServerRoomEquipment } from '../hooks/useServerRoomEquipment';
 import type { EquipmentType } from '../types';
 
 interface BabylonDatacenterViewProps {
   mode?: 'edit' | 'view'; // 초기 모드 (기본값: view)
-  serverRoomId?: string; // 서버실 ID
+  datacenterId?: number; // 데이터센터 ID (백엔드 API용)
 }
 
-function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: BabylonDatacenterViewProps = {}) {
+function BabylonDatacenterView({ mode: initialMode = 'view', datacenterId }: BabylonDatacenterViewProps = {}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<Engine | null>(null);
   const sceneRef = useRef<Scene | null>(null);
   const [isSceneReady, setIsSceneReady] = useState(false);
   const renderLoopRef = useRef<boolean>(true); // 렌더링 루프 제어
   const hasAppliedInitialModeRef = useRef(false);
+
+  // API로부터 장비 데이터 가져오기
+  const { equipment: apiEquipment, loading: loadingEquipment, error: equipmentError } = useServerRoomEquipment(datacenterId);
 
   // 컨텍스트 메뉴 상태
   const [contextMenu, setContextMenu] = useState<{
@@ -79,15 +82,28 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
     hasAppliedInitialModeRef.current = true;
   }, [initialMode, setMode]);
 
-  // 서버실 데이터 로드
+  // API로부터 로드된 장비 데이터를 스토어에 초기화
   useEffect(() => {
-    if (!serverRoomId) return;
-    if (currentServerRoomId === serverRoomId) return;
+    if (!datacenterId) return;
+    if (loadingEquipment) return;
+    if (equipmentError) {
+      console.error('Failed to load equipment:', equipmentError);
+      setToast({
+        open: true,
+        message: '장비 데이터를 불러오는데 실패했습니다.',
+        severity: 'error',
+      });
+      return;
+    }
 
-    const equipmentData = getServerRoomEquipment(serverRoomId);
-    initializeServerRoom(serverRoomId, equipmentData);
-    console.log(`✅ Loaded ${equipmentData.length} equipment for server room: ${serverRoomId}`);
-  }, [serverRoomId, currentServerRoomId, initializeServerRoom]);
+    if (apiEquipment && apiEquipment.length > 0) {
+      const serverRoomId = datacenterId.toString();
+      if (currentServerRoomId !== serverRoomId) {
+        initializeServerRoom(serverRoomId, apiEquipment);
+        console.log(`✅ Loaded ${apiEquipment.length} equipment for datacenter: ${datacenterId}`);
+      }
+    }
+  }, [datacenterId, apiEquipment, loadingEquipment, equipmentError, currentServerRoomId, initializeServerRoom]);
 
   // 장비 추가 핸들러
   const handleAddEquipment = useCallback((type: EquipmentType) => {
@@ -467,14 +483,12 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
     }
   }, [isRackModalOpen]);
 
-  // 뷰어 모드일 때 서버실 데이터 로드 (추후 API 연동)
+  // 뷰어 모드일 때 서버실 데이터 로드 (이미 위에서 처리됨)
   useEffect(() => {
-    if (mode === 'view' && serverRoomId) {
-      // TODO: API에서 서버실 데이터 로드
-      console.log('Loading server room:', serverRoomId);
-      // 예시: fetch(`/api/server-rooms/${serverRoomId}`).then(...)
+    if (mode === 'view' && datacenterId) {
+      console.log('View mode - datacenter:', datacenterId);
     }
-  }, [mode, serverRoomId]);
+  }, [mode, datacenterId]);
 
   // Delete 키 이벤트 처리
   useEffect(() => {

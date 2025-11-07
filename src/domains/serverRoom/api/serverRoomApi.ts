@@ -12,7 +12,7 @@ export const getCompanyDataCenters = async (companyId: number): Promise<ServerRo
   
   // API 응답을 ServerRoom 형태로 변환
   return response.data.result.map((item) => ({
-    id: item.dataCenterId.toString(),
+    id: item.dataCenterId, 
     name: item.dataCenterName,
     code: item.code || "N/A",
     location: item.location || "위치 정보 없음",
@@ -28,7 +28,7 @@ export const createServerRoom = async (
   serverRoomData: CreateServerRoomRequest,
 ): Promise<ServerRoom> => {
   const response = await client.post<ServerRoom>(
-    "/serverrooms",
+    "/datacenters",
     serverRoomData,
   );
   return response.data;
@@ -42,15 +42,5 @@ export interface CreateServerRoomRequest {
   floor: number;
   rows: number;
   columns: number;
-  status?: string;
   description?: string;
-  totalArea?: number;
-  totalPowerCapacity?: number;
-  totalCoolingCapacity?: number;
-  maxRackCount?: number;
-  temperatureMin?: number;
-  temperatureMax?: number;
-  humidityMin?: number;
-  humidityMax?: number;
-  managerId?: number;
 }
