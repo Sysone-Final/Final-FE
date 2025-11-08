@@ -6,6 +6,7 @@ import type {
  ResourceListFilters,
  Datacenter,
  Rack,
+ ResourceStatus,
 } from "../types/resource.types";
 
 //  API 엔드포인트를 백엔드와 일치시킵니다.
@@ -85,6 +86,20 @@ export const deleteMultipleResources = async (ids: string[]): Promise<void> => {
  });
 };
 
+
+/**
+ *  자원 대량 상태 변경 (PUT /equipments/status - API 명세 가정)
+ */
+export const updateMultipleResourceStatus = async (
+  ids: string[],
+  status: ResourceStatus,
+): Promise<void> => {
+  // 백엔드 API 엔드포인트를 가정 (예: /equipments/status)
+  await client.put(`${RESOURCE_API_URL}/status`, {
+    ids,
+    status,
+  });
+};
 /**
 * 9.2 자원 상세 정보 조회 (GET /resourceManage/{id})
 */

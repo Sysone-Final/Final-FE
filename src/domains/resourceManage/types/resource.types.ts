@@ -77,6 +77,7 @@ export interface Resource {
 export interface ResourceTableMeta extends TableMeta<Resource> {
   editResourceHandler: (resource: Resource) => void;
   deleteResourceHandler: (resourceId: string) => void;
+  openDeleteModal: (resource: Resource) => void;
 }
 
 // NOTE(user): API 응답 타입 (페이지네이션)

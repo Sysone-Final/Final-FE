@@ -8,11 +8,9 @@ import type {
 import type { Resource } from '../types/resource.types';
 import { columns } from './resourceTable.config';
 
-/**
- * 테이블 스켈레톤 UI를 위한 단일 행
- */
+
 const SkeletonRow = () => {
-  // 컬럼 정의(columns) 개수만큼 스켈레톤 셀을 생성
+  // 컬럼  개수만큼 스켈레톤 셀을 생성
   const cells = Array.from({ length: columns.length }, (_, i) => (
     <td key={i} className="px-6 py-4 whitespace-nowrap">
 
@@ -34,9 +32,7 @@ export default function ResourceTable({ table, isLoading }: ResourceTableProps) 
   return (
 
     <div className="overflow-x-auto bg-gray-700/50 rounded-lg shadow-md border border-slate-300/40"> 
-      <table className="min-w-full"> {/* [수정] divide-y 제거 (tbody에서 관리) */}
-        
-
+      <table className="min-w-full"> 
         <thead className=""> 
           {table.getHeaderGroups().map((headerGroup: HeaderGroup<Resource>) => (
             <tr key={headerGroup.id}>
@@ -88,8 +84,7 @@ export default function ResourceTable({ table, isLoading }: ResourceTableProps) 
               <td
                 colSpan={columns.length}
                 // 빈 테이블 텍스트 색상
-                className="text-center py-10 text-gray-500 text-placeholder" 
-              >
+                className="text-center py-10 text-gray-500 text-placeholder" >
                 표시할 자원이 없습니다.
               </td>
             </tr>

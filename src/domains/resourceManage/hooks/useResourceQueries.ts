@@ -10,12 +10,14 @@ import {
   getResourceById,
   getDatacenters,
   getRacksByDatacenter,
+  updateMultipleResourceStatus,
 } from "../api/resourceManageApi";
 import type {
   ResourceListFilters,
   Datacenter,
   Rack,
   Resource,
+  ResourceStatus,
   PaginatedResourceResponse, //  PaginatedResourceResponse 타입을 import해야 합니다.
 } from "../types/resource.types";
 
@@ -26,9 +28,12 @@ const USE_MOCK_DATA = true ;
 
 // 위에서 생성한 목업 데이터 파일을 import 합니다.
 import {
-  MOCK_DATA,
-  MOCK_DATACENTERS,
-  MOCK_RACKS,
+ MOCK_DATA, 
+ MOCK_DATACENTERS,
+ MOCK_RACKS,
+ mockDeleteResource, 
+  mockDeleteMultipleResources, 
+  mockUpdateMultipleResourceStatus,
 } from "../api/resourceManageApi.mock";
 
 export const RESOURCE_QUERY_KEY = "resources";
@@ -243,29 +248,77 @@ export const useUpdateResource = () => {
 export const useDeleteResource = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => deleteResource(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [RESOURCE_QUERY_KEY] });
-      toast.success("자원이 삭제되었습니다.");
-    },
-    onError: (error) => {
-      console.error("자원 삭제 실패:", error);
-      toast.error("자원 삭제에 실패했습니다.");
-    },
-  });
+   mutationFn: (id: string) => {
+   //  목업 데이터일 경우
+   if (USE_MOCK_DATA) {
+        //  MOCK_DATA를 직접 수정하는 대신, 임포트한 함수를 호출
+        mockDeleteResource(id);
+        return Promise.resolve();
+   }
+   //  실제 API 호출
+   return deleteResource(id);
+  },
+  onSuccess: () => {
+   queryClient.invalidateQueries({ queryKey: [RESOURCE_QUERY_KEY] });
+   // toast.success("자원이 삭제되었습니다."); // (Undo 로직에서 처리하므로 주석 유지)
+  },
+  onError: (error) => {
+   console.error("자원 삭제 실패:", error);
+   toast.error("자원 삭제에 실패했습니다.");
+  },
+ });
 };
-
 export const useDeleteMultipleResources = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (ids: string[]) => deleteMultipleResources(ids),
+    mutationFn: (ids: string[]) => {
+   //  목업 데이터일 경우
+   if (USE_MOCK_DATA) {
+        //  MOCK_DATA를 직접 수정하는 대신, 임포트한 함수를 호출
+        mockDeleteMultipleResources(ids);
+        return Promise.resolve();
+   }
+   //  실제 API 호출
+   return deleteMultipleResources(ids);
+  },
+  onSuccess: () => {
+   queryClient.invalidateQueries({ queryKey: [RESOURCE_QUERY_KEY] });
+   // toast.success("선택한 자원이 모두 삭제되었습니다."); // (페이지에서 직접 처리)
+  },
+  onError: (error) => {
+   console.error("자원 대량 삭제 실패:", error);
+   toast.error("자원 대량 삭제에 실패했습니다.");
+  },
+ });
+};
+/**
+ * [신규] 자원 대량 상태 변경 훅
+ */
+export const useUpdateMultipleResourceStatus = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      ids,
+      status,
+    }: {
+      ids: string[];
+      status: ResourceStatus;
+    }) => {
+      // 목업 데이터일 경우
+      if (USE_MOCK_DATA) {
+        mockUpdateMultipleResourceStatus(ids, status);
+        return Promise.resolve();
+      }
+      // 실제 API 호출
+      return updateMultipleResourceStatus(ids, status);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [RESOURCE_QUERY_KEY] });
-      toast.success("선택한 자원이 모두 삭제되었습니다.");
+      // (알림은 Page에서 Undo 스낵바가 처리하므로 여기서는 생략)
     },
     onError: (error) => {
-      console.error("자원 대량 삭제 실패:", error);
-      toast.error("자원 대량 삭제에 실패했습니다.");
+      console.error("자원 상태 변경 실패:", error);
+      toast.error("자원 상태 변경에 실패했습니다.");
     },
   });
 };
