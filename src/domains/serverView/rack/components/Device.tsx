@@ -1,5 +1,5 @@
 import { Group, Rect, Text, Line, Image } from "react-konva";
-import { useState } from "react";
+import { useState, memo } from "react";
 import { Html } from "react-konva-utils";
 import type { Equipments } from "../types";
 import { deviceImageMap } from "../utils/deviceImageMap";
@@ -180,4 +180,4 @@ function Device({
   );
 }
 
-export default Device;
+export default memo(Device);

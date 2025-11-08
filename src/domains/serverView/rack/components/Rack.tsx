@@ -23,7 +23,7 @@ interface RackProps {
   editingDeviceId: number | null;
   tempDeviceName: string;
   onDeviceNameChange: (name: string) => void;
-  onDeviceNameConfirm: (deviceId: number, name: string) => void;
+  onDeviceNameConfirm: (device: Equipments, name: string) => void;
   onDeviceNameCancel: (deviceId: number) => void;
 }
 
@@ -84,6 +84,13 @@ function Rack({
     if (floatingDevice && floatingInfo) {
       onRackClick(floatingInfo.position);
     }
+  };
+
+  const handleDeviceNameConfirm = (deviceId: number, name: string) => {
+    const device = devices.find((d) => d.equipmentId === deviceId);
+    if (!device) return;
+
+    onDeviceNameConfirm(device, name);
   };
 
   return (
@@ -161,7 +168,7 @@ function Rack({
                 isEditing={editingDeviceId === device.equipmentId}
                 tempDeviceName={tempDeviceName}
                 onDeviceNameChange={onDeviceNameChange}
-                onDeviceNameConfirm={onDeviceNameConfirm}
+                onDeviceNameConfirm={handleDeviceNameConfirm}
                 onDeviceNameCancel={onDeviceNameCancel}
               />
             );

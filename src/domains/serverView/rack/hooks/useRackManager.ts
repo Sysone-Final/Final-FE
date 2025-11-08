@@ -26,11 +26,19 @@ export function useRackManager({
   );
   const [resetKey, setResetKey] = useState(0);
   const [editingDeviceId, setEditingDeviceId] = useState<number | null>(null);
+  //장비 입력
   const [tempDeviceName, setTempDeviceName] = useState("");
 
+  //GET
   const { data, isLoading, error } = useGetRackEquipments(rackId || 0, params);
+
+  //POST
   const { mutate: postEquipment } = usePostEquipment();
+
+  //DELETE
   const { mutate: deleteEquipment } = useDeleteEquipments();
+
+  //UPDATE
   const { mutate: updateEquipment } = useUpdateRackEquipments();
 
   useEffect(() => {
@@ -157,18 +165,14 @@ export function useRackManager({
 
   // Enter 누름 → 이름 확정 & 배치 → 그 다음 서버 요청
   const handleDeviceNameConfirm = useCallback(
-    (deviceId: number, inputName: string) => {
-      const device = installedDevices.find((d) => d.equipmentId === deviceId);
-
-      if (!device) {
-        return;
-      }
-
+    (device: Equipments, inputName: string) => {
       const finalName = inputName.trim() || device.equipmentType;
 
       setInstalledDevices((prev) =>
         prev.map((d) =>
-          d.equipmentId === deviceId ? { ...d, equipmentName: finalName } : d
+          d.equipmentId === device.equipmentId
+            ? { ...d, equipmentName: finalName }
+            : d
         )
       );
       setEditingDeviceId(null);
@@ -192,19 +196,19 @@ export function useRackManager({
         onSuccess: (response) => {
           setInstalledDevices((prev) =>
             prev.map((d) =>
-              d.equipmentId === deviceId ? { ...response.data } : d
+              d.equipmentId === device.equipmentId ? { ...response.data } : d
             )
           );
         },
         onError: (error) => {
           console.error("장비 생성 실패:", error);
           setInstalledDevices((prev) =>
-            prev.filter((d) => d.equipmentId !== deviceId)
+            prev.filter((d) => d.equipmentId !== device.equipmentId)
           );
         },
       });
     },
-    [rackId, postEquipment, installedDevices]
+    [rackId, postEquipment]
   );
 
   const handleDeviceNameCancel = useCallback((deviceId: number) => {
