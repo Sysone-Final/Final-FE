@@ -101,10 +101,7 @@ export function useRackManager({
             equipmentType: draggedDevice.equipmentType,
             startUnit: newPosition,
             unitSize: draggedDevice.unitSize,
-            positionType: draggedDevice.positionType,
             status: draggedDevice.status,
-            updateAt: new Date(),
-            del_yn: "N",
           },
         });
         return updated;
@@ -178,18 +175,13 @@ export function useRackManager({
       setEditingDeviceId(null);
       setTempDeviceName("");
 
-      const now = new Date();
-
       const requestData: PostEquipmentRequest = {
         equipmentName: finalName,
         equipmentType: device.equipmentType,
         startUnit: device.startUnit,
         unitSize: device.unitSize,
-        positionType: device.positionType,
         status: device.status,
         rackId: rackId,
-        createdAt: now,
-        del_yn: "N",
       };
 
       postEquipment(requestData, {
