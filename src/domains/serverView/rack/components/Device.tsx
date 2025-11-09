@@ -115,6 +115,7 @@ function Device({
                 top: `${height / 2 - 15}px`,
                 left: `${x + 10}px`,
                 width: `${rackWidth - 55}px`,
+                pointerEvents: "none",
               },
             }}
           >
