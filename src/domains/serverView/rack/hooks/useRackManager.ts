@@ -165,6 +165,11 @@ export function useRackManager({
     (device: Equipments, inputName: string) => {
       const finalName = inputName.trim() || device.equipmentType;
 
+      if (!device.equipmentCode?.startsWith("TEMP-")) {
+        console.log("임시 장비가 아닙니다");
+        return;
+      }
+
       setInstalledDevices((prev) =>
         prev.map((d) =>
           d.equipmentId === device.equipmentId
@@ -214,9 +219,6 @@ export function useRackManager({
   //장비 삭제 함수 추가
   const handleDeviceDelete = useCallback(
     (deviceId: number) => {
-      setInstalledDevices((prev) =>
-        prev.filter((d) => d.equipmentId !== deviceId)
-      );
       deleteEquipment(deviceId);
     },
     [deleteEquipment]
