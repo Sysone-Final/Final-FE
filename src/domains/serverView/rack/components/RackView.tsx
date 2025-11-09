@@ -23,14 +23,6 @@ function RackView({ rackName }: RackViewProps = {}) {
     frontView,
   });
 
-  if (!rackId) {
-    return (
-      <div className="h-full flex justify-center items-center text-white">
-        <div className="text-lg">올바른 랙 정보가 없습니다.</div>
-      </div>
-    );
-  }
-
   if (rackManager.isLoading) {
     return (
       <div className="h-full flex justify-center items-center text-white">
@@ -102,7 +94,7 @@ function RackView({ rackName }: RackViewProps = {}) {
                   frontView={!frontView}
                   editMode={editMode}
                   editingDeviceId={rackManager.editingDeviceId}
-                  tempDeviceName={rackManager.tempDeviceName}
+                  getDeviceName={rackManager.getDeviceName}
                   onDeviceNameChange={rackManager.handleDeviceNameChange}
                   onDeviceNameConfirm={rackManager.handleDeviceNameConfirm}
                   onDeviceNameCancel={rackManager.handleDeviceNameCancel}

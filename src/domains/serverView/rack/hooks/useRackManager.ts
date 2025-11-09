@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import type { Equipments, FloatingDevice, DeviceCard } from "../types";
 import { checkCollision } from "../utils/rackCollisionDetection";
 import { useGetRackEquipments } from "./useGetRackEquipments";
@@ -24,7 +24,9 @@ export function useRackManager({
   );
   const [resetKey, setResetKey] = useState(0);
   const [editingDeviceId, setEditingDeviceId] = useState<number | null>(null);
-  const [tempDeviceName, setTempDeviceName] = useState("");
+  const [tempDeviceName, setTempDeviceName] = useState<Map<number, string>>(
+    new Map()
+  );
 
   //GET
   const { data, isLoading, error } = useGetRackEquipments(rackId || 0, params);
@@ -38,7 +40,10 @@ export function useRackManager({
   //UPDATE
   const { mutate: updateEquipment } = useUpdateRackEquipments();
 
-  const installedDevices = [...(data?.data || []), ...tempDevices];
+  const installedDevices = useMemo(
+    () => [...(data?.data || []), ...tempDevices],
+    [data?.data, tempDevices]
+  );
 
   // 카드 클릭 핸들러
   const handleCardClick = useCallback((card: DeviceCard) => {
@@ -134,9 +139,17 @@ export function useRackManager({
           return [...filteredDevices, newDevice];
         });
 
+        setTempDeviceName((prev) => {
+          const newMap = new Map(prev);
+          if (editingDeviceId) {
+            newMap.delete(editingDeviceId);
+          }
+          newMap.set(tempId, "");
+          return newMap;
+        });
+
         // 편집 모드 활성화
         setEditingDeviceId(tempId);
-        setTempDeviceName("");
 
         return null;
       });
@@ -144,13 +157,21 @@ export function useRackManager({
     [frontView, editingDeviceId, installedDevices]
   );
 
-  const handleDeviceNameChange = useCallback((name: string) => {
-    setTempDeviceName(name);
-  }, []);
+  const handleDeviceNameChange = useCallback(
+    (deviceId: number, name: string) => {
+      setTempDeviceName((prev) => {
+        const newMap = new Map(prev);
+        newMap.set(deviceId, name);
+        return newMap;
+      });
+    },
+    []
+  );
 
   // Enter 누름 → 이름 확정 & 배치 → 그 다음 서버 요청
   const handleDeviceNameConfirm = useCallback(
-    (device: Equipments, inputName: string) => {
+    (device: Equipments) => {
+      const inputName = tempDeviceName.get(device.equipmentId) || "";
       const finalName = inputName.trim() || device.equipmentType;
 
       if (!device.equipmentCode?.startsWith("TEMP-")) {
@@ -159,7 +180,6 @@ export function useRackManager({
       }
 
       setEditingDeviceId(null);
-      setTempDeviceName("");
 
       const requestData: PostEquipmentRequest = {
         equipmentName: finalName,
@@ -173,26 +193,40 @@ export function useRackManager({
       postEquipment(requestData, {
         onSuccess: () => {
           setTempDevices((prev) =>
-            prev.filter((d) => d.equipmentId !== d.equipmentId)
+            prev.filter((d) => d.equipmentId !== device.equipmentId)
           );
+          setTempDeviceName((prev) => {
+            const newMap = new Map(prev);
+            newMap.delete(device.equipmentId);
+            return newMap;
+          });
         },
         onError: (error) => {
           console.error("장비 생성 실패:", error);
           setTempDevices((prev) =>
             prev.filter((d) => d.equipmentId !== device.equipmentId)
           );
+          setTempDeviceName((prev) => {
+            const newMap = new Map(prev);
+            newMap.delete(device.equipmentId);
+            return newMap;
+          });
         },
       });
     },
-    [rackId, postEquipment]
+    [rackId, postEquipment, tempDeviceName]
   );
 
   const handleDeviceNameCancel = useCallback((deviceId: number) => {
     setTempDevices((prevDevices) =>
       prevDevices.filter((device) => device.equipmentId !== deviceId)
     );
+    setTempDeviceName((prev) => {
+      const newMap = new Map(prev);
+      newMap.delete(deviceId);
+      return newMap;
+    });
     setEditingDeviceId(null);
-    setTempDeviceName("");
   }, []);
 
   //장비 삭제 함수 추가
@@ -201,6 +235,13 @@ export function useRackManager({
       deleteEquipment(deviceId);
     },
     [deleteEquipment]
+  );
+
+  const getDeviceName = useCallback(
+    (deviceId: number) => {
+      return tempDeviceName.get(deviceId) || "";
+    },
+    [tempDeviceName]
   );
 
   return {
@@ -219,5 +260,6 @@ export function useRackManager({
     handleDeviceNameConfirm,
     handleDeviceNameCancel,
     handleDeviceDelete,
+    getDeviceName,
   };
 }

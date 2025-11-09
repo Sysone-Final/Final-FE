@@ -21,9 +21,9 @@ interface RackProps {
   frontView: boolean;
   editMode: boolean;
   editingDeviceId: number | null;
-  tempDeviceName: string;
-  onDeviceNameChange: (name: string) => void;
-  onDeviceNameConfirm: (device: Equipments, name: string) => void;
+  getDeviceName: (deviceId: number) => string;
+  onDeviceNameChange: (deviceId: number, name: string) => void;
+  onDeviceNameConfirm: (device: Equipments) => void;
   onDeviceNameCancel: (deviceId: number) => void;
 }
 
@@ -39,7 +39,7 @@ function Rack({
   frontView,
   editMode,
   editingDeviceId,
-  tempDeviceName,
+  getDeviceName,
   onDeviceNameChange,
   onDeviceNameConfirm,
   onDeviceNameCancel,
@@ -59,18 +59,21 @@ function Rack({
     [floatingDevice, rackHeight, baseY, unitHeight]
   );
 
-  const handleDeviceDragEnd = (deviceId: number, newY: number) => {
-    const draggedDevice = devices.find((d) => d.equipmentId === deviceId);
-    if (!draggedDevice) return;
+  const handleDeviceDragEnd = useCallback(
+    (deviceId: number, newY: number) => {
+      const draggedDevice = devices.find((d) => d.equipmentId === deviceId);
+      if (!draggedDevice) return;
 
-    const newPosition = calculateDraggedPosition(
-      newY,
-      draggedDevice.unitSize,
-      baseY,
-      unitHeight
-    );
-    onDeviceDragEnd(deviceId, newPosition);
-  };
+      const newPosition = calculateDraggedPosition(
+        newY,
+        draggedDevice.unitSize,
+        baseY,
+        unitHeight
+      );
+      onDeviceDragEnd(deviceId, newPosition);
+    },
+    [devices, onDeviceDragEnd, baseY, unitHeight]
+  );
 
   const handleMouseMove = (e: KonvaEventObject<MouseEvent>) => {
     const stage = e.target.getStage();
@@ -85,16 +88,6 @@ function Rack({
       onRackClick(floatingInfo.position);
     }
   };
-
-  const handleDeviceNameConfirm = useCallback(
-    (deviceId: number, name: string) => {
-      const device = devices.find((d) => d.equipmentId === deviceId);
-      if (!device) return;
-
-      onDeviceNameConfirm(device, name);
-    },
-    [devices, onDeviceNameConfirm]
-  );
 
   return (
     <div
@@ -169,9 +162,9 @@ function Rack({
                 frontView={frontView}
                 editMode={editMode}
                 isEditing={editingDeviceId === device.equipmentId}
-                tempDeviceName={tempDeviceName}
+                tempDeviceName={getDeviceName(device.equipmentId)}
                 onDeviceNameChange={onDeviceNameChange}
-                onDeviceNameConfirm={handleDeviceNameConfirm}
+                onDeviceNameConfirm={onDeviceNameConfirm}
                 onDeviceNameCancel={onDeviceNameCancel}
               />
             );
