@@ -6,7 +6,7 @@ import ResourceManagePage from "./domains/resourceManage/pages/ResourceManagePag
 import LoginPage from "./domains/login/LoginPage";
 import HumanResource from "./domains/humanResource/pages/HumanResource";
 import RackView from "./domains/serverView/rack/components/RackView";
-import ProtectedRoute from "./components/ProtectedRoute";
+import ProtectedRoute from "./shared/ProtectedRoute";
 
 const router = createBrowserRouter([
   {
