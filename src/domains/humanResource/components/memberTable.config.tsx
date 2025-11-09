@@ -66,7 +66,7 @@ export const memberColumns: ColumnDef<Member>[] = [
           className="flex items-center hover:text-gray-300 text-gray-400"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
-          사용자명
+          사용자ID
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </button>
       );
@@ -92,7 +92,7 @@ export const memberColumns: ColumnDef<Member>[] = [
   // 이메일
   {
     accessorKey: 'email',
-    header: '이메일',
+    header: 'email',
     cell: ({ getValue }) => {
       return <span className="text-gray-400">{getValue<string>()}</span>;
     },

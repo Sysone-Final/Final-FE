@@ -9,21 +9,21 @@ export interface ServerRoom {
 }
 
 // API 응답 타입
-export interface CompanyDataCenterMapping {
+export interface CompanyServerRoomMapping {
   id: number;
   companyId: number;
   companyName: string;
-  dataCenterId: number;
-  dataCenterName: string;
-  code: string; // 서버실 코드 추가
+  serverRoomId: number;
+  serverRoomName: string;
+  code: string; // 서버실 코드
   description: string;
-  location: string; // 위치 정보 추가
+  location: string; // 위치 정보
   grantedBy: string;
   createdAt: string;
 }
 
-export interface CompanyDataCentersResponse {
+export interface CompanyServerRoomsResponse {
   status_code: number;
   status_message: string;
-  result: CompanyDataCenterMapping[];
+  result: CompanyServerRoomMapping[];
 }

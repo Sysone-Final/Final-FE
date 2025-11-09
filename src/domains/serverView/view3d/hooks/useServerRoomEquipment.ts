@@ -6,16 +6,18 @@ import type { Equipment3D } from "../types";
  * 서버실 장비 데이터를 가져오는 커스텀 훅
  *
  * @example
- * const { equipment, loading, error, refetch } = useServerRoomEquipment(serverRoomId);
+ * const { equipment, gridConfig, loading, error, refetch } = useServerRoomEquipment(serverRoomId);
  */
 export function useServerRoomEquipment(serverRoomId: string | undefined) {
   const [equipment, setEquipment] = useState<Equipment3D[]>([]);
+  const [gridConfig, setGridConfig] = useState<{ rows: number; columns: number } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchData = async () => {
     if (!serverRoomId) {
       setEquipment([]);
+      setGridConfig(null);
       return;
     }
 
@@ -23,7 +25,8 @@ export function useServerRoomEquipment(serverRoomId: string | undefined) {
       setLoading(true);
       setError(null);
       const data = await fetchServerRoomEquipment(serverRoomId);
-      setEquipment(data);
+      setEquipment(data.equipment);
+      setGridConfig(data.gridConfig);
     } catch (err) {
       setError(
         err instanceof Error ? err : new Error("Failed to fetch equipment"),
@@ -41,6 +44,7 @@ export function useServerRoomEquipment(serverRoomId: string | undefined) {
 
   return {
     equipment,
+    gridConfig,
     loading,
     error,
     refetch: fetchData,

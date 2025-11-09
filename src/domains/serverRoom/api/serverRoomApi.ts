@@ -1,19 +1,19 @@
 import client from "@api/client";
-import type { ServerRoom, CompanyDataCentersResponse } from "../types";
+import type { ServerRoom, CompanyServerRoomsResponse } from "../types";
 
 /**
- * 회사의 전산실 매핑 조회 (GET)
+ * 회사의 서버실 매핑 조회 (GET)
  * @param companyId 회사 ID
  */
-export const getCompanyDataCenters = async (companyId: number): Promise<ServerRoom[]> => {
-  const response = await client.get<CompanyDataCentersResponse>(
-    `/company-datacenters/company/${companyId}`
+export const getCompanyServerRooms = async (companyId: number): Promise<ServerRoom[]> => {
+  const response = await client.get<CompanyServerRoomsResponse>(
+    `/company-serverrooms/company/${companyId}`
   );
   
   // API 응답을 ServerRoom 형태로 변환
   return response.data.result.map((item) => ({
-    id: item.dataCenterId.toString(),
-    name: item.dataCenterName,
+    id: item.serverRoomId.toString(),
+    name: item.serverRoomName,
     code: item.code || "N/A",
     location: item.location || "위치 정보 없음",
     description: item.description || "설명 없음",

@@ -32,10 +32,10 @@ export default function DataTable<TData>({
   const columnCount = columns.length;
 
   return (
-    <div className="overflow-x-auto bg-gray-800 rounded-lg shadow-md border border-gray-700">
-      <table className="min-w-full divide-y divide-gray-700">
+    <div className="overflow-x-auto rounded-lg border border-slate-300/40">
+      <table className="min-w-full">
         {/* 테이블 헤더 */}
-        <thead className="bg-gray-900">
+        <thead className="bg-gray-600">
           {table.getHeaderGroups().map((headerGroup: HeaderGroup<TData>) => (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
@@ -56,7 +56,7 @@ export default function DataTable<TData>({
         </thead>
 
         {/* 테이블 바디 */}
-        <tbody className="bg-gray-800 divide-y divide-gray-700">
+        <tbody className="backdrop-blur-2xl bg-gray-600/50 divide-y divide-gray-700">
           {isLoading ? (
             // 로딩 상태: 스켈레톤 UI
             <TableSkeleton rows={skeletonRows} columns={columnCount} />
