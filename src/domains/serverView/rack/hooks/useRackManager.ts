@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import type { Equipments, FloatingDevice, DeviceCard } from "../types";
 import { checkCollision } from "../utils/rackCollisionDetection";
 import { useGetRackEquipments } from "./useGetRackEquipments";
@@ -11,22 +11,19 @@ import type { PostEquipmentRequest } from "../api/postRackEquipments";
 interface UseRackManagerProps {
   rackId: number;
   params?: GetRackEquipmentsParams;
-  initialDevices?: Equipments[];
   frontView?: boolean;
 }
 export function useRackManager({
   rackId,
   params,
-  initialDevices = [],
   frontView = true,
 }: UseRackManagerProps) {
-  const [installedDevices, setInstalledDevices] = useState<Equipments[]>([]);
+  const [tempDevices, setTempDevices] = useState<Equipments[]>([]);
   const [floatingDevice, setFloatingDevice] = useState<FloatingDevice | null>(
     null
   );
   const [resetKey, setResetKey] = useState(0);
   const [editingDeviceId, setEditingDeviceId] = useState<number | null>(null);
-  //장비 입력
   const [tempDeviceName, setTempDeviceName] = useState("");
 
   //GET
@@ -41,13 +38,7 @@ export function useRackManager({
   //UPDATE
   const { mutate: updateEquipment } = useUpdateRackEquipments();
 
-  useEffect(() => {
-    if (data?.data) {
-      setInstalledDevices(data.data);
-    } else if (initialDevices.length > 0) {
-      setInstalledDevices(initialDevices);
-    }
-  }, [data?.data, initialDevices]);
+  const installedDevices = [...(data?.data || []), ...tempDevices];
 
   // 카드 클릭 핸들러
   const handleCardClick = useCallback((card: DeviceCard) => {
@@ -65,49 +56,42 @@ export function useRackManager({
   // 드래그 종료 핸들러
   const handleDeviceDragEnd = useCallback(
     (deviceId: number, newPosition: number) => {
-      setInstalledDevices((prevDevices) => {
-        const draggedDevice = prevDevices.find(
-          (d) => d.equipmentId === deviceId
-        );
-        if (!draggedDevice) return prevDevices;
+      const draggedDevice = installedDevices.find(
+        (d) => d.equipmentId === deviceId
+      );
+      if (!draggedDevice) return;
 
-        if (draggedDevice.startUnit === newPosition) {
-          return prevDevices;
-        }
+      if (draggedDevice.startUnit === newPosition) {
+        return;
+      }
 
-        const hasCollision = checkCollision(
-          {
-            position: newPosition,
-            height: draggedDevice.unitSize,
-          },
-          prevDevices,
-          deviceId
-        );
-        if (hasCollision) {
-          console.log("이동할 수 없습니다. 다른 장비와 겹칩니다.");
-          setResetKey((prev) => prev + 1);
-          return prevDevices;
-        }
+      const hasCollision = checkCollision(
+        {
+          position: newPosition,
+          height: draggedDevice.unitSize,
+        },
+        installedDevices,
+        deviceId
+      );
+      if (hasCollision) {
+        console.log("이동할 수 없습니다. 다른 장비와 겹칩니다.");
+        setResetKey((prev) => prev + 1);
+        return;
+      }
 
-        const updated = prevDevices.map((d) =>
-          d.equipmentId === deviceId ? { ...d, startUnit: newPosition } : d
-        );
-
-        updateEquipment({
-          id: deviceId,
-          data: {
-            rackId,
-            equipmentName: draggedDevice.equipmentName,
-            equipmentType: draggedDevice.equipmentType,
-            startUnit: newPosition,
-            unitSize: draggedDevice.unitSize,
-            status: draggedDevice.status,
-          },
-        });
-        return updated;
+      updateEquipment({
+        id: deviceId,
+        data: {
+          rackId,
+          equipmentName: draggedDevice.equipmentName,
+          equipmentType: draggedDevice.equipmentType,
+          startUnit: newPosition,
+          unitSize: draggedDevice.unitSize,
+          status: draggedDevice.status,
+        },
       });
     },
-    [updateEquipment, rackId]
+    [updateEquipment, rackId, installedDevices]
   );
 
   // 랙 클릭 핸들러
@@ -116,7 +100,17 @@ export function useRackManager({
       setFloatingDevice((prevFloating) => {
         if (!prevFloating) return null;
 
-        const currentEditingId = editingDeviceId;
+        const hasCollision = checkCollision(
+          {
+            position,
+            height: prevFloating.card.height,
+          },
+          installedDevices
+        );
+        if (hasCollision) {
+          return prevFloating;
+        }
+
         const tempId = Date.now();
         const newDevice: Equipments = {
           equipmentId: tempId,
@@ -133,26 +127,10 @@ export function useRackManager({
           ipAddress: "0.0.0.0",
           powerConsumption: 500.0,
         };
-        setInstalledDevices((prevDevices) => {
-          const hasCollision = checkCollision(
-            {
-              position,
-              height: prevFloating.card.height,
-            },
-            prevDevices
-          );
-          if (hasCollision) {
-            return prevDevices;
-          }
-
-          const filteredDevices =
-            currentEditingId !== null &&
-            prevDevices
-              .find((d) => d.equipmentId === currentEditingId)
-              ?.equipmentCode.startsWith("TEMP-")
-              ? prevDevices.filter((d) => d.equipmentId !== currentEditingId)
-              : prevDevices;
-
+        setTempDevices((prevDevices) => {
+          const filteredDevices = editingDeviceId
+            ? prevDevices.filter((d) => d.equipmentId !== editingDeviceId)
+            : prevDevices;
           return [...filteredDevices, newDevice];
         });
 
@@ -163,7 +141,7 @@ export function useRackManager({
         return null;
       });
     },
-    [frontView, editingDeviceId]
+    [frontView, editingDeviceId, installedDevices]
   );
 
   const handleDeviceNameChange = useCallback((name: string) => {
@@ -180,13 +158,6 @@ export function useRackManager({
         return;
       }
 
-      setInstalledDevices((prev) =>
-        prev.map((d) =>
-          d.equipmentId === device.equipmentId
-            ? { ...d, equipmentName: finalName }
-            : d
-        )
-      );
       setEditingDeviceId(null);
       setTempDeviceName("");
 
@@ -200,16 +171,14 @@ export function useRackManager({
       };
 
       postEquipment(requestData, {
-        onSuccess: (response) => {
-          setInstalledDevices((prev) =>
-            prev.map((d) =>
-              d.equipmentId === device.equipmentId ? { ...response.data } : d
-            )
+        onSuccess: () => {
+          setTempDevices((prev) =>
+            prev.filter((d) => d.equipmentId !== d.equipmentId)
           );
         },
         onError: (error) => {
           console.error("장비 생성 실패:", error);
-          setInstalledDevices((prev) =>
+          setTempDevices((prev) =>
             prev.filter((d) => d.equipmentId !== device.equipmentId)
           );
         },
@@ -219,7 +188,7 @@ export function useRackManager({
   );
 
   const handleDeviceNameCancel = useCallback((deviceId: number) => {
-    setInstalledDevices((prevDevices) =>
+    setTempDevices((prevDevices) =>
       prevDevices.filter((device) => device.equipmentId !== deviceId)
     );
     setEditingDeviceId(null);
