@@ -50,8 +50,14 @@ export const useUpdateRackEquipments = () => {
       }
       console.log("장비 수정 성공");
     },
-    onError: (error) => {
+    onError: (error, _, context) => {
       console.error("장비 수정 실패", error);
+      if (context?.previousData) {
+        queryClient.setQueryData(
+          ["rackEquipments", context.rackId],
+          context.previousData
+        );
+      }
     },
   });
   return mutation;
