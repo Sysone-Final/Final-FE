@@ -1,5 +1,5 @@
 import { Stage, Layer, Rect, Line, Text } from "react-konva";
-import { useMemo, Fragment } from "react";
+import { useMemo, Fragment, useCallback } from "react";
 import type { KonvaEventObject } from "konva/lib/Node";
 import type { Equipments, FloatingDevice } from "../types";
 import Device from "./Device";
@@ -86,12 +86,15 @@ function Rack({
     }
   };
 
-  const handleDeviceNameConfirm = (deviceId: number, name: string) => {
-    const device = devices.find((d) => d.equipmentId === deviceId);
-    if (!device) return;
+  const handleDeviceNameConfirm = useCallback(
+    (deviceId: number, name: string) => {
+      const device = devices.find((d) => d.equipmentId === deviceId);
+      if (!device) return;
 
-    onDeviceNameConfirm(device, name);
-  };
+      onDeviceNameConfirm(device, name);
+    },
+    [devices, onDeviceNameConfirm]
+  );
 
   return (
     <div
