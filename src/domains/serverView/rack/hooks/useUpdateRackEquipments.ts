@@ -40,6 +40,7 @@ export const useUpdateRackEquipments = () => {
       return { previousData, rackId: data.rackId };
     },
 
+    retry: false,
     onSuccess: (_, variables) => {
       if (variables.data?.rackId) {
         queryClient.invalidateQueries({

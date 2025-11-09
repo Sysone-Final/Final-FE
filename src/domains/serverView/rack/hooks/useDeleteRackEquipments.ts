@@ -22,6 +22,7 @@ export const useDeleteEquipments = () => {
 
       return { previousData };
     },
+    retry: false,
 
     onError: (_, __, context) => {
       if (context?.previousData) {
