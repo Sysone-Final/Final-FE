@@ -116,6 +116,7 @@ export function useRackManager({
       setFloatingDevice((prevFloating) => {
         if (!prevFloating) return null;
 
+        const currentEditingId = editingDeviceId;
         const tempId = Date.now();
         const newDevice: Equipments = {
           equipmentId: tempId,
@@ -143,7 +144,16 @@ export function useRackManager({
           if (hasCollision) {
             return prevDevices;
           }
-          return [...prevDevices, newDevice];
+
+          const filteredDevices =
+            currentEditingId !== null &&
+            prevDevices
+              .find((d) => d.equipmentId === currentEditingId)
+              ?.equipmentCode.startsWith("TEMP-")
+              ? prevDevices.filter((d) => d.equipmentId !== currentEditingId)
+              : prevDevices;
+
+          return [...filteredDevices, newDevice];
         });
 
         // 편집 모드 활성화
@@ -153,7 +163,7 @@ export function useRackManager({
         return null;
       });
     },
-    [frontView]
+    [frontView, editingDeviceId]
   );
 
   const handleDeviceNameChange = useCallback((name: string) => {
