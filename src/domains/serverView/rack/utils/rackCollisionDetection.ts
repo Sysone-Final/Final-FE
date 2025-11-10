@@ -1,4 +1,4 @@
-import type { RackDevice } from "../types";
+import type { Equipments } from "../types";
 
 // 두 장비가 겹치는 지 확인
 function Overlapping(
@@ -14,7 +14,7 @@ export function checkCollision(
     position: number;
     height: number;
   },
-  existingDevices: RackDevice[],
+  existingDevices: Equipments[],
   excludeDeviceId?: number,
 ): boolean {
   const newRange = {
@@ -45,9 +45,9 @@ export function findCollidingDevice(
     position: number;
     height: number;
   },
-  existingDevices: RackDevice[],
+  existingDevices: Equipments[],
   excludeDeviceId?: number,
-): RackDevice | null {
+): Equipments | null {
   const newRange = {
     bottom: newDevice.position,
     top: newDevice.position + newDevice.height - 1,
