@@ -55,6 +55,7 @@ function Device({
   const imageUrls =
     deviceImageMap[device.equipmentType] || deviceImageMap.SERVER;
   const imageUrl = frontView ? imageUrls.front : imageUrls.back;
+
   const image = useImageLoad(imageUrl);
 
   const deleteImage = useImageLoad(deleteIcon);
@@ -78,7 +79,7 @@ function Device({
       onDragEnd={(e) => {
         setIsDragging(false);
         if (onDragEnd && !isFloating && editMode) {
-          onDragEnd(device.equipmentId, e.target.y());
+          onDragEnd(device.id, e.target.y());
         }
       }}
       onDragMove={(e) => {
@@ -122,16 +123,14 @@ function Device({
             <input
               type="text"
               value={tempDeviceName}
-              onChange={(e) =>
-                onDeviceNameChange?.(device.equipmentId, e.target.value)
-              }
+              onChange={(e) => onDeviceNameChange?.(device.id, e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
                   onDeviceNameConfirm?.(device);
                 } else if (e.key === "Escape") {
                   e.preventDefault();
-                  onDeviceNameCancel?.(device.equipmentId);
+                  onDeviceNameCancel?.(device.id);
                 }
               }}
               placeholder="장비명 입력"
@@ -155,7 +154,7 @@ function Device({
             y={5}
             width={20}
             height={20}
-            onClick={() => onDeviceNameCancel?.(device.equipmentId)}
+            onClick={() => onDeviceNameCancel?.(device.id)}
           />
         </>
       ) : (
@@ -174,7 +173,7 @@ function Device({
           y={5}
           width={20}
           height={20}
-          onClick={() => onDelete?.(device.equipmentId)}
+          onClick={() => onDelete?.(device.id)}
         />
       )}
     </Group>

@@ -6,19 +6,24 @@ import {
 import type { Equipments } from "../types";
 
 interface RackEquipmentResponse {
-  status: number;
-  message: string;
-  data: Equipments[];
+  status_code: number;
+  status_message: string;
+  result: Equipments[];
 }
 
 export const useGetRackEquipments = (
   rackId: number,
   params?: GetRackEquipmentsParams
 ) => {
-  const { data, isLoading, error } = useQuery<RackEquipmentResponse>({
+  const query = useQuery<RackEquipmentResponse>({
     queryKey: ["rackEquipments", rackId, params],
     queryFn: () => getRackEquipments(rackId, params),
     enabled: !!rackId,
   });
-  return { data, isLoading, error };
+
+  return {
+    data: query.data,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
 };

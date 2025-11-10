@@ -20,7 +20,7 @@ interface BabylonDatacenterStore {
   currentServerRoomId: string | null;
   initializeServerRoom: (
     serverRoomId: string,
-    equipmentList: Equipment3D[],
+    equipmentList: Equipment3D[]
   ) => void;
 
   // 다중 선택 영역
@@ -31,19 +31,20 @@ interface BabylonDatacenterStore {
     endY: number;
   } | null;
   setSelectionArea: (
-    area: { startX: number; startY: number; endX: number; endY: number } | null,
+    area: { startX: number; startY: number; endX: number; endY: number } | null
   ) => void;
   selectEquipmentInArea: (
     startGridX: number,
     startGridY: number,
     endGridX: number,
-    endGridY: number,
+    endGridY: number
   ) => void;
 
   // 랙 모달 상태
   isRackModalOpen: boolean;
   selectedServerId: string | null;
-  openRackModal: (serverId: string) => void;
+  selectedServerRoomId: number | null;
+  openRackModal: (serverId: string, serverRoomId: number) => void;
   closeRackModal: () => void;
 
   // 장비 관리
@@ -52,7 +53,7 @@ interface BabylonDatacenterStore {
     id: string,
     gridX: number,
     gridY: number,
-    gridZ?: number,
+    gridZ?: number
   ) => boolean; // boolean 반환으로 변경
   updateMultipleEquipmentPositions: (
     updates: {
@@ -61,7 +62,7 @@ interface BabylonDatacenterStore {
       gridY: number;
       originalGridX: number;
       originalGridY: number;
-    }[],
+    }[]
   ) => boolean; // boolean 반환 및 타입 변경
   updateEquipmentRotation: (id: string, rotation: number) => void;
   rotateEquipment90: (id: string, clockwise?: boolean) => void; // 90도 회전 함수 추가
@@ -76,7 +77,7 @@ interface BabylonDatacenterStore {
   isPositionOccupied: (
     gridX: number,
     gridY: number,
-    excludeId?: string,
+    excludeId?: string
   ) => boolean;
   isValidPosition: (gridX: number, gridY: number) => boolean;
 }
@@ -141,13 +142,22 @@ export const useBabylonDatacenterStore = create<BabylonDatacenterStore>(
     // 랙 모달 상태
     isRackModalOpen: false,
     selectedServerId: null,
+    selectedServerRoomId: null,
 
-    openRackModal: (serverId) => {
-      set({ isRackModalOpen: true, selectedServerId: serverId });
+    openRackModal: (serverId: string, serverRoomId: number) => {
+      set({
+        isRackModalOpen: true,
+        selectedServerId: serverId,
+        selectedServerRoomId: serverRoomId,
+      });
     },
 
     closeRackModal: () => {
-      set({ isRackModalOpen: false, selectedServerId: null });
+      set({
+        isRackModalOpen: false,
+        selectedServerId: null,
+        selectedServerRoomId: null,
+      });
     },
 
     // 장비 추가
@@ -182,7 +192,7 @@ export const useBabylonDatacenterStore = create<BabylonDatacenterStore>(
       const { isValidPosition, isPositionOccupied, equipment } = get();
 
       console.log(
-        `🔧 [Store] updateEquipmentPosition 호출 - id: ${id}, pos: (${gridX}, ${gridY})`,
+        `🔧 [Store] updateEquipmentPosition 호출 - id: ${id}, pos: (${gridX}, ${gridY})`
       );
 
       // 현재 장비의 위치 가져오기
@@ -206,12 +216,12 @@ export const useBabylonDatacenterStore = create<BabylonDatacenterStore>(
       const occupied = isPositionOccupied(gridX, gridY, id);
 
       console.log(
-        `🔧 [Store] isValidPosition: ${valid}, isPositionOccupied: ${occupied}`,
+        `🔧 [Store] isValidPosition: ${valid}, isPositionOccupied: ${occupied}`
       );
 
       if (!valid || occupied) {
         console.log(
-          `❌ [Store] 위치 업데이트 거부 - valid: ${valid}, occupied: ${occupied}`,
+          `❌ [Store] 위치 업데이트 거부 - valid: ${valid}, occupied: ${occupied}`
         );
         return false;
       }
@@ -219,7 +229,7 @@ export const useBabylonDatacenterStore = create<BabylonDatacenterStore>(
       console.log(`✅ [Store] 위치 업데이트 승인`);
       set((state) => ({
         equipment: state.equipment.map((eq) =>
-          eq.id === id ? { ...eq, gridX, gridY, gridZ } : eq,
+          eq.id === id ? { ...eq, gridX, gridY, gridZ } : eq
         ),
       }));
 
@@ -231,7 +241,7 @@ export const useBabylonDatacenterStore = create<BabylonDatacenterStore>(
       const { isValidPosition, isPositionOccupied } = get();
 
       console.log(
-        `🔧 [Store] updateMultipleEquipmentPositions 호출 - ${updates.length}개 장비`,
+        `🔧 [Store] updateMultipleEquipmentPositions 호출 - ${updates.length}개 장비`
       );
 
       // 모든 장비의 유효성 검사
@@ -249,19 +259,19 @@ export const useBabylonDatacenterStore = create<BabylonDatacenterStore>(
         const occupied = isPositionOccupied(
           update.gridX,
           update.gridY,
-          update.id,
+          update.id
         );
 
         if (!valid) {
           console.log(
-            `❌ [Store] 다중 이동 거부 - 장비 ${update.id}가 격자 범위를 벗어남`,
+            `❌ [Store] 다중 이동 거부 - 장비 ${update.id}가 격자 범위를 벗어남`
           );
           return false;
         }
 
         if (occupied) {
           console.log(
-            `❌ [Store] 다중 이동 거부 - 장비 ${update.id}의 목표 위치가 점유됨`,
+            `❌ [Store] 다중 이동 거부 - 장비 ${update.id}의 목표 위치가 점유됨`
           );
           return false;
         }
@@ -289,7 +299,7 @@ export const useBabylonDatacenterStore = create<BabylonDatacenterStore>(
     updateEquipmentRotation: (id, rotation) => {
       set((state) => ({
         equipment: state.equipment.map((eq) =>
-          eq.id === id ? { ...eq, rotation } : eq,
+          eq.id === id ? { ...eq, rotation } : eq
         ),
       }));
     },
@@ -393,7 +403,7 @@ export const useBabylonDatacenterStore = create<BabylonDatacenterStore>(
           eq.gridX >= minX &&
           eq.gridX <= maxX &&
           eq.gridY >= minY &&
-          eq.gridY <= maxY,
+          eq.gridY <= maxY
       );
 
       const selectedIds = equipmentInArea.map((eq) => eq.id);
@@ -408,7 +418,7 @@ export const useBabylonDatacenterStore = create<BabylonDatacenterStore>(
     isPositionOccupied: (gridX, gridY, excludeId) => {
       const { equipment } = get();
       return equipment.some(
-        (eq) => eq.id !== excludeId && eq.gridX === gridX && eq.gridY === gridY,
+        (eq) => eq.id !== excludeId && eq.gridX === gridX && eq.gridY === gridY
       );
     },
 
@@ -422,5 +432,5 @@ export const useBabylonDatacenterStore = create<BabylonDatacenterStore>(
         gridY < gridConfig.rows
       );
     },
-  }),
+  })
 );
