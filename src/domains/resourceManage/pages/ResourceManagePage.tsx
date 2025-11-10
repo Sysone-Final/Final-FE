@@ -22,7 +22,7 @@ import {
  useDeleteResource,
  useDeleteMultipleResources,
  useUpdateMultipleResourceStatus,
- useGetDatacenters,
+ useGetServerRooms,
 } from '../hooks/useResourceQueries';
 import type { ResourceListFilters, Resource, ResourceTableMeta } from '../types/resource.types';
 import { useDebounce } from '../hooks/useDebounce';
@@ -39,7 +39,7 @@ export default function ResourceManagePage() {
  const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
  const [isModalOpen, setIsModalOpen] = useState(false);
- const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null);
+ const [selectedResourceId, setSelectedResourceId] = useState<number | null>(null);
  const [sorting, setSorting] = useState<SortingState>([]);
  
 
@@ -48,7 +48,7 @@ export default function ResourceManagePage() {
  const [keyword, setkeyword] = useState('');
  const [statusFilter, setStatusFilter] = useState('');
  const [typeFilter, setTypeFilter] = useState("");
-const [datacenterFilter, setDatacenterFilter] = useState("");
+const [serverRoomFilter, setServerRoomFilter] = useState("");
 const [errorToastId, setErrorToastId] = useState<string | null>(null);
  
  // API 호출 지연을 위한 Debounce
@@ -59,8 +59,8 @@ const [errorToastId, setErrorToastId] = useState<string | null>(null);
   keyword: debouncedkeyword,
   status: statusFilter,
   type: typeFilter,
-  datacenterId: datacenterFilter,
- }), [debouncedkeyword, statusFilter, typeFilter, datacenterFilter], 
+    serverRoomId: serverRoomFilter,
+  }), [debouncedkeyword, statusFilter, typeFilter, serverRoomFilter], 
   );
 
  // --- 데이터 페칭 ---
@@ -103,8 +103,8 @@ const [errorToastId, setErrorToastId] = useState<string | null>(null);
  }
 }, [isError, isFetching, refetch, errorToastId]);
 
-const { data: datacenters, isLoading: isLoadingDatacenters } =
-    useGetDatacenters();
+  const { data: serverRooms, isLoading: isLoadingServerRooms } =
+    useGetServerRooms();
 
 const [deleteModalState, setDeleteModalState] = useState<{
  isOpen: boolean;
@@ -131,7 +131,7 @@ const [deleteModalState, setDeleteModalState] = useState<{
  };
 
 
-const deleteResourceHandler = (resourceId: string) => {
+const deleteResourceHandler = (resourceId: number) => {
  deleteResourceMutation.mutate(resourceId);
 };
 const openDeleteModal = (resource: Resource) => {
@@ -383,10 +383,10 @@ const isMutating =
           onStatusChange={setStatusFilter}
           typeFilter={typeFilter}
           onTypeChange={setTypeFilter}
-          datacenterFilter={datacenterFilter}
-          onDatacenterChange={setDatacenterFilter}
-          datacenters={datacenters ?? []}
-          isLoadingDatacenters={isLoadingDatacenters}
+        serverRoomFilter={serverRoomFilter}
+        onServerRoomChange={setServerRoomFilter}
+        serverRooms={serverRooms ?? []}
+        isLoadingServerRooms={isLoadingServerRooms}
         />
 
     {/* 테이블 (위아래 간격 추가) */}
