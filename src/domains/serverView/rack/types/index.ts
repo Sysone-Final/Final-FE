@@ -19,14 +19,23 @@ export interface Equipments {
   status: string;
   startUnit: number;
   unitSize: number;
-  rackName: string;
-  rackId: number;
-  serverRoomId: number;
   modelName: string | null;
   manufacturer: string | null;
   ipAddress: string | null;
   positionType: string;
   powerConsumption: number | null;
+}
+
+export interface Rack {
+  rackName: string;
+  rackId: number;
+  serverRoomId: number;
+}
+
+export interface RackEquipmentsResult {
+  rack: Rack;
+  equipments: Equipments[];
+  totalEquipmentCount: number;
 }
 
 export interface DeviceCard {

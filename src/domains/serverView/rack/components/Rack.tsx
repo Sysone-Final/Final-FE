@@ -45,8 +45,6 @@ function Rack({
   onDeviceNameChange,
   onDeviceNameConfirm,
   onDeviceNameCancel,
-  rackId,
-  serverRoomId,
 }: RackProps) {
   const { width: rackWidth, unitHeight } = RACK_CONFIG;
 
@@ -189,10 +187,7 @@ function Rack({
                 manufacturer: "Unknown",
                 modelName: "Unknown",
                 ipAddress: "0.0.0.0",
-                rackName: "RACK_A02",
                 powerConsumption: 500.0,
-                rackId: rackId,
-                serverRoomId: serverRoomId,
               }}
               y={floatingInfo.y}
               height={floatingInfo.height}

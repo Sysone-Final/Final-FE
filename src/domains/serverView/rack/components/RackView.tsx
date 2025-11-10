@@ -25,8 +25,7 @@ function RackView({ rackName, serverRoomId }: RackViewProps) {
     frontView,
   });
 
-  const displayRackName =
-    rackManager.installedDevices[0]?.rackName || rackName || "N/A";
+  const displayRackName = rackManager.rack?.rackName || rackName || "N/A";
 
   if (rackManager.isLoading) {
     return (

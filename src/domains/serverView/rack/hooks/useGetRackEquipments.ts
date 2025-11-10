@@ -3,12 +3,12 @@ import {
   getRackEquipments,
   type GetRackEquipmentsParams,
 } from "../api/getRackEquipments";
-import type { Equipments } from "../types";
+import type { RackEquipmentsResult } from "../types";
 
 interface RackEquipmentResponse {
   status_code: number;
   status_message: string;
-  result: Equipments[];
+  result: RackEquipmentsResult;
 }
 
 export const useGetRackEquipments = (
@@ -23,6 +23,9 @@ export const useGetRackEquipments = (
 
   return {
     data: query.data,
+    equipments: query.data?.result?.equipments || [],
+    rack: query.data?.result?.rack,
+    totalCount: query.data?.result?.totalEquipmentCount,
     isLoading: query.isLoading,
     error: query.error,
   };

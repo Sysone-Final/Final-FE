@@ -16,7 +16,6 @@ interface UseRackManagerProps {
 }
 export function useRackManager({
   rackId,
-  serverRoomId,
   params,
   frontView = true,
 }: UseRackManagerProps) {
@@ -31,7 +30,10 @@ export function useRackManager({
   );
 
   //GET
-  const { data, isLoading, error } = useGetRackEquipments(rackId || 0, params);
+  const { equipments, rack, isLoading, error } = useGetRackEquipments(
+    rackId || 0,
+    params
+  );
 
   //POST
   const { mutate: postEquipment } = usePostEquipment();
@@ -43,9 +45,9 @@ export function useRackManager({
   const { mutate: updateEquipment } = useUpdateRackEquipments();
 
   const installedDevices = useMemo(() => {
-    const devices = [...(data?.result || []), ...tempDevices];
+    const devices = [...(equipments || []), ...tempDevices];
     return devices;
-  }, [data?.result, tempDevices]);
+  }, [equipments, tempDevices]);
 
   // 카드 클릭 핸들러
   const handleCardClick = useCallback((card: DeviceCard) => {
@@ -79,7 +81,6 @@ export function useRackManager({
         deviceId
       );
       if (hasCollision) {
-        console.log("이동할 수 없습니다. 다른 장비와 겹칩니다.");
         setResetKey((prev) => prev + 1);
         return;
       }
@@ -126,13 +127,10 @@ export function useRackManager({
           startUnit: position,
           positionType: frontView ? "BACK" : "FRONT",
           unitSize: prevFloating.card.height,
-          modelName: "Unknown",
-          manufacturer: "Unknown",
-          rackName: "RACK-A01",
-          ipAddress: "0.0.0.0",
-          powerConsumption: 500.0,
-          rackId: rackId,
-          serverRoomId: serverRoomId,
+          modelName: null,
+          manufacturer: null,
+          ipAddress: null,
+          powerConsumption: null,
         };
         setTempDevices((prevDevices) => {
           const filteredDevices = editingDeviceId
@@ -250,6 +248,7 @@ export function useRackManager({
     tempDeviceName,
     isLoading,
     error,
+    rack,
     handleCardClick,
     handleMouseMove,
     handleDeviceDragEnd,
