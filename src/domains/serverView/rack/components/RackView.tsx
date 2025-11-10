@@ -18,7 +18,10 @@ function RackView({ rackName }: RackViewProps = {}) {
     ? parseInt(rackName.split("-").pop() || "0", 10)
     : undefined;
 
-  const rackManager = useRackManager({ rackId });
+  const rackManager = useRackManager({
+    rackId: rackId || 0,
+    frontView,
+  });
 
   if (rackManager.isLoading) {
     return (
@@ -87,11 +90,11 @@ function RackView({ rackName }: RackViewProps = {}) {
                   onMouseMove={rackManager.handleMouseMove}
                   onRackClick={rackManager.handleRackClick}
                   onDeviceDragEnd={rackManager.handleDeviceDragEnd}
-                  onDeviceDelete={rackManager.removeDevice}
+                  onDeviceDelete={rackManager.handleDeviceDelete}
                   frontView={!frontView}
                   editMode={editMode}
                   editingDeviceId={rackManager.editingDeviceId}
-                  tempDeviceName={rackManager.tempDeviceName}
+                  getDeviceName={rackManager.getDeviceName}
                   onDeviceNameChange={rackManager.handleDeviceNameChange}
                   onDeviceNameConfirm={rackManager.handleDeviceNameConfirm}
                   onDeviceNameCancel={rackManager.handleDeviceNameCancel}
