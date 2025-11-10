@@ -25,6 +25,8 @@ interface RackProps {
   onDeviceNameChange: (deviceId: number, name: string) => void;
   onDeviceNameConfirm: (device: Equipments) => void;
   onDeviceNameCancel: (deviceId: number) => void;
+  rackId: number;
+  serverRoomId: number;
 }
 
 const FLOATING_DEVICE_ID = -1;
@@ -61,7 +63,7 @@ function Rack({
 
   const handleDeviceDragEnd = useCallback(
     (deviceId: number, newY: number) => {
-      const draggedDevice = devices.find((d) => d.equipmentId === deviceId);
+      const draggedDevice = devices.find((d) => d.id === deviceId);
       if (!draggedDevice) return;
 
       const newPosition = calculateDraggedPosition(
@@ -151,7 +153,7 @@ function Rack({
 
             return (
               <Device
-                key={device.equipmentId}
+                key={device.id}
                 device={device}
                 y={y}
                 height={height}
@@ -161,8 +163,8 @@ function Rack({
                 onDelete={onDeviceDelete}
                 frontView={frontView}
                 editMode={editMode}
-                isEditing={editingDeviceId === device.equipmentId}
-                tempDeviceName={getDeviceName(device.equipmentId)}
+                isEditing={editingDeviceId === device.id}
+                tempDeviceName={getDeviceName(device.id)}
                 onDeviceNameChange={onDeviceNameChange}
                 onDeviceNameConfirm={onDeviceNameConfirm}
                 onDeviceNameCancel={onDeviceNameCancel}
@@ -174,7 +176,7 @@ function Rack({
           {floatingDevice && floatingInfo && (
             <Device
               device={{
-                equipmentId: FLOATING_DEVICE_ID,
+                id: FLOATING_DEVICE_ID,
                 equipmentName: floatingDevice.card.label,
                 equipmentCode: `TEMP-${Date.now()}`,
                 equipmentType: floatingDevice.card.type,
@@ -185,7 +187,6 @@ function Rack({
                 manufacturer: "Unknown",
                 modelName: "Unknown",
                 ipAddress: "0.0.0.0",
-                rackName: "RACK_A02",
                 powerConsumption: 500.0,
               }}
               y={floatingInfo.y}

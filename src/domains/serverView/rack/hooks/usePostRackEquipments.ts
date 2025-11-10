@@ -9,8 +9,10 @@ export const usePostEquipment = () => {
     mutationFn: (equipment: PostEquipmentRequest) =>
       postRackEquipment(equipment),
     retry: false,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["rackEquipments"] });
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["rackEquipments", variables.rackId],
+      });
     },
     onError: (error) => {
       console.error("장비 생성 실패:", error);

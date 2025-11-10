@@ -33,9 +33,8 @@ export const useUpdateRackEquipments = () => {
       queryClient.setQueryData<Equipments[]>(
         ["rackEquipments", data.rackId],
         (old) =>
-          old?.map((item) =>
-            item.equipmentId === id ? { ...item, ...data } : item
-          ) || []
+          old?.map((item) => (item.id === id ? { ...item, ...data } : item)) ||
+          []
       );
       return { previousData, rackId: data.rackId };
     },
