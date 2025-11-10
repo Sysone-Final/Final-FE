@@ -179,6 +179,12 @@ export function useRackManager({
         return;
       }
 
+      setTempDevices((prev) =>
+        prev.map((d) =>
+          d.id === device.id ? { ...d, equipmentName: finalName } : d
+        )
+      );
+
       setEditingDeviceId(null);
 
       const requestData: PostEquipmentRequest = {
