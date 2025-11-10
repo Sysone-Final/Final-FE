@@ -377,7 +377,7 @@ const isMutating =
    <main className="flex-1 overflow-y-auto p-8">
     {/* 필터 (제목과 버튼 없음) */}
     <ResourceFilters
-          keyword={keyword}
+          searchTerm={keyword}
           onSearchChange={setkeyword}
           statusFilter={statusFilter}
           onStatusChange={setStatusFilter}

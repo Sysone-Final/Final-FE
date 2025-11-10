@@ -655,11 +655,11 @@ export default function ResourceWizardModal({
 
 if (resourceId) {
   updateResourceMutation.mutate(
-   { id: resourceId, data: data }, 
+   { id: resourceId, data: data as Resource }, 
    { onSuccess: handleClose }
   );
  } else {
-  createResourceMutation.mutate(data, { onSuccess: handleClose }); 
+  createResourceMutation.mutate(data as Resource, { onSuccess: handleClose }); 
  }
  };
 

@@ -4,6 +4,8 @@ export const MOCK_SERVER_ROOMS: ServerRoom[] = [
   {
     id: "a1",
     name: "IDC A-Zone, Floor 3",
+    code: "IDC-A3",
+    description: "Primary data center in Seoul",
     location: "Seoul, South Korea",
     rackCount: 32,
     status: "Normal",
@@ -11,6 +13,8 @@ export const MOCK_SERVER_ROOMS: ServerRoom[] = [
   {
     id: "b2",
     name: "IDC B-Zone, Floor 2",
+    code: "IDC-B2",
+    description: "Secondary data center in Tokyo",
     location: "Tokyo, Japan",
     rackCount: 24,
     status: "Warning",
@@ -18,6 +22,8 @@ export const MOCK_SERVER_ROOMS: ServerRoom[] = [
   {
     id: "c3",
     name: "IDC C-Zone, Floor 1",
+    code: "IDC-C1",
+    description: "Regional hub in Singapore",
     location: "Singapore",
     rackCount: 48,
     status: "Normal",
@@ -25,6 +31,8 @@ export const MOCK_SERVER_ROOMS: ServerRoom[] = [
   {
     id: "d4",
     name: "IDC D-Zone, Floor 4",
+    code: "IDC-D4",
+    description: "Backup facility in Hong Kong",
     location: "Hong Kong",
     rackCount: 16,
     status: "Critical",
@@ -32,6 +40,8 @@ export const MOCK_SERVER_ROOMS: ServerRoom[] = [
   {
     id: "e5",
     name: "IDC E-Zone, Floor 5",
+    code: "IDC-E5",
+    description: "Expansion site in Mumbai",
     location: "Mumbai, India",
     rackCount: 28,
     status: "Normal",
@@ -39,6 +49,8 @@ export const MOCK_SERVER_ROOMS: ServerRoom[] = [
   {
     id: "f6",
     name: "IDC F-Zone, Floor 6",
+    code: "IDC-F6",
+    description: "Regional center in Sydney",
     location: "Sydney, Australia",
     rackCount: 20,
     status: "Maintenance",
