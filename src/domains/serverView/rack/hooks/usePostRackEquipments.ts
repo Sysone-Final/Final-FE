@@ -8,7 +8,7 @@ export const usePostEquipment = () => {
   const mutation = useMutation({
     mutationFn: (equipment: PostEquipmentRequest) =>
       postRackEquipment(equipment),
-
+    retry: false,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["rackEquipments"] });
     },

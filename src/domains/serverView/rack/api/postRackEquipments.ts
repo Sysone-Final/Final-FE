@@ -3,16 +3,9 @@ import type { Equipments } from "../types";
 
 export type PostEquipmentRequest = Pick<
   Equipments,
-  | "equipmentName"
-  | "equipmentType"
-  | "startUnit"
-  | "unitSize"
-  | "positionType"
-  | "status"
+  "equipmentName" | "equipmentType" | "startUnit" | "unitSize" | "status"
 > & {
   rackId: number;
-  createdAt: Date;
-  del_yn: "N" | "Y";
 };
 
 export interface PostEquipmentResponse {

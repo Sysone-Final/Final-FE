@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
@@ -10,151 +9,125 @@ import {
   getResourceById,
   getDatacenters,
   getRacksByDatacenter,
+  updateMultipleResourceStatus,
 } from "../api/resourceManageApi";
 import type {
   ResourceListFilters,
   Datacenter,
   Rack,
   Resource,
-  PaginatedResourceResponse, //  PaginatedResourceResponse 타입을 import해야 합니다.
+  ResourceStatus,
+  PaginatedResourceResponse,
 } from "../types/resource.types";
 
-//  true : 목업 데이터를 사용 (API 호출 안 함)
-//  false: 실제 API를 호출
-//
-const USE_MOCK_DATA = true ;
+const USE_MOCK_DATA = true;
 
-// 위에서 생성한 목업 데이터 파일을 import 합니다.
 import {
   MOCK_DATA,
   MOCK_DATACENTERS,
   MOCK_RACKS,
+  mockDeleteResource,
+  mockDeleteMultipleResources,
+  mockUpdateMultipleResourceStatus,
 } from "../api/resourceManageApi.mock";
 
 export const RESOURCE_QUERY_KEY = "resources";
 export const DATACENTER_QUERY_KEY = "datacenters";
 export const RACK_QUERY_KEY = "racks";
 
-//  자원 목록 조회 훅
+// ✅ 자원 목록 조회 훅
 export const useGetResourceList = (
   page: number,
   size: number,
-  filters: ResourceListFilters,
+  filters: ResourceListFilters
 ) => {
-  // --- MOCK DATA 로직 ---
-  if (USE_MOCK_DATA) {
-    console.warn("Using MOCK data for useGetResourceList");
-
-    // MSW의 필터링/페이지네이션 로직을 간단하게 흉내냅니다.
-    let filteredData = MOCK_DATA;
-    const keyword = filters.keyword?.toLowerCase();
-
-    if (keyword) {
-      filteredData = filteredData.filter(
-        (r) =>
-          r.equipmentName.toLowerCase().includes(keyword) ||
-          (r.modelName && r.modelName.toLowerCase().includes(keyword)) ||
-          (r.ipAddress && r.ipAddress.includes(keyword)),
-      );
-    }
-    if (filters.status) {
-      filteredData = filteredData.filter((r) => r.status === filters.status);
-    }
-    if (filters.type) {
-      filteredData = filteredData.filter(
-        (r) => r.equipmentType === filters.type,
-      );
-    }
-    if (filters.datacenterId) {
-      filteredData = filteredData.filter(
-        (r) => r.datacenterId === filters.datacenterId,
-      );
-    }
-
-    const start = page * size;
-    const end = start + size;
-    const paginatedContent = filteredData.slice(start, end);
-    const totalPages = Math.ceil(filteredData.length / size);
-
-    // 실제 API 응답(PaginatedResourceResponse)과 동일한 구조로 만듭니다.
-    const mockPaginatedResponse: PaginatedResourceResponse = {
-      content: paginatedContent,
-      totalElements: filteredData.length,
-      totalPages: totalPages,
-      last: end >= filteredData.length,
-      size: size,
-      number: page,
-    };
-
-    // useQuery가 반환하는 객체와 동일한 형태로 반환합니다.
-    // (isLoading: false로 즉시 데이터를 보여줍니다)
-    return {
-      data: mockPaginatedResponse,
-      isLoading: false,
-      isFetching: false,
-      isError: false,
-      isSuccess: true,
-      // (useQuery가 반환하는 다른 상태값들... 필요시 추가)
-    };
-  }
-
-  // --- 기존 로직 (USE_MOCK_DATA = false 일 때 실행) ---
   return useQuery({
     queryKey: [RESOURCE_QUERY_KEY, page, size, filters],
-    queryFn: () => getResourceList(page, size, filters),
+    queryFn: () => {
+      // queryFn 내부에서 mock 체크
+      if (USE_MOCK_DATA) {
+        console.warn("Using MOCK data for useGetResourceList");
+
+        let filteredData = MOCK_DATA;
+        const keyword = filters.keyword?.toLowerCase();
+
+        if (keyword) {
+          filteredData = filteredData.filter(
+            (r) =>
+              r.equipmentName.toLowerCase().includes(keyword) ||
+              (r.modelName && r.modelName.toLowerCase().includes(keyword)) ||
+              (r.ipAddress && r.ipAddress.includes(keyword))
+          );
+        }
+        if (filters.status) {
+          filteredData = filteredData.filter(
+            (r) => r.status === filters.status
+          );
+        }
+        if (filters.type) {
+          filteredData = filteredData.filter(
+            (r) => r.equipmentType === filters.type
+          );
+        }
+        if (filters.datacenterId) {
+          filteredData = filteredData.filter(
+            (r) => r.datacenterId === filters.datacenterId
+          );
+        }
+
+        const start = page * size;
+        const end = start + size;
+        const paginatedContent = filteredData.slice(start, end);
+        const totalPages = Math.ceil(filteredData.length / size);
+
+        const mockPaginatedResponse: PaginatedResourceResponse = {
+          content: paginatedContent,
+          totalElements: filteredData.length,
+          totalPages: totalPages,
+          last: end >= filteredData.length,
+          size: size,
+          number: page,
+        };
+
+        return Promise.resolve(mockPaginatedResponse);
+      }
+
+      // 실제 API 호출
+      return getResourceList(page, size, filters);
+    },
     placeholderData: (previousData) => previousData,
     staleTime: 1000 * 60 * 5,
   });
 };
 
-
-//  전산실 목록 조회 훅
-
+// ✅ 전산실 목록 조회 훅
 export const useGetDatacenters = () => {
-  //  MOCK
-  if (USE_MOCK_DATA) {
-    console.warn("Using MOCK data for useGetDatacenters");
-    return {
-      data: MOCK_DATACENTERS as Datacenter[],
-      isLoading: false,
-      isError: false,
-      isSuccess: true,
-    };
-  }
-  //  END MOCK
-
   return useQuery<Datacenter[], Error>({
     queryKey: [DATACENTER_QUERY_KEY],
-    queryFn: getDatacenters,
+    queryFn: () => {
+      if (USE_MOCK_DATA) {
+        console.warn("Using MOCK data for useGetDatacenters");
+        return Promise.resolve(MOCK_DATACENTERS as Datacenter[]);
+      }
+      return getDatacenters();
+    },
     staleTime: 1000 * 60 * 5,
   });
 };
 
-
-//  랙 목록 조회 훅
-
+// ✅ 랙 목록 조회 훅
 export const useGetRacksByDatacenter = (datacenterId: string | null) => {
-  //  MOCK
-  if (USE_MOCK_DATA) {
-    console.warn("Using MOCK data for useGetRacksByDatacenter");
-
-    // datacenterId에 따라 필터링
-    const filteredRacks = datacenterId
-      ? MOCK_RACKS.filter((r) => r.datacenterId === datacenterId)
-      : [];
-
-    return {
-      data: filteredRacks as Rack[],
-      isLoading: false,
-      isError: false,
-      isSuccess: true,
-    };
-  }
-  //  END MOCK
-
   return useQuery<Rack[], Error>({
     queryKey: [RACK_QUERY_KEY, datacenterId],
     queryFn: () => {
+      if (USE_MOCK_DATA) {
+        console.warn("Using MOCK data for useGetRacksByDatacenter");
+        const filteredRacks = datacenterId
+          ? MOCK_RACKS.filter((r) => r.datacenterId === datacenterId)
+          : [];
+        return Promise.resolve(filteredRacks as Rack[]);
+      }
+
       if (!datacenterId) {
         return Promise.resolve([]);
       }
@@ -165,31 +138,23 @@ export const useGetRacksByDatacenter = (datacenterId: string | null) => {
   });
 };
 
-//
-//  자원 상세 정보 조회 훅 (수정 모드용)
-//
+// ✅ 자원 상세 정보 조회 훅
 export const useGetResourceById = (resourceId: string | null) => {
-  // MOCK
-  if (USE_MOCK_DATA) {
-    console.warn("Using MOCK data for useGetResourceById");
-
-    // resourceId로 MOCK_DATA에서 검색
-    const resource = resourceId
-      ? MOCK_DATA.find((r) => r.id === resourceId)
-      : undefined;
-
-    return {
-      data: resource as Resource | undefined,
-      isLoading: false,
-      isError: !resource && !!resourceId, // ID가 있는데 못찾으면 에러
-      isSuccess: !!resource,
-    };
-  }
-  //  END MOCK
-
   return useQuery<Resource, Error>({
     queryKey: [RESOURCE_QUERY_KEY, "detail", resourceId],
     queryFn: () => {
+      if (USE_MOCK_DATA) {
+        console.warn("Using MOCK data for useGetResourceById");
+        const resource = resourceId
+          ? MOCK_DATA.find((r) => r.id === resourceId)
+          : undefined;
+
+        if (!resource && resourceId) {
+          return Promise.reject(new Error("Resource not found"));
+        }
+        return Promise.resolve(resource as Resource);
+      }
+
       if (!resourceId) {
         return Promise.reject(new Error("Resource ID is required"));
       }
@@ -202,12 +167,7 @@ export const useGetResourceById = (resourceId: string | null) => {
   });
 };
 
-// --- CUD (Create, Update, Delete) 훅 ---
-// CUD 훅은 (GET과 달리) 버튼 클릭 시점에만 동작하므로,
-// 지금 당장 "데이터를 띄우는" 목적에는 수정하지 않아도 괜찮습니다.
-// (만약 USE_MOCK_DATA=true일 때 CUD 버튼을 누르면,
-//  실제 API로 요청이 가고 401/404 오류 토스트가 뜰 것입니다.)
-
+// --- CUD 훅들은 그대로 유지 ---
 export const useCreateResource = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -243,10 +203,15 @@ export const useUpdateResource = () => {
 export const useDeleteResource = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => deleteResource(id),
+    mutationFn: (id: string) => {
+      if (USE_MOCK_DATA) {
+        mockDeleteResource(id);
+        return Promise.resolve();
+      }
+      return deleteResource(id);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [RESOURCE_QUERY_KEY] });
-      toast.success("자원이 삭제되었습니다.");
     },
     onError: (error) => {
       console.error("자원 삭제 실패:", error);
@@ -258,14 +223,45 @@ export const useDeleteResource = () => {
 export const useDeleteMultipleResources = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (ids: string[]) => deleteMultipleResources(ids),
+    mutationFn: (ids: string[]) => {
+      if (USE_MOCK_DATA) {
+        mockDeleteMultipleResources(ids);
+        return Promise.resolve();
+      }
+      return deleteMultipleResources(ids);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [RESOURCE_QUERY_KEY] });
-      toast.success("선택한 자원이 모두 삭제되었습니다.");
     },
     onError: (error) => {
       console.error("자원 대량 삭제 실패:", error);
       toast.error("자원 대량 삭제에 실패했습니다.");
+    },
+  });
+};
+
+export const useUpdateMultipleResourceStatus = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      ids,
+      status,
+    }: {
+      ids: string[];
+      status: ResourceStatus;
+    }) => {
+      if (USE_MOCK_DATA) {
+        mockUpdateMultipleResourceStatus(ids, status);
+        return Promise.resolve();
+      }
+      return updateMultipleResourceStatus(ids, status);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [RESOURCE_QUERY_KEY] });
+    },
+    onError: (error) => {
+      console.error("자원 상태 변경 실패:", error);
+      toast.error("자원 상태 변경에 실패했습니다.");
     },
   });
 };

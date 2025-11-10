@@ -1,5 +1,5 @@
 import { Group, Rect, Text, Line, Image } from "react-konva";
-import { useState } from "react";
+import { useState, memo } from "react";
 import { Html } from "react-konva-utils";
 import type { Equipments } from "../types";
 import { deviceImageMap } from "../utils/deviceImageMap";
@@ -24,8 +24,8 @@ interface DeviceProps {
   onDelete?: (deviceId: number) => void;
   isEditing?: boolean;
   tempDeviceName?: string;
-  onDeviceNameChange?: (name: string) => void;
-  onDeviceNameConfirm?: (deviceId: number, name: string) => void;
+  onDeviceNameChange?: (deviceId: number, name: string) => void;
+  onDeviceNameConfirm?: (device: Equipments) => void;
   onDeviceNameCancel?: (deviceId: number) => void;
 }
 
@@ -115,17 +115,20 @@ function Device({
                 top: `${height / 2 - 15}px`,
                 left: `${x + 10}px`,
                 width: `${rackWidth - 55}px`,
+                pointerEvents: "auto",
               },
             }}
           >
             <input
               type="text"
               value={tempDeviceName}
-              onChange={(e) => onDeviceNameChange?.(e.target.value)}
+              onChange={(e) =>
+                onDeviceNameChange?.(device.equipmentId, e.target.value)
+              }
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
-                  onDeviceNameConfirm?.(device.equipmentId, tempDeviceName);
+                  onDeviceNameConfirm?.(device);
                 } else if (e.key === "Escape") {
                   e.preventDefault();
                   onDeviceNameCancel?.(device.equipmentId);
@@ -144,9 +147,7 @@ function Device({
             y={5}
             width={20}
             height={20}
-            onClick={() =>
-              onDeviceNameConfirm?.(device.equipmentId, tempDeviceName)
-            }
+            onClick={() => onDeviceNameConfirm?.(device)}
           />
           <ClickableIcon
             image={deleteImage}
@@ -180,4 +181,4 @@ function Device({
   );
 }
 
-export default Device;
+export default memo(Device);
