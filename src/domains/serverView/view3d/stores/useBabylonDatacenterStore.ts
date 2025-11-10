@@ -44,7 +44,7 @@ interface BabylonDatacenterStore {
   isRackModalOpen: boolean;
   selectedServerId: string | null;
   selectedServerRoomId: number | null;
-  openRackModal: (serverId: string, serverRoomId: number) => void;
+  openRackModal: (serverId: string) => void;
   closeRackModal: () => void;
 
   // 장비 관리
@@ -144,11 +144,10 @@ export const useBabylonDatacenterStore = create<BabylonDatacenterStore>(
     selectedServerId: null,
     selectedServerRoomId: null,
 
-    openRackModal: (serverId: string, serverRoomId: number) => {
+    openRackModal: (serverId: string) => {
       set({
         isRackModalOpen: true,
         selectedServerId: serverId,
-        selectedServerRoomId: serverRoomId,
       });
     },
 
