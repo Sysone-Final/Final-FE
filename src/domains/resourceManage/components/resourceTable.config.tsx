@@ -7,9 +7,11 @@ import { Pencil, Trash2, ArrowUpDown } from 'lucide-react';
 // 상태 Badge 다크 모드 색상 맵
 const statusColorMap: Record<ResourceStatus, string> = {
   'NORMAL': 'bg-green-700 text-green-100',
+   'WARNING': 'bg-yellow-600 text-yellow-100',
+ 'ERROR': 'bg-red-800 text-red-100', 
   'MAINTENANCE': 'bg-orange-700 text-orange-100',
-  'INACTIVE': 'bg-gray-700 text-gray-100',
-  'DISPOSED': 'bg-red-700 text-red-100',
+ 'POWERED_OFF': 'bg-gray-700 text-gray-100',
+ 'DECOMMISSIONED': 'bg-red-700 text-red-100',
 };
 
 // NOTE(user): 컬럼 정의 (새 타입 기준)
@@ -50,7 +52,7 @@ export const columns: ColumnDef<Resource>[] = [
    return (
     <span
      className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
-      statusColorMap[status] ?? statusColorMap['INACTIVE']
+      statusColorMap[status] ?? statusColorMap['POWERED_OFF']
      }`}
     >
      {status}

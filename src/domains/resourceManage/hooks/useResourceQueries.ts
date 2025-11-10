@@ -7,35 +7,36 @@ import {
   deleteResource,
   deleteMultipleResources,
   getResourceById,
-  getDatacenters,
-  getRacksByDatacenter,
+  getServerRooms,
+  getRacksByServerRoom,
   updateMultipleResourceStatus,
 } from "../api/resourceManageApi";
 import type {
   ResourceListFilters,
-  Datacenter,
+  ServerRoom,
   Rack,
   Resource,
   ResourceStatus,
   PaginatedResourceResponse,
 } from "../types/resource.types";
 
-const USE_MOCK_DATA = true;
+// const USE_MOCK_DATA = true;
+const USE_MOCK_DATA = false;
 
 import {
-  MOCK_DATA,
-  MOCK_DATACENTERS,
-  MOCK_RACKS,
-  mockDeleteResource,
-  mockDeleteMultipleResources,
-  mockUpdateMultipleResourceStatus,
+ MOCK_DATA, 
+ MOCK_DATACENTERS,
+ MOCK_RACKS,
+ mockDeleteResource,
+ mockDeleteMultipleResources,
+ mockUpdateMultipleResourceStatus,
 } from "../api/resourceManageApi.mock";
 
 export const RESOURCE_QUERY_KEY = "resources";
-export const DATACENTER_QUERY_KEY = "datacenters";
+export const SERVERROOM_QUERY_KEY = "serverrooms";
 export const RACK_QUERY_KEY = "racks";
 
-// ✅ 자원 목록 조회 훅
+// 자원 목록 조회 훅
 export const useGetResourceList = (
   page: number,
   size: number,
@@ -53,7 +54,7 @@ export const useGetResourceList = (
 
         if (keyword) {
           filteredData = filteredData.filter(
-            (r) =>
+            (r: Resource) =>
               r.equipmentName.toLowerCase().includes(keyword) ||
               (r.modelName && r.modelName.toLowerCase().includes(keyword)) ||
               (r.ipAddress && r.ipAddress.includes(keyword))
@@ -61,17 +62,17 @@ export const useGetResourceList = (
         }
         if (filters.status) {
           filteredData = filteredData.filter(
-            (r) => r.status === filters.status
+            (r: Resource) => r.status === filters.status
           );
         }
         if (filters.type) {
           filteredData = filteredData.filter(
-            (r) => r.equipmentType === filters.type
+            (r: Resource) => r.equipmentType === filters.type
           );
         }
-        if (filters.datacenterId) {
+        if (filters.serverRoomId) {
           filteredData = filteredData.filter(
-            (r) => r.datacenterId === filters.datacenterId
+            (r: Resource) => r.serverRoomId === Number(filters.serverRoomId)
           );
         }
 
@@ -100,53 +101,53 @@ export const useGetResourceList = (
   });
 };
 
-// ✅ 전산실 목록 조회 훅
-export const useGetDatacenters = () => {
-  return useQuery<Datacenter[], Error>({
-    queryKey: [DATACENTER_QUERY_KEY],
+//  전산실 목록 조회 훅
+export const useGetServerRooms = () => {
+  return useQuery<ServerRoom[], Error>({
+    queryKey: [SERVERROOM_QUERY_KEY],
     queryFn: () => {
       if (USE_MOCK_DATA) {
         console.warn("Using MOCK data for useGetDatacenters");
-        return Promise.resolve(MOCK_DATACENTERS as Datacenter[]);
+        return Promise.resolve(MOCK_DATACENTERS as ServerRoom[]);
       }
-      return getDatacenters();
+      return getServerRooms();
     },
     staleTime: 1000 * 60 * 5,
   });
 };
 
-// ✅ 랙 목록 조회 훅
-export const useGetRacksByDatacenter = (datacenterId: string | null) => {
+//  랙 목록 조회 훅
+export const useGetRacksByServerRoom = (serverRoomId: number | null) => {
   return useQuery<Rack[], Error>({
-    queryKey: [RACK_QUERY_KEY, datacenterId],
+    queryKey: [RACK_QUERY_KEY, serverRoomId],
     queryFn: () => {
       if (USE_MOCK_DATA) {
         console.warn("Using MOCK data for useGetRacksByDatacenter");
-        const filteredRacks = datacenterId
-          ? MOCK_RACKS.filter((r) => r.datacenterId === datacenterId)
+       const filteredRacks = serverRoomId !== null
+          ? MOCK_RACKS.filter((r: Rack) => r.serverRoomId === serverRoomId)
           : [];
         return Promise.resolve(filteredRacks as Rack[]);
       }
 
-      if (!datacenterId) {
+      if (!serverRoomId) {
         return Promise.resolve([]);
       }
-      return getRacksByDatacenter(datacenterId);
+      return getRacksByServerRoom(serverRoomId);
     },
-    enabled: !!datacenterId,
+    enabled: !!serverRoomId,
     staleTime: 1000 * 60 * 5,
   });
 };
 
-// ✅ 자원 상세 정보 조회 훅
-export const useGetResourceById = (resourceId: string | null) => {
+//  자원 상세 정보 조회 훅
+export const useGetResourceById = (resourceId: number | null) => {
   return useQuery<Resource, Error>({
     queryKey: [RESOURCE_QUERY_KEY, "detail", resourceId],
     queryFn: () => {
       if (USE_MOCK_DATA) {
         console.warn("Using MOCK data for useGetResourceById");
         const resource = resourceId
-          ? MOCK_DATA.find((r) => r.id === resourceId)
+          ? MOCK_DATA.find((r: Resource) => r.id === resourceId)
           : undefined;
 
         if (!resource && resourceId) {
@@ -156,7 +157,7 @@ export const useGetResourceById = (resourceId: string | null) => {
       }
 
       if (!resourceId) {
-        return Promise.reject(new Error("Resource ID is required"));
+        return Promise.reject(new Error("Resource ID is null"));
       }
       return getResourceById(resourceId);
     },
@@ -187,7 +188,7 @@ export const useCreateResource = () => {
 export const useUpdateResource = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Resource }) =>
+    mutationFn: ({ id, data }: { id: number; data: Resource }) =>
       updateResource(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [RESOURCE_QUERY_KEY] });
@@ -203,7 +204,7 @@ export const useUpdateResource = () => {
 export const useDeleteResource = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => {
+    mutationFn: (id: number) => {
       if (USE_MOCK_DATA) {
         mockDeleteResource(id);
         return Promise.resolve();
@@ -223,7 +224,7 @@ export const useDeleteResource = () => {
 export const useDeleteMultipleResources = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (ids: string[]) => {
+    mutationFn: (ids: number[]) => {
       if (USE_MOCK_DATA) {
         mockDeleteMultipleResources(ids);
         return Promise.resolve();
@@ -247,7 +248,7 @@ export const useUpdateMultipleResourceStatus = () => {
       ids,
       status,
     }: {
-      ids: string[];
+      ids: number[];
       status: ResourceStatus;
     }) => {
       if (USE_MOCK_DATA) {
