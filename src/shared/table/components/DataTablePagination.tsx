@@ -4,7 +4,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
 } from 'lucide-react';
-import type { DataTablePaginationProps } from '../types/table.types';
+import type { DataTablePaginationProps } from '../types/table';
 
 /**
  * 재사용 가능한 데이터 테이블 페이지네이션 컴포넌트

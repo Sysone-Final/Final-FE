@@ -8,7 +8,7 @@ import {
   deleteMember,
   deleteMultipleMembers,
 } from '../api/memberApi';
-import type { Member } from '../types/member.types';
+import type { Member } from '../types/memberTypes';
 
 export const MEMBER_QUERY_KEY = 'members';
 

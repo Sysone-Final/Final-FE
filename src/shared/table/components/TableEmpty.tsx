@@ -1,4 +1,4 @@
-import type { TableEmptyProps } from '../types/table.types';
+import type { TableEmptyProps } from '../types/table';
 
 /**
  * 테이블 빈 상태 컴포넌트

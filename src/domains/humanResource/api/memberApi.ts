@@ -1,5 +1,5 @@
 import client from '@/api/client';
-import type { MemberListResponse, Member } from '../types/member.types';
+import type { MemberListResponse, Member } from '../types/memberTypes';
 
 /**
  * 회원 목록 조회

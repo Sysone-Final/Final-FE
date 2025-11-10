@@ -4,7 +4,7 @@ import type {
   Row,
   Cell,
 } from '@tanstack/react-table';
-import type { DataTableProps } from '../types/table.types';
+import type { DataTableProps } from '../types/table';
 import TableSkeleton from './TableSkeleton';
 import TableEmpty from './TableEmpty';
 

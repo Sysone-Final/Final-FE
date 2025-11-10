@@ -13,4 +13,4 @@ export type {
   ExtendedTableMeta,
   TableSkeletonProps,
   TableEmptyProps,
-} from './types/table.types';
+} from './types/table';

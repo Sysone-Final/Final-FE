@@ -1,5 +1,5 @@
 import type { ColumnDef } from '@tanstack/react-table';
-import type { Member, MemberRole, MemberTableMeta } from '../types/member.types';
+import type { Member, MemberRole, MemberTableMeta } from '../types/memberTypes';
 import { TableHeaderCheckbox } from '@/shared/table';
 import { Pencil, Trash2, ArrowUpDown } from 'lucide-react';
 

@@ -1,5 +1,3 @@
-// src/domains/humanResource/pages/HumanResource.tsx
-
 import { useState } from 'react';
 import {
   useReactTable,
@@ -21,7 +19,7 @@ import {
   useDeleteMember,
   useDeleteMultipleMembers,
 } from '../hooks/useMemberQueries';
-import type { MemberTableMeta } from '../types/member.types';
+import type { Member, MemberTableMeta } from '../types/memberTypes';
 
 export default function HumanResource() {
   // --- 상태 관리 ---
@@ -43,7 +41,7 @@ export default function HumanResource() {
     alert('회원 추가 기능은 추후 구현 예정입니다.');
   };
 
-  const handleEditMember = (member: any) => {
+  const handleEditMember = (member: Member) => {
     // TODO: 회원 수정 모달 열기
     alert(`회원 수정: ${member.name} (ID: ${member.id})`);
   };

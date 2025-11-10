@@ -1,4 +1,5 @@
 import type { Table, TableMeta, ColumnDef } from '@tanstack/react-table';
+import type { ReactNode } from 'react';
 
 /**
  * 공용 테이블 설정 인터페이스
@@ -25,7 +26,7 @@ export interface DataTableProps<TData> {
   /** TanStack Table 인스턴스 */
   table: Table<TData>;
   /** 컬럼 정의 */
-  columns: ColumnDef<TData, any>[];
+  columns: ColumnDef<TData, ReactNode>[];
   /** 로딩 상태 */
   isLoading?: boolean;
   /** 에러 상태 */

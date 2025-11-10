@@ -1,4 +1,4 @@
-import type { TableSkeletonProps } from '../types/table.types';
+import type { TableSkeletonProps } from '../types/table';
 
 /**
  * 단일 스켈레톤 행 컴포넌트
