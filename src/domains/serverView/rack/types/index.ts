@@ -4,7 +4,7 @@ export type EquipmentType =
   | "ROUTER"
   | "STORAGE"
   | "FIREWALL"
-  | "LOAD_BALANCE"
+  | "LOAD_BALANCER"
   | "KVM";
 
 export type EquipmentStatus = "NORMAL" | "WARNING" | "ERROR" | "MAINTENANCE";

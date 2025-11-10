@@ -1,5 +1,5 @@
 import { Group, Rect, Text, Line, Image } from "react-konva";
-import { useState, memo } from "react";
+import { useState, memo, useRef } from "react";
 import { Html } from "react-konva-utils";
 import type { Equipments } from "../types";
 import { deviceImageMap } from "../utils/deviceImageMap";
@@ -44,10 +44,11 @@ function Device({
   isEditing = false,
   tempDeviceName = "",
   onDeviceNameChange,
-  onDeviceNameConfirm,
   onDeviceNameCancel,
+  onDeviceNameConfirm,
 }: DeviceProps) {
   const [dragging, setIsDragging] = useState(false);
+  const hasConfirmedRef = useRef(false);
 
   const { unitHeight, frameThickness: baseY } = RACK_CONFIG;
   const rackHeight = UNIT_COUNT * unitHeight;
@@ -68,6 +69,12 @@ function Device({
       deviceHeight: height,
       unitHeight,
     });
+  };
+
+  const handleConfirm = () => {
+    if (hasConfirmedRef.current) return;
+    hasConfirmedRef.current = true;
+    onDeviceNameConfirm?.(device);
   };
 
   return (
@@ -127,12 +134,13 @@ function Device({
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
-                  onDeviceNameConfirm?.(device);
+                  handleConfirm();
                 } else if (e.key === "Escape") {
                   e.preventDefault();
                   onDeviceNameCancel?.(device.id);
                 }
               }}
+              onBlur={handleConfirm}
               placeholder="장비명 입력"
               className="w-full px-2 py-1 text-xs bg-slate-700 text-black border border-slate-500 rounded focus:outline-none"
               autoFocus
@@ -146,7 +154,7 @@ function Device({
             y={5}
             width={20}
             height={20}
-            onClick={() => onDeviceNameConfirm?.(device)}
+            onClick={handleConfirm}
           />
           <ClickableIcon
             image={deleteImage}
