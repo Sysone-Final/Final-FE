@@ -1,7 +1,5 @@
-
-import React from 'react';
 // 1. 방금 수정한 "진짜" 공통 모달(Props 기반)을 가져옵니다.
-import { ConfirmationModal } from '../../../../components/ConfirmationModal'; 
+import { ConfirmationModal } from '@shared/ConfirmationModal'; 
 // 2. serverView의 전용 스토어를 가져옵니다.
 import { useModalStore } from '../hooks/useConfirmationModal';
 

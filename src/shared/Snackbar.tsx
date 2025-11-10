@@ -1,4 +1,3 @@
-
 import type { Toast } from 'react-hot-toast';
 
 interface SnackbarProps {

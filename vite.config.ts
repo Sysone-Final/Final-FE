@@ -22,6 +22,7 @@ export default defineConfig({
       "@components": "/src/components",
       "@domains": "/src/domains",
       "@hooks": "/src/hooks",
+      "@shared": "/src/shared",
       "@stores": "/src/stores",
       "@assets": "/src/assets",
     },

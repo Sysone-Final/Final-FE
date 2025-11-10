@@ -26,10 +26,10 @@ import {
 } from '../hooks/useResourceQueries';
 import type { ResourceListFilters, Resource, ResourceTableMeta } from '../types/resource.types';
 import { useDebounce } from '../hooks/useDebounce';
-import { ConfirmationModal } from '../../../components/ConfirmationModal';
+import { ConfirmationModal } from '@shared/ConfirmationModal';
 import { useQueryClient } from '@tanstack/react-query'; 
 import toast from 'react-hot-toast'; 
-import Snackbar from '../../../components/Snackbar';
+import Snackbar from '@shared/Snackbar';
 import { RESOURCE_QUERY_KEY } from '../hooks/useResourceQueries'; // (4)
 import type { PaginatedResourceResponse, ResourceStatus, } from '../types/resource.types'; // (5)
 
@@ -377,7 +377,7 @@ const isMutating =
    <main className="flex-1 overflow-y-auto p-8">
     {/* 필터 (제목과 버튼 없음) */}
     <ResourceFilters
-          keyword={keyword}
+          searchTerm={keyword}
           onSearchChange={setkeyword}
           statusFilter={statusFilter}
           onStatusChange={setStatusFilter}

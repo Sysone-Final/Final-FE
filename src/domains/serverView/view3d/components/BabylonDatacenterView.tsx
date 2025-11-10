@@ -8,7 +8,7 @@ import ContextMenu from './ContextMenu';
 import SelectionBox from './SelectionBox';
 import { useBabylonDatacenterStore } from '../stores/useBabylonDatacenterStore';
 import { CAMERA_CONFIG, EQUIPMENT_PALETTE } from '../constants/config';
-import { getServerRoomEquipment } from '../data/mockServerRoomEquipment';
+import { useServerRoomEquipment } from '../hooks/useServerRoomEquipment';
 import type { EquipmentType } from '../types';
 
 interface BabylonDatacenterViewProps {
@@ -70,7 +70,11 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
     setSelectionArea,
     selectEquipmentInArea,
     clearSelection,
+    setGridConfig, // 그리드 설정 함수 추가
   } = useBabylonDatacenterStore();
+
+  // 서버실 데이터 로드 (API 사용)
+  const { equipment: fetchedEquipment, gridConfig: fetchedGridConfig, loading: equipmentLoading } = useServerRoomEquipment(serverRoomId);
 
   // 초기 모드 적용 (최초 한 번)
   useEffect(() => {
@@ -79,15 +83,21 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
     hasAppliedInitialModeRef.current = true;
   }, [initialMode, setMode]);
 
-  // 서버실 데이터 로드
+  // 서버실 데이터 로드 및 그리드 설정
   useEffect(() => {
-    if (!serverRoomId) return;
+    if (!serverRoomId || equipmentLoading) return;
     if (currentServerRoomId === serverRoomId) return;
+    if (!fetchedEquipment || !fetchedGridConfig) return;
 
-    const equipmentData = getServerRoomEquipment(serverRoomId);
-    initializeServerRoom(serverRoomId, equipmentData);
-    console.log(`✅ Loaded ${equipmentData.length} equipment for server room: ${serverRoomId}`);
-  }, [serverRoomId, currentServerRoomId, initializeServerRoom]);
+    // 그리드 설정 업데이트
+    setGridConfig({
+      rows: fetchedGridConfig.rows,
+      columns: fetchedGridConfig.columns,
+    });
+
+    // 서버실 초기화
+    initializeServerRoom(serverRoomId, fetchedEquipment);
+  }, [serverRoomId, currentServerRoomId, initializeServerRoom, fetchedEquipment, fetchedGridConfig, equipmentLoading, setGridConfig]);
 
   // 장비 추가 핸들러
   const handleAddEquipment = useCallback((type: EquipmentType) => {
@@ -586,16 +596,16 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
                 cellSize={gridConfig.cellSize}
                 modelPath={paletteItem.modelPath}
                 isSelected={selectedEquipmentIds.includes(eq.id)}
-                onSelect={setSelectedEquipment}
-                onPositionChange={handleEquipmentPositionChange}
-                isDraggable={mode === 'edit'} // 편집 모드에서만 드래그 가능
-                onServerClick={mode === 'view' ? serverClickHandler : undefined} // view 모드에서만 클릭 핸들러 전달
-                onRightClick={mode === 'edit' ? rightClickHandler : undefined} // edit 모드에서만 우클릭 핸들러 전달
-                selectedEquipmentIds={selectedEquipmentIds}
-                onMultiDragEnd={handleMultipleEquipmentPositionsChange}
-              />
-            );
-          })}
+                  onSelect={setSelectedEquipment}
+                  onPositionChange={handleEquipmentPositionChange}
+                  isDraggable={mode === 'edit'} // 편집 모드에서만 드래그 가능
+                  onServerClick={mode === 'view' ? serverClickHandler : undefined} // view 모드에서만 클릭 핸들러 전달
+                  onRightClick={mode === 'edit' ? rightClickHandler : undefined} // edit 모드에서만 우클릭 핸들러 전달
+                  selectedEquipmentIds={selectedEquipmentIds}
+                  onMultiDragEnd={handleMultipleEquipmentPositionsChange}
+                />
+              );
+            })}
           
           {/* 선택 영역 박스 */}
           {mode === 'edit' && selectionArea && (

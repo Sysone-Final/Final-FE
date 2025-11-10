@@ -1,15 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getCompanyDataCenters, createServerRoom } from "../api/serverRoomApi";
+import { getCompanyServerRooms, createServerRoom } from "../api/serverRoomApi";
 import type { CreateServerRoomRequest } from "../api/serverRoomApi";
 
 /**
- * 회사의 전산실 목록 조회 query
+ * 회사의 서버실 목록 조회 query
  * @param companyId 회사 ID
  */
 export const useServerRooms = (companyId: number) => {
   return useQuery({
     queryKey: ["serverRooms", companyId],
-    queryFn: () => getCompanyDataCenters(companyId),
+    queryFn: () => getCompanyServerRooms(companyId),
   });
 };
 

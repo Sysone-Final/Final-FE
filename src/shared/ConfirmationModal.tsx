@@ -1,5 +1,3 @@
-
-import React from 'react';
 import { X, AlertTriangle } from 'lucide-react';
 
 // Props만 받는 인터페이스

@@ -13,7 +13,6 @@ import LeftSidebar from '../components/LeftSidebar';
 import RightSidebar from '../components/RightSidebar';
 import StatusLegendAndFilters from '../components/LeftSidebar/StatusLegendAndFilters';
 import TopNWidget from '../components/TopNWidget';
-import { ConfirmationModal } from '../../../../components/ConfirmationModal';
 
 interface FloorPlanPageProps {
   containerRef: React.RefObject<HTMLDivElement>;
@@ -42,7 +41,6 @@ const FloorPlanPage: React.FC<FloorPlanPageProps> = ({ containerRef, serverRoomI
 
   return (
     <DndContext onDragEnd={handleDragEnd}>
-      <ConfirmationModal />
       <div className="flex-1 relative overflow-hidden">
         <Canvas containerRef={containerRef} />
         
