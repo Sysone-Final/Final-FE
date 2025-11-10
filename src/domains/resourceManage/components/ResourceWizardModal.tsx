@@ -162,6 +162,7 @@ const Step2Location = ({ register, errors, watch, getValues }: Step2Props) => {
           <select
             {...register("datacenterId", {
               validate: (value) => value !== "" || "전산실을 선택해야 합니다.",
+              valueAsNumber: true,
             })}
             className={`modal-input ${errors.datacenterId ? "border-red-500" : ""}`}
             disabled={isLoadingDatacenters || isErrorDatacenters}
@@ -191,6 +192,7 @@ const Step2Location = ({ register, errors, watch, getValues }: Step2Props) => {
           <select
             {...register("rackId", {
               validate: (value) => value !== "" || "랙을 선택해야 합니다.",
+              valueAsNumber: true,
             })}
             className={`modal-input ${errors.rackId ? "border-red-500" : ""}`}
             disabled={!watchedDatacenterId || isLoadingRacks || isErrorRacks}
@@ -206,7 +208,7 @@ const Step2Location = ({ register, errors, watch, getValues }: Step2Props) => {
             </option>
             {Array.isArray(racks) &&
               racks.map((rack) => (
-                <option key={rack.id} value={rack.id}>
+               <option key={rack.id} value={rack.id}>
                   {rack.rackName} ({rack.availableUnits}U / {rack.totalUnits}
                   U)
                 </option>
@@ -522,7 +524,7 @@ const getDefaultFormData = (): Partial<Resource> => ({
   diskSpec: "",
   ipAddress: "",
   macAddress: "",
-  managerId: "",
+  managerId: null,
   installationDate: "",
   notes: "",
   monitoringEnabled: false,
@@ -537,7 +539,7 @@ const getDefaultFormData = (): Partial<Resource> => ({
 interface ResourceWizardModalProps {
   isOpen: boolean;
   onCloseHandler: () => void;
-  resourceId: string | null;
+  resourceId: number | null;
 }
 
 export default function ResourceWizardModal({

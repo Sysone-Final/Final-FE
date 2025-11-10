@@ -18,7 +18,7 @@ export type PositionType = "FRONT" | "REAR" | "NORMAL";
 // NOTE(user): 자원(Equipment) 핵심 인터페이스 (3단계 폼 기준)
 export interface Resource {
   // 1단계: 기본 식별 정보
-  id: string; // (NOT NULL - PK)    Corresponds to equipmentId
+  id: number; // (NOT NULL - PK)    Corresponds to equipmentId
   equipmentName: string; // (NOT NULL)
   equipmentType: EquipmentType; // (NOT NULL)
   manufacturer?: string | null;
@@ -30,8 +30,8 @@ export interface Resource {
 
   // 2단계: 위치 및 사양
   // 2-1. 물리적 위치 (Nullable)
-  datacenterId?: string | null; // User defined (for form logic)
-  rackId?: string | null;
+  datacenterId?: number | null; // User defined (for form logic)
+  rackId?: number | null;
   startUnit?: number | null;
   unitSize: number; // (NOT NULL)
   positionType?: PositionType | null;
@@ -48,7 +48,7 @@ export interface Resource {
 
   // 3단계: 관리 및 모니터링
   // 3-1. 관리 정보
-  managerId?: string | null;
+  managerId?: number | null;
   status: ResourceStatus; // (NOT NULL)
   installationDate?: string | null; // (YYYY-MM-DD)
   notes?: string | null;
@@ -76,7 +76,7 @@ export interface Resource {
 // NOTE(user): TanStack Table meta 타입 (핸들러 전달용)
 export interface ResourceTableMeta extends TableMeta<Resource> {
   editResourceHandler: (resource: Resource) => void;
-  deleteResourceHandler: (resourceId: string) => void;
+  deleteResourceHandler: (resourceId: number) => void;
   openDeleteModal: (resource: Resource) => void;
 }
 
@@ -101,7 +101,7 @@ export interface ResourceListFilters {
 
 //  3.1 접근 가능한 전산실 목록 조회 (GET /datacenters) - 전체 필드
 export interface Datacenter {
-  id: string; // Sticking with string based on mocks
+  id: number; // Sticking with string based on mocks
   name: string;
   code: string;
   location: string;
@@ -112,7 +112,7 @@ export interface Datacenter {
 
 //  5.1 전산실별 랙 목록 조회 (GET /racks/datacenter/{dataCenterId}) - 전체 필드
 export interface Rack {
-  id: string; // Sticking with string
+  id: number; // Sticking with string
   rackName: string;
   groupNumber: string | null;
   rackLocation: string | null;
@@ -125,6 +125,6 @@ export interface Rack {
   currentPowerUsage: number;
   maxPowerCapacity: number;
   department: string | null;
-  managerId: string | null; // Sticking with string for mocks
-  datacenterId?: string; // For MSW convenience
+  managerId: number | null; // Sticking with string for mocks
+  datacenterId?: number; // For MSW convenience
 }

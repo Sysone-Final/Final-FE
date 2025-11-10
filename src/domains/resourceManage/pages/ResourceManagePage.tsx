@@ -39,7 +39,7 @@ export default function ResourceManagePage() {
  const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
  const [isModalOpen, setIsModalOpen] = useState(false);
- const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null);
+ const [selectedResourceId, setSelectedResourceId] = useState<number | null>(null);
  const [sorting, setSorting] = useState<SortingState>([]);
  
 
@@ -131,7 +131,7 @@ const [deleteModalState, setDeleteModalState] = useState<{
  };
 
 
-const deleteResourceHandler = (resourceId: string) => {
+const deleteResourceHandler = (resourceId: number) => {
  deleteResourceMutation.mutate(resourceId);
 };
 const openDeleteModal = (resource: Resource) => {
