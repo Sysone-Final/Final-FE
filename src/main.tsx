@@ -6,7 +6,6 @@ import router from './router';
 import { Toaster } from 'react-hot-toast';
 //  --- 1. React Query 도구 임포트 ---
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 const queryClient = new QueryClient();
 
@@ -34,7 +33,6 @@ const queryClient = new QueryClient();
      }}
     />
         {/* Layout.tsx에서 옮겨온 Devtools */}
-        <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
     </StrictMode>,
   );
