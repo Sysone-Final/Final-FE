@@ -14,8 +14,8 @@ import type { Resource, Rack } from "../types/resource.types";
 import {
   useCreateResource,
   useUpdateResource,
-  useGetDatacenters,
-  useGetRacksByDatacenter,
+  useGetServerRooms,
+  useGetRacksByServerRoom,
   useGetResourceById,
 } from "../hooks/useResourceQueries";
 import { X, ArrowLeft, Loader2 } from "lucide-react";
@@ -129,19 +129,19 @@ const Step1Identity = ({
 
 // --- 스텝 2 컴포넌트 ---
 const Step2Location = ({ register, errors, watch, getValues }: Step2Props) => {
-  const watchedDatacenterId = watch("datacenterId");
+ const watchedServerRoomId = watch("serverRoomId");
   const watchedRackId = watch("rackId");
 
   const {
-    data: datacenters,
-    isLoading: isLoadingDatacenters,
-    isError: isErrorDatacenters,
-  } = useGetDatacenters();
+    data: serverRooms,
+    isLoading: isLoadingServerRooms,
+    isError: isErrorServerRooms,
+  } = useGetServerRooms();
   const {
     data: racks,
     isLoading: isLoadingRacks,
     isError: isErrorRacks,
-  } = useGetRacksByDatacenter(watchedDatacenterId || null);
+  } = useGetRacksByServerRoom(watchedServerRoomId || null);
 
   const selectedRack = useMemo(() => {
     if (!watchedRackId || !racks || !Array.isArray(racks)) return null;
@@ -157,32 +157,32 @@ const Step2Location = ({ register, errors, watch, getValues }: Step2Props) => {
       <div className={gridContainerStyle}>
         <div>
           <label className={labelStyle}>
-            전산실 <span className="text-red-500">*</span>
+            서버실 <span className="text-red-500">*</span>
           </label>
           <select
-            {...register("datacenterId", {
-              validate: (value) => value !== "" || "전산실을 선택해야 합니다.",
+            {...register("serverRoomId", {
+              validate: (value) => value !== "" || "서버실을 선택해야 합니다.",
               valueAsNumber: true,
             })}
-            className={`modal-input ${errors.datacenterId ? "border-red-500" : ""}`}
-            disabled={isLoadingDatacenters || isErrorDatacenters}
+            className={`modal-input ${errors.serverRoomId ? "border-red-500" : ""}`}
+            disabled={isLoadingServerRooms || isErrorServerRooms}
           >
             <option value="">
-              {isLoadingDatacenters
+              {isLoadingServerRooms
                 ? "불러오는 중..."
-                : isErrorDatacenters
+                : isErrorServerRooms
                   ? "오류 발생"
-                  : "-- 전산실 선택 --"}
+                  : "-- 서버실 선택 --"}
             </option>
-            {Array.isArray(datacenters) &&
-              datacenters.map((dc) => (
+            {Array.isArray(serverRooms) &&
+              serverRooms.map((dc) => (
                 <option key={dc.id} value={dc.id}>
                   {dc.name}
                 </option>
               ))}
           </select>
-          {errors.datacenterId && (
-            <p className={errorTextStyle}>{errors.datacenterId.message}</p>
+          {errors.serverRoomId && (
+            <p className={errorTextStyle}>{errors.serverRoomId.message}</p>
           )}
         </div>
         <div>
@@ -195,13 +195,13 @@ const Step2Location = ({ register, errors, watch, getValues }: Step2Props) => {
               valueAsNumber: true,
             })}
             className={`modal-input ${errors.rackId ? "border-red-500" : ""}`}
-            disabled={!watchedDatacenterId || isLoadingRacks || isErrorRacks}
+            disabled={!watchedServerRoomId || isLoadingRacks || isErrorRacks}
           >
             <option value="">
               {isLoadingRacks
                 ? "불러오는 중..."
-                : !watchedDatacenterId
-                  ? "-- 전산실 먼저 선택 --"
+                : !watchedServerRoomId
+                  ? "-- 서버실 먼저 선택 --"
                   : isErrorRacks
                     ? "오류 발생"
                     : "-- 랙 선택 --"}
@@ -396,10 +396,10 @@ const Step3Management = ({ register, errors, watch }: Step3Props) => {
             })}
             className={`modal-input ${errors.status ? "border-red-500" : ""}`}
           >
-            <option value="INACTIVE">INACTIVE - 비활성/재고</option>
+            <option value="POWERED_OFF">비활성/재고</option>
             <option value="NORMAL">NORMAL - 운영중</option>
             <option value="MAINTENANCE">MAINTENANCE - 점검중</option>
-            <option value="DISPOSED">DISPOSED - 폐기</option>
+            <option value="DECOMMISSIONED">폐기</option>
           </select>
           {errors.status && (
             <p className={errorTextStyle}>{errors.status.message}</p>
@@ -509,12 +509,12 @@ const getDefaultFormData = (): Partial<Resource> => ({
   equipmentName: "",
   equipmentType: "SERVER",
   unitSize: 1,
-  status: "INACTIVE",
+  status: "POWERED_OFF",
   manufacturer: "",
   modelName: "",
   serialNumber: "",
   equipmentCode: "",
-  datacenterId: null,
+  serverRoomId: null,
   rackId: null,
   startUnit: null,
   positionType: null,
@@ -564,14 +564,14 @@ export default function ResourceWizardModal({
   });
 
   const { dirtyFields } = useFormState({ control });
-  const watchedDatacenterId = watch("datacenterId");
+  const watchedServerRoomId = watch("serverRoomId");
 
   useEffect(() => {
-    if (dirtyFields.datacenterId) {
+    if (dirtyFields.serverRoomId) {
       setValue("rackId", null, { shouldValidate: true });
       setValue("startUnit", null, { shouldValidate: true });
     }
-  }, [watchedDatacenterId, dirtyFields.datacenterId, setValue]);
+  }, [watchedServerRoomId, dirtyFields.serverRoomId, setValue]);
 
   // const [imageFrontFile, setImageFrontFile] = useState<File | null>(null);
   // const [imageRearFile, setImageRearFile] = useState<File | null>(null);
@@ -627,7 +627,7 @@ export default function ResourceWizardModal({
     } else if (step === 2) {
       fieldsToValidate.push(
         'unitSize',
-        'datacenterId',
+        'serverRoomId',
         'rackId',
         'startUnit'
       );

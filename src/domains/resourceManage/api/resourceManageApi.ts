@@ -4,7 +4,7 @@ import type {
  PaginatedResourceResponse,
  Resource,
  ResourceListFilters,
- Datacenter,
+ ServerRoom,
  Rack,
  ResourceStatus,
 } from "../types/resource.types";
@@ -124,20 +124,20 @@ interface ApiResponseWrapper<T> {
 /**
 * 3.1 접근 가능한 전산실 목록 조회 (GET /datacenters)
 */
-export const getDatacenters = async (): Promise<Datacenter[]> => {
+export const getServerRooms = async (): Promise<ServerRoom[]> => {
  const response =
-  await client.get<ApiResponseWrapper<Datacenter[]>>("/datacenters");
+  await client.get<ApiResponseWrapper<ServerRoom[]>>("/serverrooms");
  return response.data.result;
 };
 
 /**
 * 5.1 전산실별 랙 목록 조회 (GET /racks/datacenter/{dataCenterId})
 */
-export const getRacksByDatacenter = async (
- dataCenterId: number,
+export const getRacksByServerRoom = async (
+  serverRoomId: number,
 ): Promise<Rack[]> => {
  const response = await client.get<ApiResponseWrapper<Rack[]>>(
-  `/racks/datacenter/${dataCenterId}`,
+  `/racks/serverroom/${serverRoomId}`,
  );
  return response.data.result;
 };

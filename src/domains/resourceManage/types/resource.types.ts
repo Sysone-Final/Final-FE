@@ -4,8 +4,10 @@ import type { TableMeta } from "@tanstack/react-table";
 export type ResourceStatus =
   | "NORMAL" // 운영중
   | "MAINTENANCE" // 점검중
-  | "INACTIVE" // 비활성/재고
-  | "DISPOSED"; // 폐기
+  | "WARNING"
+  | "ERROR"
+  | "POWERED_OFF"
+  | "DECOMMISSIONED";
 
 // NOTE(user): 3단계 폼 기준 장비 유형 타입
 export type EquipmentType = "SERVER" | "SWITCH" | "ROUTER" | "PDU" | "UPS";
@@ -28,7 +30,7 @@ export interface Resource {
 
   // 2단계: 위치 및 사양
   // 2-1. 물리적 위치 (Nullable)
-  datacenterId?: number | null; // User defined (for form logic)
+  serverRoomId?: number | null; // User defined (for form logic)
   rackId?: number | null;
   startUnit?: number | null;
   unitSize: number; // (NOT NULL)
@@ -94,11 +96,11 @@ export interface ResourceListFilters {
   status?: string;
   type?: string;
   // location?: string; // TODO(user): 삭제
-  datacenterId?: string; //  "위치" 필터용으로 추가
+  serverRoomId?: string; //  "위치" 필터용으로 추가
 }
 
 //  3.1 접근 가능한 전산실 목록 조회 (GET /datacenters) - 전체 필드
-export interface Datacenter {
+export interface ServerRoom {
   id: number; // Sticking with string based on mocks
   name: string;
   code: string;
@@ -124,5 +126,5 @@ export interface Rack {
   maxPowerCapacity: number;
   department: string | null;
   managerId: number | null; // Sticking with string for mocks
-  datacenterId?: number; // For MSW convenience
+  serverRoomId?: number; // For MSW convenience
 }

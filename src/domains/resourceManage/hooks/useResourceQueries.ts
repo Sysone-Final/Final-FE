@@ -7,13 +7,13 @@ import {
   deleteResource,
   deleteMultipleResources,
   getResourceById,
-  getDatacenters,
-  getRacksByDatacenter,
+  getServerRooms,
+  getRacksByServerRoom,
   updateMultipleResourceStatus,
 } from "../api/resourceManageApi";
 import type {
   ResourceListFilters,
-  Datacenter,
+  ServerRoom,
   Rack,
   Resource,
   ResourceStatus,
@@ -33,7 +33,7 @@ import {
 } from "../api/resourceManageApi.mock";
 
 export const RESOURCE_QUERY_KEY = "resources";
-export const DATACENTER_QUERY_KEY = "datacenters";
+export const SERVERROOM_QUERY_KEY = "serverrooms";
 export const RACK_QUERY_KEY = "racks";
 
 // 자원 목록 조회 훅
@@ -70,9 +70,9 @@ export const useGetResourceList = (
             (r) => r.equipmentType === filters.type
           );
         }
-        if (filters.datacenterId) {
+        if (filters.serverRoomId) {
           filteredData = filteredData.filter(
-            (r) => r.datacenterId === filters.datacenterId
+            (r) => r.serverRoomId === Number(filters.serverRoomId)
           );
         }
 
@@ -102,39 +102,39 @@ export const useGetResourceList = (
 };
 
 //  전산실 목록 조회 훅
-export const useGetDatacenters = () => {
-  return useQuery<Datacenter[], Error>({
-    queryKey: [DATACENTER_QUERY_KEY],
+export const useGetServerRooms = () => {
+  return useQuery<ServerRoom[], Error>({
+    queryKey: [SERVERROOM_QUERY_KEY],
     queryFn: () => {
       if (USE_MOCK_DATA) {
         console.warn("Using MOCK data for useGetDatacenters");
-        return Promise.resolve(MOCK_DATACENTERS as Datacenter[]);
+        return Promise.resolve(MOCK_DATACENTERS as ServerRoom[]);
       }
-      return getDatacenters();
+      return getServerRooms();
     },
     staleTime: 1000 * 60 * 5,
   });
 };
 
 //  랙 목록 조회 훅
-export const useGetRacksByDatacenter = (datacenterId: number | null) => {
+export const useGetRacksByServerRoom = (serverRoomId: number | null) => {
   return useQuery<Rack[], Error>({
-    queryKey: [RACK_QUERY_KEY, datacenterId],
+    queryKey: [RACK_QUERY_KEY, serverRoomId],
     queryFn: () => {
       if (USE_MOCK_DATA) {
         console.warn("Using MOCK data for useGetRacksByDatacenter");
-       const filteredRacks = datacenterId !== null
-          ? MOCK_RACKS.filter((r) => r.datacenterId === datacenterId)
+       const filteredRacks = serverRoomId !== null
+          ? MOCK_RACKS.filter((r) => r.serverRoomId === serverRoomId)
           : [];
         return Promise.resolve(filteredRacks as Rack[]);
       }
 
-      if (!datacenterId) {
+      if (!serverRoomId) {
         return Promise.resolve([]);
       }
-      return getRacksByDatacenter(datacenterId);
+      return getRacksByServerRoom(serverRoomId);
     },
-    enabled: !!datacenterId,
+    enabled: !!serverRoomId,
     staleTime: 1000 * 60 * 5,
   });
 };
