@@ -1,22 +1,27 @@
-import { useEffect } from 'react';
-import RackView from '../rack/components/RackView';
-import { useBabylonDatacenterStore } from '../view3d/stores/useBabylonDatacenterStore';
+import { useEffect } from "react";
+import RackView from "../rack/components/RackView";
+import { useBabylonDatacenterStore } from "../view3d/stores/useBabylonDatacenterStore";
 
 function RackModal() {
-  const { isRackModalOpen, selectedServerId, closeRackModal } = useBabylonDatacenterStore();
+  const {
+    isRackModalOpen,
+    selectedServerId,
+    closeRackModal,
+    selectedServerRoomId,
+  } = useBabylonDatacenterStore();
 
   // ESC 키로 패널 닫기
   useEffect(() => {
     if (!isRackModalOpen) return; // 모달이 열려있지 않으면 이벤트 리스너 추가하지 않음
-    
+
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         closeRackModal();
       }
     };
 
-    window.addEventListener('keydown', handleEsc);
-    return () => window.removeEventListener('keydown', handleEsc);
+    window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
   }, [isRackModalOpen, closeRackModal]);
 
   // 패널이 닫혀있으면 아예 렌더링하지 않음 (메모리 절약)
@@ -29,14 +34,13 @@ function RackModal() {
         className="fixed inset-0 bg-black/30 z-40 animate-fadeIn"
         onClick={closeRackModal}
       />
-      
+
       {/* 우측 슬라이드 패널 */}
-      <div
-        className="fixed top-16 right-0 h-[calc(100vh-4rem)] w-full max-w-[700px] sm:w-[30vw] sm:max-w-[600px] z-50 animate-slideInRight overflow-hidden"
-      >
-        <RackView 
-          onClose={closeRackModal} 
-          rackName={selectedServerId || 'N/A'} 
+      <div className="fixed top-16 right-0 h-[calc(100vh-4rem)] w-full max-w-[700px] sm:w-[30vw] sm:max-w-[600px] z-50 animate-slideInRight overflow-hidden">
+        <RackView
+          onClose={closeRackModal}
+          rackName={selectedServerId || "N/A"}
+          serverRoomId={selectedServerRoomId ?? 0}
         />
       </div>
     </div>

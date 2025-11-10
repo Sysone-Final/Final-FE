@@ -69,7 +69,7 @@ function Tools({ onCardClick }: ToolsProps) {
       size: "1U",
       img: loadBalanceImg,
       height: 1,
-      type: "LOAD_BALANCE",
+      type: "LOAD_BALANCER",
     },
   ];
 

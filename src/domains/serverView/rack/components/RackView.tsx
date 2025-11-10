@@ -8,9 +8,10 @@ import { useState } from "react";
 interface RackViewProps {
   onClose?: () => void;
   rackName?: string;
+  serverRoomId: number;
 }
 
-function RackView({ rackName }: RackViewProps = {}) {
+function RackView({ rackName, serverRoomId }: RackViewProps) {
   const [frontView, setFrontView] = useState(true);
   const [editMode, setEditMode] = useState(false);
 
@@ -20,8 +21,11 @@ function RackView({ rackName }: RackViewProps = {}) {
 
   const rackManager = useRackManager({
     rackId: rackId || 0,
+    serverRoomId: serverRoomId,
     frontView,
   });
+
+  const displayRackName = rackManager.rack?.rackName || rackName || "N/A";
 
   if (rackManager.isLoading) {
     return (
@@ -49,7 +53,7 @@ function RackView({ rackName }: RackViewProps = {}) {
         <header className="flex justify-between items-center px-6 py-4 border-b border-slate-300/40">
           {/* 왼쪽: RackHeader (전체 너비 차지) */}
           <div className="flex-1">
-            <RackHeader rackName={rackName} />
+            <RackHeader rackName={displayRackName} />
           </div>
 
           {/* 오른쪽: 버튼 그룹 */}
@@ -98,6 +102,8 @@ function RackView({ rackName }: RackViewProps = {}) {
                   onDeviceNameChange={rackManager.handleDeviceNameChange}
                   onDeviceNameConfirm={rackManager.handleDeviceNameConfirm}
                   onDeviceNameCancel={rackManager.handleDeviceNameCancel}
+                  rackId={rackId || 0}
+                  serverRoomId={serverRoomId}
                 />
               </div>
             </div>
