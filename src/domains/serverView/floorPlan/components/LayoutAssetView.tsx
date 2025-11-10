@@ -8,6 +8,7 @@ import {
  selectAsset,
 } from '../store/floorPlanStore';
 
+import { useBabylonDatacenterStore } from '@/domains/serverView/view3d/stores/useBabylonDatacenterStore';
 import type { AssetRendererProps } from './AssetRenderer';
 import type { Asset } from '../types';
 
@@ -40,6 +41,8 @@ const LayoutAssetView: React.FC<AssetRendererProps> = ({
 }) => {
  const mode = useFloorPlanStore((state) => state.mode);
  const assets = useFloorPlanStore((state) => state.assets);
+
+ const openRackModal = useBabylonDatacenterStore((state) => state.openRackModal);
 
  const pixelX = headerPadding + (asset.gridX ?? 0) * gridSize;
  const pixelY = headerPadding + (asset.gridY ?? 0) * gridSize;
@@ -123,10 +126,24 @@ const LayoutAssetView: React.FC<AssetRendererProps> = ({
   });
  }; 
 
- const handleClick = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
-  e.cancelBubble = true;
-  selectAsset(asset.id, e.evt.shiftKey);
- };
+const handleClick = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
+    e.cancelBubble = true;
+    
+    // 3. 2D 스토어의 자산 선택 (기존 로직)
+    selectAsset(asset.id, e.evt.shiftKey);
+
+    // 4. 모달 연동 로직 추가
+    // 보기(view) 모드이고, 랙(rack) 타입일 경우
+    if (mode === 'view' && asset.assetType === 'rack') {
+      // 3D 뷰의 ID(eq3D.id)이자 2D 뷰의 ID(asset.id)를 사용해 모달을 엽니다.
+      // 랙 이름(asset.name)도 함께 전달합니다. (RackModal이 rackName을 props로 받음)
+      openRackModal(asset.name); 
+      // 참고: RackModal은 selectedServerId를 스토어에서 가져와 사용합니다.
+      // openRackModal이 selectedServerId를 asset.name으로 설정합니다.
+      // 만약 3D 뷰가 ID(asset.id)를 사용한다면 openRackModal(asset.id)로 변경해야 합니다.
+      // RackModal.tsx를 보니 selectedServerId를 rackName으로 사용하고 있으므로 asset.name이 맞습니다.
+    }
+  };
 
  const getDoorPosition = () => {
   const barThickness = 4;

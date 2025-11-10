@@ -83,6 +83,7 @@ export interface Asset {
     memoryUsage?: number; // 예: 68 (%)
     powerUsage?: number;  // 예: 2.3 (kW)
     networkUsage?: number; // 예: 160 (Mbps)
+    rackServerId?: string | number;
   };
 }
 
@@ -101,14 +102,9 @@ export interface FloorPlanState {
 visibleLayers: Record<AssetLayer, boolean>;
  visibleSeverities: Record<AssetStatus, boolean>;
 
-  // 1. 로딩 및 에러 상태만 남겨둡니다.
   isLoading: boolean;
   error: string | null;
 
-  // 2. 모든 액션 함수 시그니처를 제거합니다.
-  // toggleMode: () => void;
-  // ...
-  // fetchFloorPlan: (roomId: string) => Promise<void>;
-  // ...
+
 }
 

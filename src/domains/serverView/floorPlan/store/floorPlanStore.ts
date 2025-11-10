@@ -12,6 +12,8 @@ import type {
   AssetLayer,
   AssetStatus,
 } from '../types';
+// import { useBabylonDatacenterStore } from '@/domains/serverView/view3d/stores/useBabylonDatacenterStore';
+
 import toast from 'react-hot-toast';
 
 export const initialState: FloorPlanState = {
@@ -70,32 +72,32 @@ export const useFloorPlanStore = create<FloorPlanState>()(
 
 // --- Actions ---
 
-export const fetchFloorPlan = async (roomId: string) => {
-  useFloorPlanStore.setState({ isLoading: true, error: null });
-  try {
-    const response = await fetch(`/api/server-rooms/${roomId}/floorplan`);
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Fetch error response:', errorText);
-      throw new Error(
-        `Failed to fetch floor plan data. Status: ${response.status}`,
-      );
-    }
-    const data = await response.json();
-    useFloorPlanStore.setState({
-      assets: data.assets,
-      gridCols: data.gridCols,
-      gridRows: data.gridRows,
-      isLoading: false,
-    });
-  } catch (err) {
-    console.error('Error in fetchFloorPlan:', err);
-    useFloorPlanStore.setState({
-      isLoading: false,
-      error: err instanceof Error ? err.message : String(err),
-    });
-  }
-};
+// export const fetchFloorPlan = async (roomId: string) => {
+//   useFloorPlanStore.setState({ isLoading: true, error: null });
+//   try {
+//     const response = await fetch(`/api/server-rooms/${roomId}/floorplan`);
+//     if (!response.ok) {
+//       const errorText = await response.text();
+//       console.error('Fetch error response:', errorText);
+//       throw new Error(
+//         `Failed to fetch floor plan data. Status: ${response.status}`,
+//       );
+//     }
+//     const data = await response.json();
+//     useFloorPlanStore.setState({
+//       assets: data.assets,
+//       gridCols: data.gridCols,
+//       gridRows: data.gridRows,
+//       isLoading: false,
+//     });
+//   } catch (err) {
+//     console.error('Error in fetchFloorPlan:', err);
+//     useFloorPlanStore.setState({
+//       isLoading: false,
+//       error: err instanceof Error ? err.message : String(err),
+//     });
+//   }
+// };
 
 export const addAsset = async (newAsset: Omit<Asset, 'id'>) => {
   try {
