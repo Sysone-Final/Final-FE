@@ -4,7 +4,7 @@ import type {
  PaginatedResourceResponse,
  Resource,
  ResourceListFilters,
- Datacenter,
+ ServerRoom,
  Rack,
  ResourceStatus,
 } from "../types/resource.types";
@@ -59,7 +59,7 @@ export const createResource = async (data: Resource): Promise<Resource> => {
 * 자원 정보 수정 (PUT)
 */
 export const updateResource = async (
-  id: string,
+  id: number,
   data: Resource, 
 ): Promise<Resource> => {
   const response = await client.put<ApiResponseWrapper<Resource>>(
@@ -73,14 +73,14 @@ export const updateResource = async (
 /**
 * 자원 삭제 (DELETE)
 */
-export const deleteResource = async (id: string): Promise<void> => {
+export const deleteResource = async (id: number): Promise<void> => {
  await client.delete(`${RESOURCE_API_URL}/${id}`);
 };
 
 /**
 * 자원 대량 삭제 (DELETE)
 */
-export const deleteMultipleResources = async (ids: string[]): Promise<void> => {
+export const deleteMultipleResources = async (ids: number[]): Promise<void> => {
  await client.delete(RESOURCE_API_URL, {
   data: { ids },
  });
@@ -91,7 +91,7 @@ export const deleteMultipleResources = async (ids: string[]): Promise<void> => {
  *  자원 대량 상태 변경 (PUT /equipments/status - API 명세 가정)
  */
 export const updateMultipleResourceStatus = async (
-  ids: string[],
+  ids: number[],
   status: ResourceStatus,
 ): Promise<void> => {
   // 백엔드 API 엔드포인트를 가정 (예: /equipments/status)
@@ -103,7 +103,7 @@ export const updateMultipleResourceStatus = async (
 /**
 * 9.2 자원 상세 정보 조회 (GET /resourceManage/{id})
 */
-export const getResourceById = async (id: string): Promise<Resource> => {
+export const getResourceById = async (id: number): Promise<Resource> => {
   //  '포장지'로 감싸기
  const response = await client.get<ApiResponseWrapper<Resource>>(`${RESOURCE_API_URL}/${id}`); 
   //  '내용물' 꺼내기
@@ -124,20 +124,20 @@ interface ApiResponseWrapper<T> {
 /**
 * 3.1 접근 가능한 전산실 목록 조회 (GET /datacenters)
 */
-export const getDatacenters = async (): Promise<Datacenter[]> => {
+export const getServerRooms = async (): Promise<ServerRoom[]> => {
  const response =
-  await client.get<ApiResponseWrapper<Datacenter[]>>("/datacenters");
+  await client.get<ApiResponseWrapper<ServerRoom[]>>("/serverrooms");
  return response.data.result;
 };
 
 /**
 * 5.1 전산실별 랙 목록 조회 (GET /racks/datacenter/{dataCenterId})
 */
-export const getRacksByDatacenter = async (
- dataCenterId: string,
+export const getRacksByServerRoom = async (
+  serverRoomId: number,
 ): Promise<Rack[]> => {
  const response = await client.get<ApiResponseWrapper<Rack[]>>(
-  `/racks/datacenter/${dataCenterId}`,
+  `/racks/serverroom/${serverRoomId}`,
  );
  return response.data.result;
 };

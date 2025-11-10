@@ -3,7 +3,7 @@ import {
   EQUIPMENT_TYPE_OPTIONS,
   RESOURCE_STATUS_OPTIONS,
 } from "../constants/resource.constants";
-import type { Datacenter } from "../types/resource.types";
+import type { ServerRoom } from "../types/resource.types";
 
 interface ResourceFiltersProps {
   searchTerm: string;
@@ -12,10 +12,10 @@ interface ResourceFiltersProps {
   onStatusChange: (value: string) => void;
   typeFilter: string; 
   onTypeChange: (value: string) => void; 
- datacenterFilter: string;
-  onDatacenterChange: (value: string) => void;
-  datacenters: Datacenter[];
-  isLoadingDatacenters: boolean;
+  serverRoomFilter: string;
+  onServerRoomChange: (value: string) => void;
+  serverRooms: ServerRoom[];
+  isLoadingServerRooms: boolean;
 }
 
 export default function ResourceFilters({
@@ -25,10 +25,10 @@ export default function ResourceFilters({
   onStatusChange,
   typeFilter,
   onTypeChange,
-  datacenterFilter,
-  onDatacenterChange,
-  datacenters,
-  isLoadingDatacenters,
+  serverRoomFilter,
+  onServerRoomChange,
+  serverRooms,
+  isLoadingServerRooms,
 }: ResourceFiltersProps) {
   return (
     <div>
@@ -78,15 +78,15 @@ export default function ResourceFilters({
           </select>
           <select
           className="border border-slate-300/40 rounded-lg py-2.5 px-3 focus:outline-none bg-gray-700/50 text-gray-50"
-          value={datacenterFilter}
-          onChange={(e) => onDatacenterChange(e.target.value)}
-          disabled={isLoadingDatacenters} //  로딩 중 비활성화
+           value={serverRoomFilter}
+           onChange={(e) => onServerRoomChange(e.target.value)}
+           disabled={isLoadingServerRooms} //  로딩 중 비활성화
         >
           <option value="">위치: 전체</option>
-          {isLoadingDatacenters ? (
+          {isLoadingServerRooms ? (
             <option disabled>불러오는 중...</option>
           ) : (
-            datacenters.map((dc) => (
+            serverRooms.map((dc) => (
               <option key={dc.id} value={dc.id}>
                 {dc.name}
               </option>
