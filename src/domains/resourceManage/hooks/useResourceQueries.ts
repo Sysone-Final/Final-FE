@@ -24,12 +24,12 @@ import type {
 const USE_MOCK_DATA = false;
 
 import {
-  MOCK_DATA,
-  MOCK_DATACENTERS,
-  MOCK_RACKS,
-  mockDeleteResource,
-  mockDeleteMultipleResources,
-  mockUpdateMultipleResourceStatus,
+ MOCK_DATA, 
+ MOCK_DATACENTERS,
+ MOCK_RACKS,
+ mockDeleteResource,
+ mockDeleteMultipleResources,
+ mockUpdateMultipleResourceStatus,
 } from "../api/resourceManageApi.mock";
 
 export const RESOURCE_QUERY_KEY = "resources";
@@ -54,7 +54,7 @@ export const useGetResourceList = (
 
         if (keyword) {
           filteredData = filteredData.filter(
-            (r) =>
+            (r: Resource) =>
               r.equipmentName.toLowerCase().includes(keyword) ||
               (r.modelName && r.modelName.toLowerCase().includes(keyword)) ||
               (r.ipAddress && r.ipAddress.includes(keyword))
@@ -62,17 +62,17 @@ export const useGetResourceList = (
         }
         if (filters.status) {
           filteredData = filteredData.filter(
-            (r) => r.status === filters.status
+            (r: Resource) => r.status === filters.status
           );
         }
         if (filters.type) {
           filteredData = filteredData.filter(
-            (r) => r.equipmentType === filters.type
+            (r: Resource) => r.equipmentType === filters.type
           );
         }
         if (filters.serverRoomId) {
           filteredData = filteredData.filter(
-            (r) => r.serverRoomId === Number(filters.serverRoomId)
+            (r: Resource) => r.serverRoomId === Number(filters.serverRoomId)
           );
         }
 
@@ -124,7 +124,7 @@ export const useGetRacksByServerRoom = (serverRoomId: number | null) => {
       if (USE_MOCK_DATA) {
         console.warn("Using MOCK data for useGetRacksByDatacenter");
        const filteredRacks = serverRoomId !== null
-          ? MOCK_RACKS.filter((r) => r.serverRoomId === serverRoomId)
+          ? MOCK_RACKS.filter((r: Rack) => r.serverRoomId === serverRoomId)
           : [];
         return Promise.resolve(filteredRacks as Rack[]);
       }
@@ -147,7 +147,7 @@ export const useGetResourceById = (resourceId: number | null) => {
       if (USE_MOCK_DATA) {
         console.warn("Using MOCK data for useGetResourceById");
         const resource = resourceId
-          ? MOCK_DATA.find((r) => r.id === resourceId)
+          ? MOCK_DATA.find((r: Resource) => r.id === resourceId)
           : undefined;
 
         if (!resource && resourceId) {

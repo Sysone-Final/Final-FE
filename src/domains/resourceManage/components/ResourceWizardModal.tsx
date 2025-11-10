@@ -161,7 +161,7 @@ const Step2Location = ({ register, errors, watch, getValues }: Step2Props) => {
           </label>
           <select
             {...register("serverRoomId", {
-              validate: (value) => value !== "" || "서버실을 선택해야 합니다.",
+              validate: (value) => !!value || "서버실을 선택해야 합니다.",
               valueAsNumber: true,
             })}
             className={`modal-input ${errors.serverRoomId ? "border-red-500" : ""}`}
@@ -191,7 +191,7 @@ const Step2Location = ({ register, errors, watch, getValues }: Step2Props) => {
           </label>
           <select
             {...register("rackId", {
-              validate: (value) => value !== "" || "랙을 선택해야 합니다.",
+              validate: (value) => !!value || "랙을 선택해야 합니다.",
               valueAsNumber: true,
             })}
             className={`modal-input ${errors.rackId ? "border-red-500" : ""}`}
