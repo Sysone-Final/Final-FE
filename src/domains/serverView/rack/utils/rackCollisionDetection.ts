@@ -3,7 +3,7 @@ import type { Equipments } from "../types";
 // 두 장비가 겹치는 지 확인
 function Overlapping(
   range1: { bottom: number; top: number },
-  range2: { bottom: number; top: number },
+  range2: { bottom: number; top: number }
 ): boolean {
   return !(range1.top < range2.bottom || range1.bottom > range2.top);
 }
@@ -15,7 +15,7 @@ export function checkCollision(
     height: number;
   },
   existingDevices: Equipments[],
-  excludeDeviceId?: number,
+  excludeDeviceId?: number
 ): boolean {
   const newRange = {
     bottom: newDevice.position,
@@ -23,10 +23,7 @@ export function checkCollision(
   };
 
   return existingDevices.some((device) => {
-    if (
-      excludeDeviceId !== undefined &&
-      device.equipmentId === excludeDeviceId
-    ) {
+    if (excludeDeviceId !== undefined && device.id === excludeDeviceId) {
       return false;
     }
 
@@ -46,17 +43,14 @@ export function findCollidingDevice(
     height: number;
   },
   existingDevices: Equipments[],
-  excludeDeviceId?: number,
+  excludeDeviceId?: number
 ): Equipments | null {
   const newRange = {
     bottom: newDevice.position,
     top: newDevice.position + newDevice.height - 1,
   };
   const collidingDevice = existingDevices.find((device) => {
-    if (
-      excludeDeviceId !== undefined &&
-      device.equipmentId == excludeDeviceId
-    ) {
+    if (excludeDeviceId !== undefined && device.id == excludeDeviceId) {
       return false;
     }
     const existingRange = {
