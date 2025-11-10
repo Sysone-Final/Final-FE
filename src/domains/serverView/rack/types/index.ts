@@ -4,23 +4,20 @@ export type EquipmentType =
   | "ROUTER"
   | "STORAGE"
   | "FIREWALL"
-  | "LOAD_BALANCER"
+  | "LOAD_BALANCE"
   | "KVM";
 
-export type EquipmentStatus =
-  | "NORMAL"
-  | "WARNING"
-  | "ERROR"
-  | "MAINTENANCE"
-  | "POWERED_OFF"
-  | "DECOMMISSIONED";
+export type EquipmentStatus = "NORMAL" | "WARNING" | "ERROR" | "MAINTENANCE";
 
-export interface RackDevice {
+export type EquipmentPosition = "FRONT" | "BACK";
+
+export interface Equipments {
   equipmentId: number;
   equipmentName: string;
   equipmentCode: string;
   equipmentType: EquipmentType;
   status: EquipmentStatus;
+  positionType: EquipmentPosition;
   startUnit: number;
   unitSize: number;
   rackName: string;

@@ -13,7 +13,7 @@ import LeftSidebar from '../components/LeftSidebar';
 import RightSidebar from '../components/RightSidebar';
 import StatusLegendAndFilters from '../components/LeftSidebar/StatusLegendAndFilters';
 import TopNWidget from '../components/TopNWidget';
-import { ConfirmationModal } from '../components/ConfirmationModal';
+import { ConfirmationModal } from '@shared/ConfirmationModal';
 
 interface FloorPlanPageProps {
   containerRef: React.RefObject<HTMLDivElement>;
