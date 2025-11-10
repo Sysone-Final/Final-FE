@@ -1,5 +1,3 @@
-// src/domains/resourceManage/types/resource.types.ts
-
 import type { TableMeta } from "@tanstack/react-table";
 
 // NOTE(user): 3단계 폼 기준 자원 상태 타입

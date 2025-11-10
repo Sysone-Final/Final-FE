@@ -16,10 +16,12 @@ const ServerRoomDashboard: React.FC = () => {
 
   const stats = useMemo(() => {
     const totalRooms = serverRooms.length;
-    const totalRacks = serverRooms.reduce((sum, room) => sum + room.rackCount, 0);
-    // 상태값 비교 시 대소문자 구분 주의 (예: 'Normal' vs 'normal')
-    const normalStatus = serverRooms.filter(room => room.status.toLowerCase() === 'normal').length;
-    const needAttention = serverRooms.filter(room => ['warning', 'critical'].includes(room.status.toLowerCase())).length;
+    const totalRacks = serverRooms.reduce((sum, room) => sum + (room.rackCount || 0), 0);
+    // status가 없는 경우 대비하여 안전하게 처리
+    const normalStatus = serverRooms.filter(room => room.status?.toLowerCase() === 'normal').length;
+    const needAttention = serverRooms.filter(room => 
+      room.status && ['warning', 'critical'].includes(room.status.toLowerCase())
+    ).length;
     return { totalRooms, totalRacks, normalStatus, needAttention };
   }, [serverRooms]);
 
