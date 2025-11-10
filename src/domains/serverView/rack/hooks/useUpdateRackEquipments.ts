@@ -32,10 +32,18 @@ export const useUpdateRackEquipments = () => {
 
       queryClient.setQueryData<Equipments[]>(
         ["rackEquipments", data.rackId],
-        (old) =>
-          old?.map((item) => (item.id === id ? { ...item, ...data } : item)) ||
-          []
+        (old) => {
+          if (!Array.isArray(old)) {
+            console.warn("캐시 데이터가 배열이 아닙니다:", old);
+            return [];
+          }
+
+          return old.map((item) =>
+            item.id === id ? { ...item, ...data } : item
+          );
+        }
       );
+
       return { previousData, rackId: data.rackId };
     },
 
