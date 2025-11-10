@@ -10,6 +10,7 @@ import { useBabylonDatacenterStore } from '../stores/useBabylonDatacenterStore';
 import { CAMERA_CONFIG, EQUIPMENT_PALETTE } from '../constants/config';
 import { useServerRoomEquipment } from '../hooks/useServerRoomEquipment';
 import type { EquipmentType } from '../types';
+import { LoadingSpinner } from '@/shared/loading';
 
 interface BabylonDatacenterViewProps {
   mode?: 'edit' | 'view'; // 초기 모드 (기본값: view)
@@ -271,6 +272,8 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
   // Babylon.js 씬 초기화
   useEffect(() => {
     if (!canvasRef.current) return;
+    
+    if (equipmentLoading) return;
 
     // 엔진 생성
     const engine = new Engine(canvasRef.current, true, {
@@ -315,6 +318,7 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
     const light2 = new HemisphericLight('light2', new Vector3(0, -1, 0), scene);
     light2.intensity = 0.3;
 
+    // 장비 로딩이 완료된 후에만 씬 준비 완료로 설정
     setIsSceneReady(true);
 
     // 렌더링 루프 (최적화: 렌더링이 필요할 때만 실행)
@@ -347,7 +351,7 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
         engine.dispose();
       }
     };
-  }, [gridConfig.columns, gridConfig.rows, gridConfig.cellSize]);
+  }, [gridConfig.columns, gridConfig.rows, gridConfig.cellSize, equipmentLoading]);
 
   // 모드 변경에 따른 포인터 상호작용 업데이트
   useEffect(() => {
@@ -470,7 +474,7 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
     scene.onPointerUp = undefined;
   }, [mode, isDraggingSelection, selectionStart, clearSelection, setSelectionArea, selectEquipmentInArea, screenToGrid]);
 
-  // 🔥 랙 모달이 열리면 Babylon 렌더링 일시정지 (성능 최적화)
+  //랙 모달이 열리면 Babylon 렌더링 일시정지 
   useEffect(() => {
     if (renderLoopRef.current !== undefined) {
       renderLoopRef.current = !isRackModalOpen;
@@ -516,6 +520,9 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
         onDrop={mode === 'edit' ? handleDrop : undefined} // 편집 모드에서만 드롭 허용
         onDragOver={mode === 'edit' ? handleDragOver : undefined} // 드래그 오버 허용
       />
+
+      {/* 로딩 표시  */}
+      {equipmentLoading && <LoadingSpinner message="서버실 데이터를 불러오는 중..." />}
 
       {/* 컨트롤 가이드 */}
       <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-md rounded-lg p-3 text-white text-xs max-w-xs z-10">
