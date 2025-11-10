@@ -1,5 +1,6 @@
 import { useFloorPlanStore } from '../../store/floorPlanStore';
 import type { Asset } from '../../types';
+import { useBabylonDatacenterStore } from '@/domains/serverView/view3d/stores/useBabylonDatacenterStore';
 
 // 상태 값에 따라 한글 이름과 CSS 클래스를 반환하는 헬퍼 함수
 const getStatusInfo = (status: Asset['status']) => {
@@ -17,6 +18,8 @@ const getStatusInfo = (status: Asset['status']) => {
 
 const PropertiesViewer: React.FC = () => {
   const { assets, selectedAssetIds } = useFloorPlanStore();
+
+  const openRackModal = useBabylonDatacenterStore((state) => state.openRackModal);
 
   const selectedAsset = selectedAssetIds.length > 0
     ? assets.find((asset) => asset.id === selectedAssetIds[0])
@@ -67,7 +70,10 @@ const PropertiesViewer: React.FC = () => {
       
       {selectedAsset.assetType === 'rack' && (
         <div className="viewer-footer">
-            <button className="detail-button text-button">
+            <button className="detail-button text-button"
+            onClick={() => openRackModal(selectedAsset.id)} 
+            >
+              
             랙 상세 보기
             </button>
         </div>
