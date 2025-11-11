@@ -12,7 +12,7 @@ interface ConfirmationModalProps {
 }
 
 // 이 파일은 store를 전혀 모릅니다.
-export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
+export function ConfirmationModal({
   isOpen,
   onClose,
   onConfirm,
@@ -20,7 +20,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   confirmText,
   isDestructive = false,
   children,
-}) => {
+}: ConfirmationModalProps) {
   if (!isOpen) return null;
 
   return (
@@ -73,4 +73,4 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       </div>
     </div>
   );
-};
+}
