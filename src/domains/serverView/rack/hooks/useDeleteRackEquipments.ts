@@ -1,6 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteRackEquipments } from "../api/deleteRackEquipments";
-import type { Equipments } from "../types";
+import type { RackEquipmentsResult } from "../types";
+
+interface RackEquipmentResponse {
+  status_code: number;
+  status_message: string;
+  result: RackEquipmentsResult;
+}
 
 interface DeleteEquipmentParams {
   id: number;
@@ -19,17 +25,28 @@ export const useDeleteEquipments = () => {
         queryKey: ["rackEquipments", params.rackId],
       });
 
-      const previousData = queryClient.getQueryData<{ data: Equipments[] }>([
+      const previousData = queryClient.getQueryData<RackEquipmentResponse>([
         "rackEquipments",
         params.rackId,
       ]);
 
-      queryClient.setQueryData<{ data: Equipments[] }>(
+      queryClient.setQueryData<RackEquipmentResponse>(
         ["rackEquipments", params.rackId],
-        (old) => ({
-          ...old,
-          data: old?.data?.filter((d) => d.id !== params.id) || [],
-        })
+        (old) => {
+          if (!old?.result?.equipments) {
+            return old;
+          }
+
+          return {
+            ...old,
+            result: {
+              ...old.result,
+              equipments: old.result.equipments.filter(
+                (d) => d.id !== params.id
+              ),
+            },
+          };
+        }
       );
 
       return { previousData, rackId: params.rackId };
