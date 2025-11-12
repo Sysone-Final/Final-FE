@@ -65,7 +65,7 @@ const FloorPlanPage: React.FC<FloorPlanPageProps> = ({ containerRef, serverRoomI
   if (!loading && !error) {
     
     // 🚨 Goal 2: 3D 원본 그리드 설정 (예: 15x8)
-    const sourceGridConfig = gridConfig ?? { columns: 15, rows: 8 };
+    const sourceGridConfig = gridConfig ?? { columns: 15, rows: 8, cellSize: 2 };
 
     try {
       // 🚨 Goal 2: 변환 함수에는 원본 3D 그리드 설정을 전달
