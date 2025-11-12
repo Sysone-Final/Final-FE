@@ -1,7 +1,9 @@
 import React, { useEffect } from 'react';
 import { DndContext } from '@dnd-kit/core';
-import Canvas from '../components/Canvas';
-import FloatingSidebarPanel from '../components/FloatingSidebarPanel';
+// 🚨 경로 수정: './Canvas' -> '../components/Canvas'
+import Canvas from '../components/Canvas'; 
+// 🚨 경로 수정: './FloatingSidebarPanel' -> '../components/FloatingSidebarPanel'
+import FloatingSidebarPanel from '../components/FloatingSidebarPanel'; 
 import { useFloorPlanDragDrop } from '../hooks/useFloorPlanDragDrop';
 import { useFloorPlanNavigationGuard } from '../hooks/useFloorPlanNavigationGuard';
 import { useFloorPlanStore, initialState } from '../store/floorPlanStore';
@@ -11,10 +13,14 @@ import { useServerRoomEquipment } from '@/domains/serverView/view3d/hooks/useSer
 import { transform3DTo2DAssets } from '../utils/dataTransformer';
 
 // Sidebar components
-import LeftSidebar from '../components/LeftSidebar';
-import RightSidebar from '../components/RightSidebar';
-import StatusLegendAndFilters from '../components/LeftSidebar/StatusLegendAndFilters';
-import TopNWidget from '../components/TopNWidget';
+// 🚨 경로 수정: './LeftSidebar' -> '../components/LeftSidebar'
+import LeftSidebar from '../components/LeftSidebar'; 
+// 🚨 경로 수정: './RightSidebar' -> '../components/RightSidebar'
+import RightSidebar from '../components/RightSidebar'; 
+// 🚨 경로 수정: './LeftSidebar/StatusLegendAndFilters' -> '../components/LeftSidebar/StatusLegendAndFilters'
+import StatusLegendAndFilters from '../components/LeftSidebar/StatusLegendAndFilters'; 
+// 🚨 경로 수정: './TopNWidget' -> '../components/TopNWidget'
+import TopNWidget from '../components/TopNWidget'; 
 
 interface FloorPlanPageProps {
   containerRef: React.RefObject<HTMLDivElement>;
@@ -56,22 +62,27 @@ const FloorPlanPage: React.FC<FloorPlanPageProps> = ({ containerRef, serverRoomI
     //  'if (apiData)' 대신 'equipment3D'가 있는지 확인합니다.
     // 'equipment3D'는 훅에서 '?? []'로 처리되므로 null/undefined 체크가 필요 없을 수 있지만,
     // 'gridConfig'는 null일 수 있으므로 로딩이 끝난 시점(loading: false)을 기준으로 합니다.
-    if (!loading && !error) {
-      console.log('2D API Hook: Data received', { equipment3D, gridConfig });
+  if (!loading && !error) {
+    
+    // 🚨 Goal 2: 3D 원본 그리드 설정 (예: 15x8)
+    const sourceGridConfig = gridConfig ?? { columns: 15, rows: 8 };
 
-      try {
-        // 'equipment3D'는 이미 '[]'로 보장되므로 '|| []'가 필요 없습니다.
-        const assets2D = transform3DTo2DAssets(equipment3D);
-        console.log('Transformed 2D Assets:', assets2D);
+    try {
+      // 🚨 Goal 2: 변환 함수에는 원본 3D 그리드 설정을 전달
+      const assets2D = transform3DTo2DAssets(
+        equipment3D,
+        sourceGridConfig,
+      );
+      console.log('Transformed 2D Assets:', assets2D);
 
-        //  2D 스토어 상태 업데이트
-        useFloorPlanStore.setState({
-          assets: assets2D,
-          gridCols: gridConfig?.columns || 15,
-          gridRows: gridConfig?.rows || 8,
-          isLoading: false, // (중요) 로딩 상태 false로 변경
-          error: null,
-        });
+      // 🚨 Goal 2: 2D 스토어의 그리드 크기는 +2 (패딩)하여 설정
+      useFloorPlanStore.setState({
+        assets: assets2D,
+        gridCols: sourceGridConfig.columns + 2, // 👈 +2
+        gridRows: sourceGridConfig.rows + 2,    // 👈 +2
+        isLoading: false, // (중요) 로딩 상태 false로 변경
+        error: null,
+      });
       } catch (transformError) {
         //  transform3DTo2DAssets에서 에러가 나도 로딩이 멈추지 않도록 처리
         console.error('Failed to transform 3D data to 2D:', transformError);
