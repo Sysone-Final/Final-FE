@@ -10,7 +10,7 @@ import type {
   UseFormWatch,
   UseFormGetValues,
 } from "react-hook-form";
-import type { Resource, Rack } from "../types/resource.types";
+import type { Resource, Rack , ServerRoom} from "../types/resource.types";
 import {
   useCreateResource,
   useUpdateResource,
