@@ -9,6 +9,7 @@ import type {
   CreateRackRequest,
   CreateRackResponse,
 } from "../types";
+import { DEFAULT_GRID_CONFIG } from "../constants/config";
 
 // 공통 API 클라이언트 사용
 const apiClient = client;
@@ -63,7 +64,7 @@ export function transformToBackendEquipment(
  */
 export async function fetchServerRoomEquipment(
   serverRoomId: string,
-): Promise<{ equipment: Equipment3D[]; gridConfig: { rows: number; columns: number } }> {
+): Promise<{ equipment: Equipment3D[]; gridConfig: { rows: number; columns: number; cellSize: number } }> {
   try {
     const response = await apiClient.get<ServerRoomEquipmentResponse>(
       `/devices/serverroom/${serverRoomId}`,
@@ -75,10 +76,11 @@ export async function fetchServerRoomEquipment(
     // 백엔드 디바이스 데이터를 프론트엔드 형식으로 변환
     const equipment = transformBackendDevice(devices);
 
-    // 서버실 그리드 설정 반환
+    // 서버실 그리드 설정 반환 
     const gridConfig = {
       rows: serverRoom.rows,
       columns: serverRoom.columns,
+      cellSize: DEFAULT_GRID_CONFIG.cellSize, 
     };
 
     return { equipment, gridConfig };
