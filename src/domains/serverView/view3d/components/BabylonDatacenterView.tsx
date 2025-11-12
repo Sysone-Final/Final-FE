@@ -9,14 +9,17 @@ import SelectionBox from './SelectionBox';
 import { useBabylonDatacenterStore } from '../stores/useBabylonDatacenterStore';
 import { CAMERA_CONFIG, EQUIPMENT_PALETTE } from '../constants/config';
 import { useServerRoomEquipment } from '../hooks/useServerRoomEquipment';
+import { createDevice } from '../api/serverRoomEquipmentApi';
 import type { EquipmentType } from '../types';
+import { LoadingSpinner } from '@/shared/loading';
 
 interface BabylonDatacenterViewProps {
   mode?: 'edit' | 'view'; // 초기 모드 (기본값: view)
   serverRoomId?: string; // 서버실 ID
+  datacenterId?: number; // 데이터센터 ID (장비 생성 시 필요)
 }
 
-function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: BabylonDatacenterViewProps = {}) {
+function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId, datacenterId = 1 }: BabylonDatacenterViewProps = {}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<Engine | null>(null);
   const sceneRef = useRef<Scene | null>(null);
@@ -52,7 +55,6 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
     equipment,
     selectedEquipmentId,
     selectedEquipmentIds,
-    addEquipment,
     setSelectedEquipment,
     updateEquipmentPosition,
     updateMultipleEquipmentPositions,
@@ -86,7 +88,6 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
   // 서버실 데이터 로드 및 그리드 설정
   useEffect(() => {
     if (!serverRoomId || equipmentLoading) return;
-    if (currentServerRoomId === serverRoomId) return;
     if (!fetchedEquipment || !fetchedGridConfig) return;
 
     // 그리드 설정 업데이트
@@ -95,17 +96,55 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
       columns: fetchedGridConfig.columns,
     });
 
-    // 서버실 초기화
+    // 서버실 초기화 (변경 감지 로직은 initializeServerRoom 내부에서 처리)
     initializeServerRoom(serverRoomId, fetchedEquipment);
   }, [serverRoomId, currentServerRoomId, initializeServerRoom, fetchedEquipment, fetchedGridConfig, equipmentLoading, setGridConfig]);
 
+  // 토스트 표시 헬퍼
+  const showToast = useCallback((message: string, severity: 'error' | 'warning' | 'info' | 'success' = 'info') => {
+    setToast({ open: true, message, severity });
+  }, []);
+
   // 장비 추가 핸들러
-  const handleAddEquipment = useCallback((type: EquipmentType) => {
-    // 맵 중앙에 추가
-    const centerX = Math.floor(gridConfig.columns / 2);
-    const centerY = Math.floor(gridConfig.rows / 2);
-    addEquipment(type, centerX, centerY);
-  }, [addEquipment, gridConfig.columns, gridConfig.rows]);
+  const handleAddEquipment = useCallback(async (type: EquipmentType) => {
+    if (!serverRoomId) {
+      showToast('서버실 ID가 없습니다', 'error');
+      return;
+    }
+
+    try {
+      // 맵 중앙에 추가
+      const centerX = Math.floor(gridConfig.columns / 2);
+      const centerY = Math.floor(gridConfig.rows / 2);
+
+      // API를 통해 장비 생성
+      const createdEquipment = await createDevice(
+        {
+          type,
+          gridX: centerX,
+          gridY: centerY,
+          gridZ: 0,
+          rotation: 0,
+          metadata: {
+            name: `새 ${type}`,
+            status: 'NORMAL',
+          },
+        },
+        Number(serverRoomId),
+        datacenterId,
+      );
+
+      // 스토어에 추가 (loadEquipment 대신 직접 업데이트)
+      useBabylonDatacenterStore.setState((state) => ({
+        equipment: [...state.equipment, createdEquipment],
+      }));
+
+      showToast('장비가 추가되었습니다', 'success');
+    } catch (error) {
+      console.error('Failed to add equipment:', error);
+      showToast('장비 추가에 실패했습니다', 'error');
+    }
+  }, [serverRoomId, datacenterId, gridConfig.columns, gridConfig.rows, showToast]);
 
   const handleRotateEquipment = useCallback((clockwise: boolean) => {
     if (!selectedEquipmentId) return;
@@ -126,11 +165,6 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
     }
     setContextMenu({ x, y, equipmentId });
   }, [selectedEquipmentIds, setSelectedEquipment]);
-
-  // 토스트 표시 헬퍼
-  const showToast = useCallback((message: string, severity: 'error' | 'warning' | 'info' | 'success' = 'info') => {
-    setToast({ open: true, message, severity });
-  }, []);
 
   // 토스트 닫기
   const handleCloseToast = useCallback(() => {
@@ -196,8 +230,13 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
   }, [gridConfig.cellSize]);
 
   // 드래그 앤 드롭으로 장비 추가
-  const handleDrop = useCallback((e: React.DragEvent) => {
+  const handleDrop = useCallback(async (e: React.DragEvent) => {
     e.preventDefault();
+    
+    if (!serverRoomId) {
+      showToast('서버실 ID가 없습니다', 'error');
+      return;
+    }
     
     const equipmentType = e.dataTransfer.getData('equipmentType') as EquipmentType;
     if (!equipmentType) return;
@@ -222,10 +261,35 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
       return;
     }
 
-    // 장비 추가
-    addEquipment(equipmentType, gridX, gridY);
-    showToast('장비가 추가되었습니다', 'success');
-  }, [screenToGrid, isValidPosition, isPositionOccupied, addEquipment, showToast]);
+    try {
+      // API를 통해 장비 생성
+      const createdEquipment = await createDevice(
+        {
+          type: equipmentType,
+          gridX,
+          gridY,
+          gridZ: 0,
+          rotation: 0,
+          metadata: {
+            name: `새 ${equipmentType}`,
+            status: 'NORMAL',
+          },
+        },
+        Number(serverRoomId),
+        datacenterId,
+      );
+
+      // 스토어에 추가
+      useBabylonDatacenterStore.setState((state) => ({
+        equipment: [...state.equipment, createdEquipment],
+      }));
+
+      showToast('장비가 추가되었습니다', 'success');
+    } catch (error) {
+      console.error('Failed to add equipment:', error);
+      showToast('장비 추가에 실패했습니다', 'error');
+    }
+  }, [serverRoomId, datacenterId, screenToGrid, isValidPosition, isPositionOccupied, showToast]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -271,6 +335,8 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
   // Babylon.js 씬 초기화
   useEffect(() => {
     if (!canvasRef.current) return;
+    
+    if (equipmentLoading) return;
 
     // 엔진 생성
     const engine = new Engine(canvasRef.current, true, {
@@ -315,6 +381,7 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
     const light2 = new HemisphericLight('light2', new Vector3(0, -1, 0), scene);
     light2.intensity = 0.3;
 
+    // 장비 로딩이 완료된 후에만 씬 준비 완료로 설정
     setIsSceneReady(true);
 
     // 렌더링 루프 (최적화: 렌더링이 필요할 때만 실행)
@@ -347,7 +414,7 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
         engine.dispose();
       }
     };
-  }, [gridConfig.columns, gridConfig.rows, gridConfig.cellSize]);
+  }, [gridConfig.columns, gridConfig.rows, gridConfig.cellSize, equipmentLoading]);
 
   // 모드 변경에 따른 포인터 상호작용 업데이트
   useEffect(() => {
@@ -470,7 +537,7 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
     scene.onPointerUp = undefined;
   }, [mode, isDraggingSelection, selectionStart, clearSelection, setSelectionArea, selectEquipmentInArea, screenToGrid]);
 
-  // 🔥 랙 모달이 열리면 Babylon 렌더링 일시정지 (성능 최적화)
+  //랙 모달이 열리면 Babylon 렌더링 일시정지 
   useEffect(() => {
     if (renderLoopRef.current !== undefined) {
       renderLoopRef.current = !isRackModalOpen;
@@ -516,6 +583,9 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
         onDrop={mode === 'edit' ? handleDrop : undefined} // 편집 모드에서만 드롭 허용
         onDragOver={mode === 'edit' ? handleDragOver : undefined} // 드래그 오버 허용
       />
+
+      {/* 로딩 표시  */}
+      {equipmentLoading && <LoadingSpinner message="서버실 데이터를 불러오는 중..." />}
 
       {/* 컨트롤 가이드 */}
       <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-md rounded-lg p-3 text-white text-xs max-w-xs z-10">

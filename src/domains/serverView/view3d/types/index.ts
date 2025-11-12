@@ -21,8 +21,16 @@ export interface Equipment3D {
 // 장비 추가 정보
 export interface EquipmentMetadata {
   name?: string;
+  code?: string;
   status?: string;
   temperature?: number;
+  rackName?: string;
+  modelName?: string;
+  manufacturer?: string;
+  serialNumber?: string;
+  purchaseDate?: string;
+  warrantyEndDate?: string;
+  notes?: string;
   [key: string]: unknown; // 기타 메타데이터
 }
 
@@ -55,6 +63,73 @@ export interface BackendDevice {
   status: string;
   rackName: string | null;
   rackId: number | null;
+}
+
+// 새 장비 생성 요청 데이터 구조
+export interface CreateDeviceRequest {
+  deviceName: string;
+  deviceCode: string;
+  gridY: number;
+  gridX: number;
+  gridZ: number;
+  rotation: number; // 각도 (degree)
+  status: string;
+  modelName?: string;
+  manufacturer?: string;
+  serialNumber?: string;
+  purchaseDate?: string;
+  warrantyEndDate?: string;
+  notes?: string;
+  deviceTypeId: number;
+  datacenterId: number;
+  rackId?: number | null;
+  serverRoomId: number;
+}
+
+// 장비 생성 응답 구조
+export interface CreateDeviceResponse {
+  status_code: number;
+  status_message: string;
+  result: BackendDevice;
+}
+
+// 랙 생성 요청 데이터 구조
+export interface CreateRackRequest {
+  rackName: string;
+  gridX: number;
+  gridY: number;
+  totalUnits: number;
+  doorDirection: "FRONT" | "BACK";
+  zoneDirection: "NORTH" | "SOUTH" | "EAST" | "WEST";
+  maxPowerCapacity: number;
+  manufacturer?: string;
+  serialNumber?: string;
+  status: "ACTIVE" | "INACTIVE" | "MAINTENANCE";
+  rackType: "STANDARD" | "BLADE" | "OPEN_FRAME";
+  notes?: string;
+  serverRoomId: number;
+}
+
+// 랙 생성 응답 구조
+export interface CreateRackResponse {
+  status_code: number;
+  status_message: string;
+  result: {
+    id: number;
+    rackName: string;
+    gridX: number;
+    gridY: number;
+    totalUnits: number;
+    doorDirection: string;
+    zoneDirection: string;
+    maxPowerCapacity: number;
+    manufacturer?: string;
+    serialNumber?: string;
+    status: string;
+    rackType: string;
+    notes?: string;
+    serverRoomId: number;
+  };
 }
 
 // 이전 구조 호환성을 위한 타입 (deprecated)

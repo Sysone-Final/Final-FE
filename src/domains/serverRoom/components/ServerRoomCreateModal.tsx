@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
 import { X } from "lucide-react";
 import { createPortal } from "react-dom";
-import { useCreateServerRoom } from "../hooks/useServerRoomQueries";
+import { useCreateServerRoom, useDataCenters } from "../hooks/useServerRoomQueries";
 import type { CreateServerRoomRequest } from "../api/serverRoomApi";
 
 // 공통 스타일
@@ -15,9 +15,9 @@ interface ServerRoomCreateModalProps {
 }
 
 type FormValues = {
+  dataCenterId: number;
   name: string;
   code: string;
-  location: string;
   floor: number;
   rows: number;
   columns: number;
@@ -36,9 +36,10 @@ function ServerRoomCreateModal({
     reset,
   } = useForm<FormValues>({
     defaultValues: {
+      dataCenterId: undefined,
       name: "",
       code: "",
-      location: "",
+      floor: 1,
       rows: 10,
       columns: 10,
       description: "",
@@ -46,6 +47,7 @@ function ServerRoomCreateModal({
     },
   });
 
+  const { data: dataCenters, isLoading: isLoadingDataCenters } = useDataCenters();
   const createServerRoomMutation = useCreateServerRoom();
   const isLoading = createServerRoomMutation.isPending;
 
@@ -56,24 +58,15 @@ function ServerRoomCreateModal({
   };
 
   const onSubmit: SubmitHandler<FormValues> = (data) => {
-    // 백엔드로 보낼 데이터 구성 (기본값 포함)
+    // 백엔드로 보낼 데이터 구성
     const serverRoomData: CreateServerRoomRequest = {
+      dataCenterId: data.dataCenterId,
       name: data.name,
       code: data.code,
-      location: data.location,
       floor: data.floor,
       rows: data.rows,
       columns: data.columns,
-    //   status: "ACTIVE",
       description: data.description || "",
-    //   totalArea: 800.5,
-    //   totalPowerCapacity: 2000.0,
-    //   totalCoolingCapacity: 1500.0,
-    //   maxRackCount: 150,
-    //   temperatureMin: 18.0,
-    //   temperatureMax: 27.0,
-    //   humidityMin: 40.0,
-    //   humidityMax: 60.0,
       managerId: data.managerId,
     };
 
@@ -88,7 +81,7 @@ function ServerRoomCreateModal({
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex justify-center items-center p-4 backdrop-blur-sm bg-black/20">
-      <div className="modal">
+      <div className="modal max-w-2xl">
         <div className="p-6 md:p-8">
           {/* 헤더 */}
           <div className="flex justify-between items-center mb-6">
@@ -106,23 +99,66 @@ function ServerRoomCreateModal({
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="mb-6 max-h-[60vh] overflow-y-auto pr-2">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* 데이터센터명 */}
+                {/* 데이터센터 드롭다운 */}
                 <div>
                   <label className={labelStyle}>
                     데이터센터 <span className="text-red-500">*</span>
                   </label>
+                  <select
+                    {...register("dataCenterId", {
+                      required: "데이터센터는 필수 선택 항목입니다.",
+                      valueAsNumber: true,
+                    })}
+                    className={`modal-input ${errors.dataCenterId ? "border-red-500" : ""}`}
+                    disabled={isLoadingDataCenters}
+                  >
+                    <option value="">데이터센터를 선택하세요</option>
+                    {dataCenters?.map((dc) => (
+                      <option key={dc.id} value={dc.id}>
+                        {dc.name} ({dc.code})
+                      </option>
+                    ))}
+                  </select>
+                  {errors.dataCenterId && (
+                    <p className={errorTextStyle}>{errors.dataCenterId.message}</p>
+                  )}
+                </div>
+
+                {/* 서버실명 */}
+                <div>
+                  <label className={labelStyle}>
+                    서버실명 <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="text"
                     {...register("name", {
-                      required: "IDC 필수 입력 항목입니다.",
+                      required: "서버실명은 필수 입력 항목입니다.",
                     })}
                     className={`modal-input ${errors.name ? "border-red-500 " : ""}`}
-                    placeholder="서울 데이터센터"
+                    placeholder="국방부 서버실"
                   />
                   {errors.name && (
                     <p className={errorTextStyle}>{errors.name.message}</p>
                   )}
                 </div>
+
+                {/* 위치 */}
+                {/* <div className="md:col-span-1">
+                  <label className={labelStyle}>
+                    위치 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    {...register("location", {
+                      required: "위치는 필수 입력 항목입니다.",
+                    })}
+                    className={`modal-input ${errors.location ? "border-red-500" : ""}`}
+                    placeholder="부산시 해운대구 센텀중앙로 48"
+                  />
+                  {errors.location && (
+                    <p className={errorTextStyle}>{errors.location.message}</p>
+                  )}
+                </div> */}
 
                 {/* 코드 */}
                 <div>
@@ -139,24 +175,6 @@ function ServerRoomCreateModal({
                   />
                   {errors.code && (
                     <p className={errorTextStyle}>{errors.code.message}</p>
-                  )}
-                </div>
-
-                {/* 위치 */}
-                <div className="md:col-span-1">
-                  <label className={labelStyle}>
-                    위치 <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    {...register("location", {
-                      required: "위치는 필수 입력 항목입니다.",
-                    })}
-                    className={`modal-input ${errors.location ? "border-red-500" : ""}`}
-                    placeholder="서울특별시 마포구 월드컵대로"
-                  />
-                  {errors.location && (
-                    <p className={errorTextStyle}>{errors.location.message}</p>
                   )}
                 </div>
 
