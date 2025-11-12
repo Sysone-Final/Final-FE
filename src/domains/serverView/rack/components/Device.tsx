@@ -22,6 +22,7 @@ interface DeviceProps {
   editMode: boolean;
   onDragEnd?: (deviceId: number, newY: number) => void;
   onDelete?: (deviceId: number) => void;
+  onClick?: (deviceId: number, deviceName: string) => void;
   isEditing?: boolean;
   tempDeviceName?: string;
   onDeviceNameChange?: (deviceId: number, name: string) => void;
@@ -41,6 +42,7 @@ function Device({
   frontView,
   editMode,
   onDelete,
+  onClick,
   isEditing = false,
   tempDeviceName = "",
   onDeviceNameChange,
@@ -77,12 +79,20 @@ function Device({
     onDeviceNameConfirm?.(device);
   };
 
+  const handleClick = () => {
+    if (!editMode && !isFloating && !isEditing && onClick) {
+      onClick(device.id, device.equipmentName || device.equipmentType);
+    }
+  };
+
   return (
     <Group
       y={y}
       opacity={dragging ? 0.5 : opacity}
       draggable={!isFloating && editMode}
       dragBoundFunc={!isFloating && editMode ? handleDragBound : undefined}
+      onClick={handleClick}
+      onDragStart={() => setIsDragging(true)}
       onDragEnd={(e) => {
         setIsDragging(false);
         if (onDragEnd && !isFloating && editMode) {

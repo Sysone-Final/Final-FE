@@ -25,6 +25,7 @@ interface RackProps {
   onDeviceNameChange: (deviceId: number, name: string) => void;
   onDeviceNameConfirm: (device: Equipments) => void;
   onDeviceNameCancel: (deviceId: number) => void;
+  onDeviceClick: (deviceId: number, deviceName: string) => void;
   rackId: number;
   serverRoomId: number;
 }
@@ -45,6 +46,7 @@ function Rack({
   onDeviceNameChange,
   onDeviceNameConfirm,
   onDeviceNameCancel,
+  onDeviceClick,
 }: RackProps) {
   const { width: rackWidth, unitHeight } = RACK_CONFIG;
 
@@ -161,6 +163,7 @@ function Rack({
                 x={rackX}
                 onDragEnd={handleDeviceDragEnd}
                 onDelete={onDeviceDelete}
+                onClick={onDeviceClick}
                 frontView={frontView}
                 editMode={editMode}
                 isEditing={editingDeviceId === device.id}
