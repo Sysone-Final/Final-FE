@@ -10,7 +10,7 @@ import type {
   UseFormWatch,
   UseFormGetValues,
 } from "react-hook-form";
-import type { Resource, Rack } from "../types/resource.types";
+import type { Resource, Rack , ServerRoom} from "../types/resource.types";
 import {
   useCreateResource,
   useUpdateResource,
@@ -43,6 +43,15 @@ interface Step2Props {
   errors: FieldErrors<FormValues>;
   watch: UseFormWatch<FormValues>;
   getValues: UseFormGetValues<FormValues>;
+  isUnallocated?: boolean;
+
+  serverRooms: ServerRoom[] | undefined;
+ isLoadingServerRooms: boolean;
+ isErrorServerRooms: boolean;
+ racks: Rack[] | undefined;
+ isLoadingRacks: boolean;
+ isErrorRacks: boolean;
+ watchedServerRoomId: number | null | undefined;
 }
 
 interface Step3Props {
@@ -128,20 +137,34 @@ const Step1Identity = ({
 );
 
 // --- 스텝 2 컴포넌트 ---
-const Step2Location = ({ register, errors, watch, getValues }: Step2Props) => {
- const watchedServerRoomId = watch("serverRoomId");
+const Step2Location = ({ 
+  register, 
+  errors, 
+  watch, 
+  getValues,
+  isUnallocated = false,
+  // --- props로 데이터 받기 ---
+  serverRooms,
+  isLoadingServerRooms,
+  isErrorServerRooms,
+  racks,
+  isLoadingRacks,
+  isErrorRacks,
+  watchedServerRoomId
+}: Step2Props) => {
+ // const watchedServerRoomId = watch("serverRoomId"); // 모달에서 이미 watch함
   const watchedRackId = watch("rackId");
 
-  const {
-    data: serverRooms,
-    isLoading: isLoadingServerRooms,
-    isError: isErrorServerRooms,
-  } = useGetServerRooms();
-  const {
-    data: racks,
-    isLoading: isLoadingRacks,
-    isError: isErrorRacks,
-  } = useGetRacksByServerRoom(watchedServerRoomId || null);
+  // const {
+  //   data: serverRooms,
+  //   isLoading: isLoadingServerRooms,
+  //   isError: isErrorServerRooms,
+  // } = useGetServerRooms();
+  // const {
+  //   data: racks,
+  //   isLoading: isLoadingRacks,
+  //   isError: isErrorRacks,
+  // } = useGetRacksByServerRoom(watchedServerRoomId || null);
 
   const selectedRack = useMemo(() => {
     if (!watchedRackId || !racks || !Array.isArray(racks)) return null;
@@ -157,16 +180,17 @@ const Step2Location = ({ register, errors, watch, getValues }: Step2Props) => {
       <div className={gridContainerStyle}>
         <div>
           <label className={labelStyle}>
-            서버실 <span className="text-red-500">*</span>
+            서버실 {isUnallocated ? "" : <span className="text-red-500">*</span>}
           </label>
           <select
             {...register("serverRoomId", {
-              validate: (value) => !!value || "서버실을 선택해야 합니다.",
-              valueAsNumber: true,
-            })}
-            className={`modal-input ${errors.serverRoomId ? "border-red-500" : ""}`}
-            disabled={isLoadingServerRooms || isErrorServerRooms}
-          >
+       validate: (value) =>
+        isUnallocated || !!value || "서버실을 선택해야 합니다.",
+       valueAsNumber: true,
+      })}
+      className={`modal-input ${errors.serverRoomId ? "border-red-500" : ""}`}
+      disabled={isLoadingServerRooms || isErrorServerRooms || isUnallocated}
+     >
             <option value="">
               {isLoadingServerRooms
                 ? "불러오는 중..."
@@ -187,16 +211,17 @@ const Step2Location = ({ register, errors, watch, getValues }: Step2Props) => {
         </div>
         <div>
           <label className={labelStyle}>
-            랙 (Rack) <span className="text-red-500">*</span>
-          </label>
-          <select
-            {...register("rackId", {
-              validate: (value) => !!value || "랙을 선택해야 합니다.",
-              valueAsNumber: true,
-            })}
-            className={`modal-input ${errors.rackId ? "border-red-500" : ""}`}
-            disabled={!watchedServerRoomId || isLoadingRacks || isErrorRacks}
-          >
+            랙 (Rack) {isUnallocated ? "" : <span className="text-red-500">*</span>}
+     </label>
+     <select
+      {...register("rackId", {
+       validate: (value) =>
+        isUnallocated || !!value || "랙을 선택해야 합니다.",
+       valueAsNumber: true,
+      })}
+      className={`modal-input ${errors.rackId ? "border-red-500" : ""}`}
+      disabled={!watchedServerRoomId || isLoadingRacks || isErrorRacks || isUnallocated}
+     >
             <option value="">
               {isLoadingRacks
                 ? "불러오는 중..."
@@ -221,24 +246,28 @@ const Step2Location = ({ register, errors, watch, getValues }: Step2Props) => {
 
         <div>
           <label className={labelStyle}>
-            시작 유닛 <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="number"
-            {...register("startUnit", {
-              required: "시작 유닛을 입력하세요.",
-              valueAsNumber: true,
-              min: { value: 1, message: "시작 유닛은 1 이상이어야 합니다." },
-              max: {
-                value: maxUnits,
-                message: `이 랙의 최대 유닛(${maxUnits}U)을 초과할 수 없습니다.`,
-              },
-            })}
-            min="1"
-            max={maxUnits}
-            className={`modal-input ${errors.startUnit ? "border-red-500" : ""}`}
-            disabled={!watchedRackId}
-          />
+            시작 유닛 {isUnallocated ? "" : <span className="text-red-500">*</span>}
+     </label>
+     <input
+      type="number"
+      {...register("startUnit", {
+       required: isUnallocated ? false : "시작 유닛을 입력하세요.",
+       valueAsNumber: true,
+       min: isUnallocated
+        ? undefined
+        : { value: 1, message: "시작 유닛은 1 이상이어야 합니다." },
+       max: isUnallocated
+        ? undefined
+        : {
+          value: maxUnits,
+          message: `이 랙의 최대 유닛(${maxUnits}U)을 초과할 수 없습니다.`,
+         },
+      })}
+      min="1"
+      max={maxUnits}
+      className={`modal-input ${errors.startUnit ? "border-red-500" : ""}`}
+      disabled={!watchedRackId || isUnallocated}
+     />
           <p className={helperTextStyle}>
             랙의 몇 번째 U부터? (최대: {maxUnits}U)
           </p>
@@ -257,7 +286,9 @@ const Step2Location = ({ register, errors, watch, getValues }: Step2Props) => {
               valueAsNumber: true,
               min: { value: 1, message: "유닛 크기는 1 이상이어야 합니다." },
               validate: (value) => {
-                const startUnit = getValues("startUnit");
+        if (isUnallocated) return true; 
+
+        const startUnit = getValues("startUnit");
                 if (typeof startUnit === 'number' && typeof value === 'number') {
                   return (
                     startUnit + value - 1 <= maxUnits ||
@@ -270,7 +301,7 @@ const Step2Location = ({ register, errors, watch, getValues }: Step2Props) => {
             min="1"
             max={maxUnits}
             className={`modal-input ${errors.unitSize ? "border-red-500" : ""}`}
-            disabled={!watchedRackId}
+            disabled={!watchedRackId && !isUnallocated}
           />
           <p className={helperTextStyle}>장비가 차지하는 U 크기 (예: 2U)</p>
           {errors.unitSize && (
@@ -540,12 +571,14 @@ interface ResourceWizardModalProps {
   isOpen: boolean;
   onCloseHandler: () => void;
   resourceId: number | null;
+  isUnallocated?: boolean;
 }
 
 export default function ResourceWizardModal({
   isOpen,
   onCloseHandler,
   resourceId,
+  isUnallocated = false,
 }: ResourceWizardModalProps) {
   const [step, setStep] = useState(1);
 
@@ -566,6 +599,18 @@ export default function ResourceWizardModal({
   const { dirtyFields } = useFormState({ control });
   const watchedServerRoomId = watch("serverRoomId");
 
+  const {
+  data: serverRooms,
+  isLoading: isLoadingServerRooms,
+  isError: isErrorServerRooms,
+ } = useGetServerRooms();
+
+ const {
+  data: racks,
+  isLoading: isLoadingRacks,
+  isError: isErrorRacks,
+ } = useGetRacksByServerRoom(watchedServerRoomId || null);
+
   useEffect(() => {
     if (dirtyFields.serverRoomId) {
       setValue("rackId", null, { shouldValidate: true });
@@ -573,10 +618,7 @@ export default function ResourceWizardModal({
     }
   }, [watchedServerRoomId, dirtyFields.serverRoomId, setValue]);
 
-  // const [imageFrontFile, setImageFrontFile] = useState<File | null>(null);
-  // const [imageRearFile, setImageRearFile] = useState<File | null>(null);
-  // const [imageFrontPreview, setImageFrontPreview] = useState<string | null>(null);
-  // const [imageRearPreview, setImageRearPreview] = useState<string | null>(null);
+
 
   const createResourceMutation = useCreateResource();
   const updateResourceMutation = useUpdateResource();
@@ -592,30 +634,49 @@ export default function ResourceWizardModal({
   const isLoading = isLoadingDetail || isLoadingMutation;
 
   // (useEffect 로직들은 동일하게 유지)
-  useEffect(() => {
-    if (isOpen) {
-      if (!resourceId) {
-        reset(getDefaultFormData());
-        // setImageFrontPreview(null);
-        // setImageRearPreview(null);
-        // setImageFrontFile(null);
-        // setImageRearFile(null);
-        setStep(1);
-      } else if (resourceId && resourceDetailData) {
-        reset({
-          ...getDefaultFormData(),
-          ...resourceDetailData,
-        });
-        // setImageFrontPreview(resourceDetailData.imageUrlFront || null);
-        // setImageRearPreview(resourceDetailData.imageUrlRear || null);
-        // setImageFrontFile(null);
-        // setImageRearFile(null);
-        setStep(1);
+ useEffect(() => {
+  if (isOpen) {
+   if (!resourceId) {
+    reset(getDefaultFormData());
+    setStep(1);
+   } else if (resourceId && resourceDetailData) {
+        // [중요] reset 시 rackId가 설정됩니다.
+    reset({
+     ...getDefaultFormData(),
+     ...resourceDetailData,
+    });
+    setStep(1);
+   }
+  }
+ }, [resourceId, resourceDetailData, isOpen, reset]);
+
+useEffect(() => {
+    // 1. 랙 목록 로딩이 끝났고 (false)
+    // 2. 랙 목록 데이터가 존재하며 (undefined 아님)
+    // 3. 수정 모드 데이터(resourceDetailData)가 있고
+    // 4. 해당 데이터에 rackId가 설정되어 있을 때
+  if (
+   !isLoadingRacks && 
+   racks &&
+   resourceDetailData && 
+   resourceDetailData.rackId
+  ) {
+      // 5. 폼의 현재 rackId 값과 상세 데이터의 rackId 값이 일치하는지 확인
+      // (이미 올바르게 설정되었다면 다시 설정할 필요 없음)
+      const currentFormRackId = getValues("rackId");
+
+      if (currentFormRackId !== resourceDetailData.rackId) {
+        // 6. 폼의 rackId 값을 강제로 다시 설정하여 <select>가 값을 표시하도록 함
+        setValue("rackId", resourceDetailData.rackId, { shouldDirty: false });
       }
-    }
-  }, [resourceId, resourceDetailData, isOpen, reset]);
-
-
+  }
+ }, [
+    isLoadingRacks, // isLoadingRacks가 true -> false로 바뀔 때 실행됨
+    racks, 
+    resourceDetailData, 
+    getValues, 
+    setValue
+  ]);
 
   if (!isOpen) return null;
 
@@ -627,10 +688,15 @@ export default function ResourceWizardModal({
     } else if (step === 2) {
       fieldsToValidate.push(
         'unitSize',
-        'serverRoomId',
-        'rackId',
-        'startUnit'
-      );
+   );
+
+   if (!isUnallocated) {
+    fieldsToValidate.push(
+     'serverRoomId',
+     'rackId',
+     'startUnit'
+    );
+   }
       if (getValues('ipAddress')) {
         fieldsToValidate.push('ipAddress');
       }
@@ -680,6 +746,14 @@ if (resourceId) {
             errors={errors}
             watch={watch}
             getValues={getValues}
+            isUnallocated={isUnallocated}
+            serverRooms={serverRooms}
+            isLoadingServerRooms={isLoadingServerRooms}
+            isErrorServerRooms={isErrorServerRooms}
+            racks={racks}
+            isLoadingRacks={isLoadingRacks}
+            isErrorRacks={isErrorRacks}
+            watchedServerRoomId={watchedServerRoomId}
           />
         );
       case 3:
