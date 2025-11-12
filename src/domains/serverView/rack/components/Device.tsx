@@ -1,5 +1,5 @@
 import { Group, Rect, Text, Line, Image } from "react-konva";
-import { useState, memo } from "react";
+import { useState, memo, useRef } from "react";
 import { Html } from "react-konva-utils";
 import type { Equipments } from "../types";
 import { deviceImageMap } from "../utils/deviceImageMap";
@@ -44,10 +44,11 @@ function Device({
   isEditing = false,
   tempDeviceName = "",
   onDeviceNameChange,
-  onDeviceNameConfirm,
   onDeviceNameCancel,
+  onDeviceNameConfirm,
 }: DeviceProps) {
   const [dragging, setIsDragging] = useState(false);
+  const hasConfirmedRef = useRef(false);
 
   const { unitHeight, frameThickness: baseY } = RACK_CONFIG;
   const rackHeight = UNIT_COUNT * unitHeight;
@@ -55,6 +56,7 @@ function Device({
   const imageUrls =
     deviceImageMap[device.equipmentType] || deviceImageMap.SERVER;
   const imageUrl = frontView ? imageUrls.front : imageUrls.back;
+
   const image = useImageLoad(imageUrl);
 
   const deleteImage = useImageLoad(deleteIcon);
@@ -69,6 +71,12 @@ function Device({
     });
   };
 
+  const handleConfirm = () => {
+    if (hasConfirmedRef.current) return;
+    hasConfirmedRef.current = true;
+    onDeviceNameConfirm?.(device);
+  };
+
   return (
     <Group
       y={y}
@@ -78,7 +86,7 @@ function Device({
       onDragEnd={(e) => {
         setIsDragging(false);
         if (onDragEnd && !isFloating && editMode) {
-          onDragEnd(device.equipmentId, e.target.y());
+          onDragEnd(device.id, e.target.y());
         }
       }}
       onDragMove={(e) => {
@@ -122,18 +130,17 @@ function Device({
             <input
               type="text"
               value={tempDeviceName}
-              onChange={(e) =>
-                onDeviceNameChange?.(device.equipmentId, e.target.value)
-              }
+              onChange={(e) => onDeviceNameChange?.(device.id, e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
-                  onDeviceNameConfirm?.(device);
+                  handleConfirm();
                 } else if (e.key === "Escape") {
                   e.preventDefault();
-                  onDeviceNameCancel?.(device.equipmentId);
+                  onDeviceNameCancel?.(device.id);
                 }
               }}
+              onBlur={handleConfirm}
               placeholder="장비명 입력"
               className="w-full px-2 py-1 text-xs bg-slate-700 text-black border border-slate-500 rounded focus:outline-none"
               autoFocus
@@ -147,7 +154,7 @@ function Device({
             y={5}
             width={20}
             height={20}
-            onClick={() => onDeviceNameConfirm?.(device)}
+            onClick={handleConfirm}
           />
           <ClickableIcon
             image={deleteImage}
@@ -155,7 +162,7 @@ function Device({
             y={5}
             width={20}
             height={20}
-            onClick={() => onDeviceNameCancel?.(device.equipmentId)}
+            onClick={() => onDeviceNameCancel?.(device.id)}
           />
         </>
       ) : (
@@ -174,7 +181,7 @@ function Device({
           y={5}
           width={20}
           height={20}
-          onClick={() => onDelete?.(device.equipmentId)}
+          onClick={() => onDelete?.(device.id)}
         />
       )}
     </Group>

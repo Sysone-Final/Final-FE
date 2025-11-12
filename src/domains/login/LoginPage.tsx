@@ -34,7 +34,7 @@ function LoginPage() {
     setEmail(filteredValue);
   };
 
-  const handleLogin = (e?: React.MouseEvent) => {
+  const handleLogin = (e?: React.FormEvent) => {
     e?.preventDefault();
     setEmailError("");
     setPasswordError("");
@@ -64,12 +64,12 @@ function LoginPage() {
       <div className="login-container">
         <div className="login-form-container">
           <img src="/logo.svg" alt="logo" className="login-logo" />
-          <div className="login-form">
+          <form className="login-form" onSubmit={handleLogin}>
             <Input
               label="아이디"
               id="email"
               placeholder="아이디를 입력하세요."
-              type="email"
+              type="text"
               value={email}
               onChange={handleEmailChange}
               icon={<img src={EmailIcon} alt="email" />}
@@ -92,12 +92,8 @@ function LoginPage() {
                 로그인 실패: {mutation.error?.message || "다시 시도해주세요."}
               </div>
             )}
-            <Button
-              text="로그인"
-              onClick={handleLogin}
-              disabled={mutation.isPending}
-            />
-          </div>
+            <Button text="로그인" disabled={mutation.isPending} />
+          </form>
         </div>
         <div className="rotating-logo-container">
           <div className="hero-content">

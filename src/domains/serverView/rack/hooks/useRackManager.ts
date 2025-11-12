@@ -12,6 +12,7 @@ interface UseRackManagerProps {
   rackId: number;
   params?: GetRackEquipmentsParams;
   frontView?: boolean;
+  serverRoomId: number;
 }
 export function useRackManager({
   rackId,
@@ -29,7 +30,10 @@ export function useRackManager({
   );
 
   //GET
-  const { data, isLoading, error } = useGetRackEquipments(rackId || 0, params);
+  const { equipments, rack, isLoading, error } = useGetRackEquipments(
+    rackId || 0,
+    params
+  );
 
   //POST
   const { mutate: postEquipment } = usePostEquipment();
@@ -40,10 +44,10 @@ export function useRackManager({
   //UPDATE
   const { mutate: updateEquipment } = useUpdateRackEquipments();
 
-  const installedDevices = useMemo(
-    () => [...(data?.data || []), ...tempDevices],
-    [data?.data, tempDevices]
-  );
+  const installedDevices = useMemo(() => {
+    const devices = [...(equipments || []), ...tempDevices];
+    return devices;
+  }, [equipments, tempDevices]);
 
   // 카드 클릭 핸들러
   const handleCardClick = useCallback((card: DeviceCard) => {
@@ -61,9 +65,7 @@ export function useRackManager({
   // 드래그 종료 핸들러
   const handleDeviceDragEnd = useCallback(
     (deviceId: number, newPosition: number) => {
-      const draggedDevice = installedDevices.find(
-        (d) => d.equipmentId === deviceId
-      );
+      const draggedDevice = installedDevices.find((d) => d.id === deviceId);
       if (!draggedDevice) return;
 
       if (draggedDevice.startUnit === newPosition) {
@@ -79,7 +81,6 @@ export function useRackManager({
         deviceId
       );
       if (hasCollision) {
-        console.log("이동할 수 없습니다. 다른 장비와 겹칩니다.");
         setResetKey((prev) => prev + 1);
         return;
       }
@@ -118,7 +119,7 @@ export function useRackManager({
 
         const tempId = Date.now();
         const newDevice: Equipments = {
-          equipmentId: tempId,
+          id: tempId,
           equipmentName: "",
           equipmentCode: `TEMP-${tempId}`,
           equipmentType: prevFloating.card.type,
@@ -126,15 +127,14 @@ export function useRackManager({
           startUnit: position,
           positionType: frontView ? "BACK" : "FRONT",
           unitSize: prevFloating.card.height,
-          modelName: "Unknown",
-          manufacturer: "Unknown",
-          rackName: "RACK-A01",
-          ipAddress: "0.0.0.0",
-          powerConsumption: 500.0,
+          modelName: null,
+          manufacturer: null,
+          ipAddress: null,
+          powerConsumption: null,
         };
         setTempDevices((prevDevices) => {
           const filteredDevices = editingDeviceId
-            ? prevDevices.filter((d) => d.equipmentId !== editingDeviceId)
+            ? prevDevices.filter((d) => d.id !== editingDeviceId)
             : prevDevices;
           return [...filteredDevices, newDevice];
         });
@@ -171,13 +171,19 @@ export function useRackManager({
   // Enter 누름 → 이름 확정 & 배치 → 그 다음 서버 요청
   const handleDeviceNameConfirm = useCallback(
     (device: Equipments) => {
-      const inputName = tempDeviceName.get(device.equipmentId) || "";
+      const inputName = tempDeviceName.get(device.id) || "";
       const finalName = inputName.trim() || device.equipmentType;
 
       if (!device.equipmentCode?.startsWith("TEMP-")) {
         console.log("임시 장비가 아닙니다");
         return;
       }
+
+      setTempDevices((prev) =>
+        prev.map((d) =>
+          d.id === device.id ? { ...d, equipmentName: finalName } : d
+        )
+      );
 
       setEditingDeviceId(null);
 
@@ -192,23 +198,19 @@ export function useRackManager({
 
       postEquipment(requestData, {
         onSuccess: () => {
-          setTempDevices((prev) =>
-            prev.filter((d) => d.equipmentId !== device.equipmentId)
-          );
+          setTempDevices((prev) => prev.filter((d) => d.id !== device.id));
           setTempDeviceName((prev) => {
             const newMap = new Map(prev);
-            newMap.delete(device.equipmentId);
+            newMap.delete(device.id);
             return newMap;
           });
         },
         onError: (error) => {
           console.error("장비 생성 실패:", error);
-          setTempDevices((prev) =>
-            prev.filter((d) => d.equipmentId !== device.equipmentId)
-          );
+          setTempDevices((prev) => prev.filter((d) => d.id !== device.id));
           setTempDeviceName((prev) => {
             const newMap = new Map(prev);
-            newMap.delete(device.equipmentId);
+            newMap.delete(device.id);
             return newMap;
           });
         },
@@ -219,7 +221,7 @@ export function useRackManager({
 
   const handleDeviceNameCancel = useCallback((deviceId: number) => {
     setTempDevices((prevDevices) =>
-      prevDevices.filter((device) => device.equipmentId !== deviceId)
+      prevDevices.filter((device) => device.id !== deviceId)
     );
     setTempDeviceName((prev) => {
       const newMap = new Map(prev);
@@ -232,9 +234,9 @@ export function useRackManager({
   //장비 삭제 함수 추가
   const handleDeviceDelete = useCallback(
     (deviceId: number) => {
-      deleteEquipment(deviceId);
+      deleteEquipment({ id: deviceId, rackId });
     },
-    [deleteEquipment]
+    [deleteEquipment, rackId]
   );
 
   const getDeviceName = useCallback(
@@ -252,6 +254,7 @@ export function useRackManager({
     tempDeviceName,
     isLoading,
     error,
+    rack,
     handleCardClick,
     handleMouseMove,
     handleDeviceDragEnd,

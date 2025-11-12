@@ -3,7 +3,13 @@ import {
   updateRackEquipments,
   type UpdateRackEquipmentRequest,
 } from "../api/updateRackEquipments";
-import type { Equipments } from "../types";
+import type { RackEquipmentsResult } from "../types";
+
+interface RackEquipmentResponse {
+  status_code: number;
+  status_message: string;
+  result: RackEquipmentsResult;
+}
 
 export const useUpdateRackEquipments = () => {
   const queryClient = useQueryClient();
@@ -25,17 +31,29 @@ export const useUpdateRackEquipments = () => {
       });
 
       const previousData =
-        queryClient.getQueryData<Equipments[]>([
+        queryClient.getQueryData<RackEquipmentResponse>([
           "rackEquipments",
           data.rackId,
         ]) || [];
 
-      queryClient.setQueryData<Equipments[]>(
+      queryClient.setQueryData<RackEquipmentResponse>(
         ["rackEquipments", data.rackId],
-        (old) =>
-          old?.map((item) =>
-            item.equipmentId === id ? { ...item, ...data } : item
-          ) || []
+        (old) => {
+          if (!old?.result?.equipments) {
+            console.warn("캐시 데이터 구조가 올바르지 않습니다:", old);
+            return old;
+          }
+
+          return {
+            ...old,
+            result: {
+              ...old.result,
+              equipments: old.result.equipments.map((item) =>
+                item.id === id ? { ...item, ...data } : item
+              ),
+            },
+          };
+        }
       );
       return { previousData, rackId: data.rackId };
     },

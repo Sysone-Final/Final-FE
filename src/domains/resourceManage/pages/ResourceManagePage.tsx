@@ -424,6 +424,7 @@ const isMutating =
   isOpen={isModalOpen}
   onCloseHandler={closeModalHandler}
   resourceId={selectedResourceId}
+  isUnallocated={!selectedResourceId}
  />
 
     {/*  을 tab-layout div 안으로 이동 */}

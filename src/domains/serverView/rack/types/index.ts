@@ -4,7 +4,7 @@ export type EquipmentType =
   | "ROUTER"
   | "STORAGE"
   | "FIREWALL"
-  | "LOAD_BALANCE"
+  | "LOAD_BALANCER"
   | "KVM";
 
 export type EquipmentStatus = "NORMAL" | "WARNING" | "ERROR" | "MAINTENANCE";
@@ -12,19 +12,30 @@ export type EquipmentStatus = "NORMAL" | "WARNING" | "ERROR" | "MAINTENANCE";
 export type EquipmentPosition = "FRONT" | "BACK";
 
 export interface Equipments {
-  equipmentId: number;
+  id: number;
   equipmentName: string;
-  equipmentCode: string;
-  equipmentType: EquipmentType;
-  status: EquipmentStatus;
-  positionType: EquipmentPosition;
+  equipmentCode: string | null;
+  equipmentType: string;
+  status: string;
   startUnit: number;
   unitSize: number;
+  modelName: string | null;
+  manufacturer: string | null;
+  ipAddress: string | null;
+  positionType: string;
+  powerConsumption: number | null;
+}
+
+export interface Rack {
   rackName: string;
-  modelName: string;
-  manufacturer: string;
-  ipAddress: string;
-  powerConsumption: number;
+  rackId: number;
+  serverRoomId: number;
+}
+
+export interface RackEquipmentsResult {
+  rack: Rack;
+  equipments: Equipments[];
+  totalEquipmentCount: number;
 }
 
 export interface DeviceCard {

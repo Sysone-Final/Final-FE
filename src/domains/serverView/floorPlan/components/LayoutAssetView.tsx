@@ -8,6 +8,7 @@ import {
  selectAsset,
 } from '../store/floorPlanStore';
 
+import { useBabylonDatacenterStore } from '@/domains/serverView/view3d/stores/useBabylonDatacenterStore';
 import type { AssetRendererProps } from './AssetRenderer';
 import type { Asset } from '../types';
 
@@ -41,6 +42,8 @@ const LayoutAssetView: React.FC<AssetRendererProps> = ({
  const mode = useFloorPlanStore((state) => state.mode);
  const assets = useFloorPlanStore((state) => state.assets);
 
+ const openRackModal = useBabylonDatacenterStore((state) => state.openRackModal);
+
  const pixelX = headerPadding + (asset.gridX ?? 0) * gridSize;
  const pixelY = headerPadding + (asset.gridY ?? 0) * gridSize;
  const pixelWidth = (asset.widthInCells ?? 1) * gridSize;
@@ -64,6 +67,8 @@ const LayoutAssetView: React.FC<AssetRendererProps> = ({
 
  const offsetX = pixelWidth / 2;
  const offsetY = pixelHeight / 2;
+ const isDoor = asset.assetType.startsWith('door_');
+ const groupY = isDoor ? pixelY + (gridSize / 2) : pixelY + offsetY;
 
  const handleDragEnd = (e: KonvaEventObject<DragEvent>) => {
   const group = e.target;
@@ -76,7 +81,8 @@ const LayoutAssetView: React.FC<AssetRendererProps> = ({
 
   if (deltaGridX === 0 && deltaGridY === 0) {
    group.x(pixelX + offsetX);
-   group.y(pixelY + offsetY);
+   // 🚨 수정: 드래그 취소 시에도 중앙 정렬 로직을 반영합니다.
+   group.y(groupY);
    return;
   }
 
@@ -109,8 +115,8 @@ const LayoutAssetView: React.FC<AssetRendererProps> = ({
     id: 'asset-move-collision', // 중복 알림 방지
    });
 
-   group.x(pixelX + offsetX);
-   group.y(pixelY + offsetY);
+    group.x(pixelX + offsetX);
+   group.y(groupY);
    return;
   }
 
@@ -123,10 +129,22 @@ const LayoutAssetView: React.FC<AssetRendererProps> = ({
   });
  }; 
 
- const handleClick = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
-  e.cancelBubble = true;
-  selectAsset(asset.id, e.evt.shiftKey);
- };
+const handleClick = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
+    e.cancelBubble = true;
+    
+    //  2D 스토어의 자산 선택 
+    selectAsset(asset.id, e.evt.shiftKey);
+
+
+
+  if (mode === 'view' && asset.assetType === 'rack') {
+      
+
+   openRackModal(asset.id); 
+
+
+    }
+  };
 
  const getDoorPosition = () => {
   const barThickness = 4;
@@ -160,7 +178,7 @@ const LayoutAssetView: React.FC<AssetRendererProps> = ({
  return (
   <Group
    x={pixelX + offsetX}
-   y={pixelY + offsetY}
+  y={groupY}
    rotation={asset.rotation || 0}
    offsetX={offsetX}
    offsetY={offsetY}

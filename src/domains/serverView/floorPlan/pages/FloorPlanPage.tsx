@@ -1,18 +1,26 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { DndContext } from '@dnd-kit/core';
-import Canvas from '../components/Canvas';
-import FloatingSidebarPanel from '../components/FloatingSidebarPanel';
+// 🚨 경로 수정: './Canvas' -> '../components/Canvas'
+import Canvas from '../components/Canvas'; 
+// 🚨 경로 수정: './FloatingSidebarPanel' -> '../components/FloatingSidebarPanel'
+import FloatingSidebarPanel from '../components/FloatingSidebarPanel'; 
 import { useFloorPlanDragDrop } from '../hooks/useFloorPlanDragDrop';
-import { useFloorPlanInitializer } from '../hooks/useFloorPlanInitializer';
 import { useFloorPlanNavigationGuard } from '../hooks/useFloorPlanNavigationGuard';
-import { useFloorPlanStore } from '../store/floorPlanStore';
+import { useFloorPlanStore, initialState } from '../store/floorPlanStore';
 import { useSidebarStore } from '../store/useSidebarStore';
 
+import { useServerRoomEquipment } from '@/domains/serverView/view3d/hooks/useServerRoomEquipment';
+import { transform3DTo2DAssets } from '../utils/dataTransformer';
+
 // Sidebar components
-import LeftSidebar from '../components/LeftSidebar';
-import RightSidebar from '../components/RightSidebar';
-import StatusLegendAndFilters from '../components/LeftSidebar/StatusLegendAndFilters';
-import TopNWidget from '../components/TopNWidget';
+// 🚨 경로 수정: './LeftSidebar' -> '../components/LeftSidebar'
+import LeftSidebar from '../components/LeftSidebar'; 
+// 🚨 경로 수정: './RightSidebar' -> '../components/RightSidebar'
+import RightSidebar from '../components/RightSidebar'; 
+// 🚨 경로 수정: './LeftSidebar/StatusLegendAndFilters' -> '../components/LeftSidebar/StatusLegendAndFilters'
+import StatusLegendAndFilters from '../components/LeftSidebar/StatusLegendAndFilters'; 
+// 🚨 경로 수정: './TopNWidget' -> '../components/TopNWidget'
+import TopNWidget from '../components/TopNWidget'; 
 
 interface FloorPlanPageProps {
   containerRef: React.RefObject<HTMLDivElement>;
@@ -20,9 +28,74 @@ interface FloorPlanPageProps {
 }
 
 const FloorPlanPage: React.FC<FloorPlanPageProps> = ({ containerRef, serverRoomId }) => {
-  // FloorPlan 초기화
-  useFloorPlanInitializer(serverRoomId);
+  // 훅의 반환 값에 맞게 구조분해 할당을 수정합니다.
+  // 'data: apiData'가 아니라 'equipment: equipment3D'와 'gridConfig'를 직접 받습니다.
+  const { equipment: equipment3D, gridConfig, loading, error } = useServerRoomEquipment(serverRoomId);
+
+  // 스토어 상태 및 사이드바 초기화 (최초 마운트 시 1회)
+  const { setLeftSidebarOpen, setRightSidebarOpen } = useSidebarStore();
   
+  useEffect(() => {
+    console.log('Initializing 2D FloorPlan Store...');
+    // A. 2D 스토어 상태를 초기값으로 리셋
+    useFloorPlanStore.setState(initialState, true);
+    useFloorPlanStore.temporal.getState().clear();
+
+    // B. 사이드바 상태를 초기값으로 리셋
+    setLeftSidebarOpen(true);
+    setRightSidebarOpen(false);
+  }, [setLeftSidebarOpen, setRightSidebarOpen]); // 최초 1회 실행
+
+  // API 데이터가 로드되면 2D 스토어에 반영
+  useEffect(() => {
+    if (loading) {
+      console.log('2D API Hook: Loading...');
+      useFloorPlanStore.setState({ isLoading: true, error: null });
+      return;
+    }
+    if (error) {
+      console.error('2D API Hook: Error', error);
+      useFloorPlanStore.setState({ isLoading: false, error: error.message });
+      return;
+    }
+    
+    //  'if (apiData)' 대신 'equipment3D'가 있는지 확인합니다.
+    // 'equipment3D'는 훅에서 '?? []'로 처리되므로 null/undefined 체크가 필요 없을 수 있지만,
+    // 'gridConfig'는 null일 수 있으므로 로딩이 끝난 시점(loading: false)을 기준으로 합니다.
+  if (!loading && !error) {
+    
+    // 🚨 Goal 2: 3D 원본 그리드 설정 (예: 15x8)
+    const sourceGridConfig = gridConfig ?? { columns: 15, rows: 8 };
+
+    try {
+      // 🚨 Goal 2: 변환 함수에는 원본 3D 그리드 설정을 전달
+      const assets2D = transform3DTo2DAssets(
+        equipment3D,
+        sourceGridConfig,
+      );
+      console.log('Transformed 2D Assets:', assets2D);
+
+      // 🚨 Goal 2: 2D 스토어의 그리드 크기는 +2 (패딩)하여 설정
+      useFloorPlanStore.setState({
+        assets: assets2D,
+        gridCols: sourceGridConfig.columns + 2, // 👈 +2
+        gridRows: sourceGridConfig.rows + 2,    // 👈 +2
+        isLoading: false, // (중요) 로딩 상태 false로 변경
+        error: null,
+      });
+      } catch (transformError) {
+        //  transform3DTo2DAssets에서 에러가 나도 로딩이 멈추지 않도록 처리
+        console.error('Failed to transform 3D data to 2D:', transformError);
+        useFloorPlanStore.setState({ 
+          isLoading: false, 
+          error: '데이터 변환 중 오류가 발생했습니다.' 
+        });
+      }
+    }
+  //  useEffect 의존성 배열에 'apiData' 대신 'equipment3D'와 'gridConfig'를 추가합니다.
+  }, [equipment3D, gridConfig, loading, error]);
+
+
   // 페이지 이탈 방지
   useFloorPlanNavigationGuard();
   
@@ -38,6 +111,27 @@ const FloorPlanPage: React.FC<FloorPlanPageProps> = ({ containerRef, serverRoomI
   } = useSidebarStore();
 
   const isDashboardView = mode === 'view' && displayMode === 'status';
+
+  // 훅에서 가져온 로딩/에러 상태를 렌더링에 반영
+  const isLoadingFromStore = useFloorPlanStore((state) => state.isLoading);
+  const errorFromStore = useFloorPlanStore((state) => state.error);
+
+  //  로딩 및 에러 UI 반환
+  if (isLoadingFromStore) {
+    return (
+     <div className="flex-1 relative overflow-hidden flex items-center justify-center text-white bg-gray-900">
+       2D 평면도 로딩 중...
+     </div>
+    );
+  }
+
+  if (errorFromStore) {
+    return (
+     <div className="flex-1 relative overflow-hidden flex items-center justify-center text-red-400 bg-gray-900">
+       오류가 발생했습니다: {errorFromStore}
+     </div>
+    );
+  }
 
   return (
     <DndContext onDragEnd={handleDragEnd}>

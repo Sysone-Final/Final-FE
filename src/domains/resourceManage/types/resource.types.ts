@@ -10,7 +10,7 @@ export type ResourceStatus =
   | "DECOMMISSIONED";
 
 // NOTE(user): 3단계 폼 기준 장비 유형 타입
-export type EquipmentType = "SERVER" | "SWITCH" | "ROUTER" | "PDU" | "UPS";
+export type EquipmentType = "SERVER" | "SWITCH" | "ROUTER" | "PDU" | "UPS" | "STORAGE" | "FIREWALL" | "LOAD_BALANCE" | "KVM";
 
 // NOTE(user): 3단계 폼 기준 설치 방향 타입
 export type PositionType = "FRONT" | "REAR" | "NORMAL";
