@@ -29,14 +29,14 @@ export function ConfirmationModal({
       onClick={onClose} 
     >
       <div
-        className="w-full max-w-md p-6 bg-gray-800/90 border border-gray-700 rounded-lg shadow-xl"
+        className="w-full max-w-md p-6 modal"
         onClick={(e) => e.stopPropagation()} 
       >
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-gray-600">
           <div className="flex items-center gap-2">
             {isDestructive && (
-              <AlertTriangle className="w-5 h-5 text-red-500" />
+              <AlertTriangle className="text-red-500" />
             )}
             <h3 className="text-xl font-bold text-white">{title}</h3>
           </div>

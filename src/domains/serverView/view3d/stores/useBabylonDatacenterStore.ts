@@ -5,6 +5,61 @@ import {
   EQUIPMENT_DEFAULT_ROTATION,
 } from "../constants/config";
 
+/**
+ * 장비 목록의 변경 여부를 감지
+ * - 장비 개수 변화
+ * - 장비 위치 변화 (gridX, gridY, gridZ)
+ * - 장비 회전 변화
+ * - 장비 상태 변화
+ */
+function hasEquipmentChanges(
+  currentEquipment: Equipment3D[],
+  newEquipment: Equipment3D[],
+): boolean {
+  // 개수가 다르면 변경됨
+  if (currentEquipment.length !== newEquipment.length) {
+    return true;
+  }
+
+  // ID 기준으로 맵 생성 (빠른 조회)
+  const currentMap = new Map(
+    currentEquipment.map((eq) => [eq.equipmentId || eq.id, eq])
+  );
+
+  // 각 장비를 비교
+  for (const newEq of newEquipment) {
+    const currentEq = currentMap.get(newEq.equipmentId || newEq.id);
+
+    // 새로운 장비가 추가됨
+    if (!currentEq) {
+      return true;
+    }
+
+    // 위치나 회전이 변경됨
+    if (
+      currentEq.gridX !== newEq.gridX ||
+      currentEq.gridY !== newEq.gridY ||
+      currentEq.gridZ !== newEq.gridZ ||
+      Math.abs(currentEq.rotation - newEq.rotation) > 0.01 // 부동소수점 오차 고려
+    ) {
+      return true;
+    }
+
+    // 상태가 변경됨
+    if (currentEq.metadata?.status !== newEq.metadata?.status) {
+      return true;
+    }
+
+    // rackId 변경됨
+    if (currentEq.rackId !== newEq.rackId) {
+      return true;
+    }
+  }
+
+  // 모든 검사 통과 - 변경 없음
+  return false;
+}
+
 interface BabylonDatacenterStore {
   // 격자 설정
   gridConfig: GridConfig;
@@ -128,6 +183,18 @@ export const useBabylonDatacenterStore = create<BabylonDatacenterStore>(
       }),
 
     initializeServerRoom: (serverRoomId, equipmentList) => {
+      const currentState = get();
+      
+      // 같은 서버실이고 장비 데이터가 동일하면 업데이트하지 않음 (성능 최적화)
+      if (currentState.currentServerRoomId === serverRoomId) {
+        const hasChanges = hasEquipmentChanges(currentState.equipment, equipmentList);
+        if (!hasChanges) {
+          console.log('📦 장비 데이터 변경 없음 - 업데이트 스킵');
+          return;
+        }
+        console.log('🔄 장비 데이터 변경 감지 - 업데이트 진행');
+      }
+
       set({
         currentServerRoomId: serverRoomId,
         equipment: equipmentList,
