@@ -1,6 +1,7 @@
 import type { Equipment3D, EquipmentType as EquipmentType3D } from '../../view3d/types';
 import type { Asset, AssetType as AssetType2D, AssetLayer } from '../types';
-import type { GridConfig } from '@/domains/serverView/view3d/types'; 
+import type { GridConfig } from '@/domains/serverView/view3d/api/serverRoomEquipmentApi';
+
 // 3D 뷰의 장비 타입 -> 2D 뷰의 장비 타입 매핑
 const equipmentTypeMap: Record<EquipmentType3D, AssetType2D | null> = {
   server: 'rack',
