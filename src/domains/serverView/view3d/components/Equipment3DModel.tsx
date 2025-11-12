@@ -536,6 +536,7 @@ function Equipment3DModel({
     isLoaded,
     isDraggable,
     equipment.id,
+    equipment.rackId,
     equipment.type,
     scene,
     gridToWorld,
