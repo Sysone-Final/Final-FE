@@ -4,6 +4,7 @@ import { Group, Rect, Text } from 'react-konva';
 import type { KonvaEventObject } from 'konva/lib/Node';
 import { selectAsset, useFloorPlanStore } from '../store/floorPlanStore';
 import type { AssetRendererProps } from './AssetRenderer';
+import { useBabylonDatacenterStore } from '@/domains/serverView/view3d/stores/useBabylonDatacenterStore';
 
 // CPU 사용량에 따라 상태(색상)를 결정
 const getCpuStatus = (cpuUsage: number | undefined) => {
@@ -73,6 +74,8 @@ const DashboardAssetView: React.FC<AssetRendererProps> = ({
 
  const metricView = useFloorPlanStore((state) => state.dashboardMetricView);
 
+ const openRackModal = useBabylonDatacenterStore((state) => state.openRackModal);
+
  const pixelX = (asset.gridX ?? 0) * gridSize + headerPadding;
  const pixelY = (asset.gridY ?? 0) * gridSize + headerPadding;
  const pixelWidth = (asset.widthInCells ?? 1) * gridSize;
@@ -96,10 +99,11 @@ const DashboardAssetView: React.FC<AssetRendererProps> = ({
  const handleClick = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
   e.cancelBubble = true;
   selectAsset(asset.id, e.evt.shiftKey);
+  openRackModal(asset.id);
  };
 
  const innerPadding = 15;
- const titleFontSize = 20;
+ const titleFontSize = 15;
  const labelFontSize = 14;
  const lineHeight = 28; 
 

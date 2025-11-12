@@ -26,12 +26,55 @@ body {
   }
 }
 
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes modalFadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
 .animate-slideInRight {
   animation: slideInRight 0.3s ease-out;
 }
 
 .animate-fadeIn {
   animation: fadeIn 0.3s ease-out;
+}
+
+.animate-fadeOut {
+  animation: fadeOut 0.2s ease-out;
+}
+
+.animate-modalFadeIn {
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+.animate-modalFadeOut {
+  animation: modalFadeOut 0.2s ease-out;
 }
 
 /*  제목  */
@@ -82,7 +125,7 @@ body {
 }
 
 .modal {
-  @apply bg-gray-400/60 backdrop-blur-3xl border border-slate-300/40 rounded-2xl shadow-xl max-w-xl z-50 w-full
+  @apply bg-gray-400/60 backdrop-blur-3xl border border-slate-300/40 rounded-2xl shadow-xl z-50 w-full
 }
 
 .modal-input {
@@ -111,3 +154,34 @@ body {
 .tab-subtitle {
   @apply mt-1; /* 텍스트 스타일은 컴포넌트에서 text-body-primary 사용 + 색상 조정 */
 }
+
+
+/* 로딩 ui css */
+
+.loader {
+    position: relative;
+    width:  48px;
+    height: 48px;
+    background: #de3500;
+    transform: rotateX(65deg) rotate(45deg);
+    // remove bellows command for perspective change
+    //transform: perspective(200px) rotateX(65deg) rotate(45deg); 
+    color: #fff;
+    animation: layers1 1s linear infinite alternate;
+  }
+  .loader:after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.7);
+    animation: layerTr 1s linear infinite alternate;
+  }
+
+  @keyframes layers1 {
+    0% { box-shadow: 0px 0px 0 0px  }
+   90% , 100% { box-shadow: 20px 20px 0 -4px  }
+  }
+  @keyframes layerTr {
+    0% { transform:  translate(0, 0) scale(1) }
+    100% {  transform: translate(-25px, -25px) scale(1) }
+  }

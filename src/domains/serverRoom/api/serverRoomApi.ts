@@ -1,6 +1,27 @@
 import client from "@api/client";
 import type { ServerRoom, CompanyServerRoomsResponse } from "../types";
 
+// 데이터센터 타입
+export interface DataCenter {
+  id: number;
+  code: string;
+  name: string;
+}
+
+export interface DataCentersResponse {
+  status_code: number;
+  status_message: string;
+  result: DataCenter[];
+}
+
+/**
+ * 데이터센터 목록 조회 (GET)
+ */
+export const getDataCenters = async (): Promise<DataCenter[]> => {
+  const response = await client.get<DataCentersResponse>("/datacenters");
+  return response.data.result;
+};
+
 /**
  * 회사의 서버실 매핑 조회 (GET)
  * @param companyId 회사 ID
@@ -38,19 +59,11 @@ export const createServerRoom = async (
 export interface CreateServerRoomRequest {
   name: string;
   code: string;
-  location: string;
+  // location: string;
+  dataCenterId: number;
   floor: number;
   rows: number;
   columns: number;
-  status?: string;
   description?: string;
-  totalArea?: number;
-  totalPowerCapacity?: number;
-  totalCoolingCapacity?: number;
-  maxRackCount?: number;
-  temperatureMin?: number;
-  temperatureMax?: number;
-  humidityMin?: number;
-  humidityMax?: number;
   managerId?: number;
 }
