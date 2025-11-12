@@ -19,7 +19,7 @@ import {
   useGetResourceById,
 } from "../hooks/useResourceQueries";
 import { X, ArrowLeft, Loader2 } from "lucide-react";
-
+import { EQUIPMENT_TYPE_OPTIONS } from "../constants/resource.constants";
 const labelStyle = "block text-sm font-medium text-white mb-1";
 const gridContainerStyle = "grid grid-cols-1 md:grid-cols-2 gap-4";
 const gridSpanFullStyle = "md:col-span-2";
@@ -89,11 +89,11 @@ const Step1Identity = ({
         {...register("equipmentType", { required: "장비 유형을 선택하세요." })}
         className={`modal-input ${errors.equipmentType ? "border-red-500" : ""}`}
       >
-        <option value="SERVER">SERVER</option>
-        <option value="SWITCH">SWITCH</option>
-        <option value="ROUTER">ROUTER</option>
-        <option value="PDU">PDU</option>
-        <option value="UPS">UPS</option>
+        {EQUIPMENT_TYPE_OPTIONS.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label} ({option.value})
+          </option>
+        ))}
       </select>
       {errors.equipmentType && <p className={errorTextStyle}>{errors.equipmentType.message}</p>}
     </div>
