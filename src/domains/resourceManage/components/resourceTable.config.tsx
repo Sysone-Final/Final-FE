@@ -2,7 +2,7 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import type { Resource, ResourceStatus, ResourceTableMeta } from '../types/resource.types';
 import HeaderCheckbox from './HeaderCheckbox';
-import { Pencil, Trash2, ArrowUpDown } from 'lucide-react';
+import { Pencil, Trash2, ArrowUpDown, AlertTriangle } from 'lucide-react';
 
 // 상태 Badge 다크 모드 색상 맵
 const statusColorMap: Record<ResourceStatus, string> = {
@@ -47,8 +47,30 @@ export const columns: ColumnDef<Resource>[] = [
  {
   accessorKey: 'status',
   header: '상태', 
-  cell: ({ getValue }) => {
-   const status = getValue<ResourceStatus>();
+  cell: ({ row }) => {
+   const resource = row.original;
+   const status = resource.status;
+
+   // "선배치 후등록" 필요 조건:
+   // 위치(rackId)는 있는데, 상세 정보(예: modelName)가 없다.
+   const needsDetails = resource.rackId != null && !resource.modelName;
+
+   // 위 조건에 해당하면, "정보 필요" 배지를 노출
+   if (needsDetails) {
+    return (
+     <span
+      className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${
+       statusColorMap['WARNING'] // '경고' 색상(노란색) 사용
+      }`}
+      title="상세 정보가 필요합니다."
+     >
+      <AlertTriangle size={12} />
+      <span>정보 필요</span>
+     </span>
+    );
+   }
+
+   // 일반적인 상태 배지
    return (
     <span
      className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
