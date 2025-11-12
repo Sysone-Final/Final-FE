@@ -164,8 +164,8 @@ body {
     height: 48px;
     background: #de3500;
     transform: rotateX(65deg) rotate(45deg);
-    // remove bellows command for perspective change
-    //transform: perspective(200px) rotateX(65deg) rotate(45deg); 
+    /* remove bellows command for perspective change */
+    /* transform: perspective(200px) rotateX(65deg) rotate(45deg); */
     color: #fff;
     animation: layers1 1s linear infinite alternate;
   }
