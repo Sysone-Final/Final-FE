@@ -18,6 +18,7 @@ export function useServerRoomEquipment(serverRoomId: string | undefined) {
   return {
     equipment: data?.equipment ?? [],
     gridConfig: data?.gridConfig ?? null,
+    serverRoomName: data?.serverRoomName ?? null,
     loading: isLoading,
     error: error as Error | null,
     refetch,
