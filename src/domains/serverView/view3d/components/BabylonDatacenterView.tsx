@@ -9,7 +9,8 @@ import SelectionBox from './SelectionBox';
 import { useBabylonDatacenterStore } from '../stores/useBabylonDatacenterStore';
 import { CAMERA_CONFIG, EQUIPMENT_PALETTE } from '../constants/config';
 import { useServerRoomEquipment } from '../hooks/useServerRoomEquipment';
-import { createDevice } from '../api/serverRoomEquipmentApi';
+import { getNextDeviceNumber, generateDeviceName } from '../utils/deviceNameGenerator';
+import { createDevice, deleteEquipment, updateEquipment } from '../api/serverRoomEquipmentApi';
 import type { EquipmentType } from '../types';
 import { LoadingSpinner } from '@/shared/loading';
 
@@ -117,6 +118,10 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId, datac
       const centerX = Math.floor(gridConfig.columns / 2);
       const centerY = Math.floor(gridConfig.rows / 2);
 
+      // 다음 사용 가능한 장비 번호 계산
+      const nextNumber = getNextDeviceNumber(equipment, type, serverRoomId);
+      const deviceName = generateDeviceName(type, serverRoomId, nextNumber);
+
       // API를 통해 장비 생성
       const createdEquipment = await createDevice(
         {
@@ -126,12 +131,13 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId, datac
           gridZ: 0,
           rotation: 0,
           metadata: {
-            name: `새 ${type}`,
+            name: deviceName,
             status: 'NORMAL',
           },
         },
         Number(serverRoomId),
         datacenterId,
+        equipment, // 기존 장비 목록 전달
       );
 
       // 스토어에 추가 (loadEquipment 대신 직접 업데이트)
@@ -139,17 +145,38 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId, datac
         equipment: [...state.equipment, createdEquipment],
       }));
 
-      showToast('장비가 추가되었습니다', 'success');
+      showToast('장치가 추가되었습니다', 'success');
     } catch (error) {
       console.error('Failed to add equipment:', error);
-      showToast('장비 추가에 실패했습니다', 'error');
+      showToast('장치 추가에 실패했습니다', 'error');
     }
-  }, [serverRoomId, datacenterId, gridConfig.columns, gridConfig.rows, showToast]);
+  }, [serverRoomId, datacenterId, gridConfig.columns, gridConfig.rows, showToast, equipment]);
 
   const handleRotateEquipment = useCallback((clockwise: boolean) => {
     if (!selectedEquipmentId) return;
+    
+    const equipmentToRotate = equipment.find(eq => eq.id === selectedEquipmentId);
+    if (!equipmentToRotate) return;
+
+    // 로컬 상태 업데이트
     rotateEquipment90(selectedEquipmentId, clockwise);
-  }, [rotateEquipment90, selectedEquipmentId]);
+    
+    // 새로운 회전값 계산
+    const rotation90 = Math.PI / 2;
+    const newRotation = clockwise
+      ? equipmentToRotate.rotation + rotation90
+      : equipmentToRotate.rotation - rotation90;
+    const normalizedRotation = ((newRotation % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+
+    // 백엔드 업데이트 (비동기 - 응답을 기다리지 않음)
+    updateEquipment({
+      ...equipmentToRotate,
+      rotation: normalizedRotation,
+    }).catch(error => {
+      console.error('Failed to rotate equipment:', error);
+      showToast('장비 회전에 실패했습니다', 'error');
+    });
+  }, [rotateEquipment90, selectedEquipmentId, equipment, showToast]);
 
   // 모드에 따라 안정적인 핸들러 반환 (memo 최적화용)
   // Server 클릭 핸들러 (view 모드에서만)
@@ -182,10 +209,24 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId, datac
       } else if (isPositionOccupied(gridX, gridY, id)) {
         showToast('이미 장비가 배치되어 있습니다', 'error');
       }
+      return false;
+    }
+
+    // 백엔드 업데이트 (비동기 - 응답을 기다리지 않음)
+    const equipmentToUpdate = equipment.find(eq => eq.id === id);
+    if (equipmentToUpdate) {
+      updateEquipment({
+        ...equipmentToUpdate,
+        gridX,
+        gridY,
+      }).catch(error => {
+        console.error('Failed to update equipment position:', error);
+        showToast('장비 위치 업데이트에 실패했습니다', 'error');
+      });
     }
     
-    return result;
-  }, [updateEquipmentPosition, isValidPosition, isPositionOccupied, showToast]);
+    return true;
+  }, [updateEquipmentPosition, isValidPosition, isPositionOccupied, equipment, showToast]);
 
   // 다중 장비 위치 업데이트 핸들러 (유효성 검사 포함)
   const handleMultipleEquipmentPositionsChange = useCallback((
@@ -195,7 +236,7 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId, datac
     
     if (!result) {
       // 유효성 검사 실패 시 토스트 표시
-      showToast('선택된 장비들을 이동할 수 없습니다 (격자 범위 벗어남 또는 위치 중복)', 'error');
+      showToast('선택된 장치들을 이동할 수 없습니다 (격자 범위 벗어남 또는 위치 중복)', 'error');
     }
     
     return result;
@@ -257,11 +298,15 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId, datac
     }
 
     if (isPositionOccupied(gridX, gridY)) {
-      showToast('이미 장비가 배치되어 있습니다', 'error');
+      showToast('이미 장치가 배치되어 있습니다', 'error');
       return;
     }
 
     try {
+      // 다음 사용 가능한 장비 번호 계산
+      const nextNumber = getNextDeviceNumber(equipment, equipmentType, serverRoomId);
+      const deviceName = generateDeviceName(equipmentType, serverRoomId, nextNumber);
+
       // API를 통해 장비 생성
       const createdEquipment = await createDevice(
         {
@@ -271,12 +316,13 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId, datac
           gridZ: 0,
           rotation: 0,
           metadata: {
-            name: `새 ${equipmentType}`,
+            name: deviceName,
             status: 'NORMAL',
           },
         },
         Number(serverRoomId),
         datacenterId,
+        equipment, // 기존 장비 목록 전달
       );
 
       // 스토어에 추가
@@ -284,12 +330,12 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId, datac
         equipment: [...state.equipment, createdEquipment],
       }));
 
-      showToast('장비가 추가되었습니다', 'success');
+      showToast('장치가 추가되었습니다', 'success');
     } catch (error) {
       console.error('Failed to add equipment:', error);
-      showToast('장비 추가에 실패했습니다', 'error');
+      showToast('장치 추가에 실패했습니다', 'error');
     }
-  }, [serverRoomId, datacenterId, screenToGrid, isValidPosition, isPositionOccupied, showToast]);
+  }, [serverRoomId, datacenterId, screenToGrid, isValidPosition, isPositionOccupied, showToast, equipment]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -302,30 +348,60 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId, datac
   }, []);
 
   // 장비 삭제
-  const handleDeleteEquipment = useCallback(() => {
+  const handleDeleteEquipment = useCallback(async () => {
     if (contextMenu) {
-      // 다중 선택된 경우 모두 삭제
-      if (selectedEquipmentIds.length > 1) {
-        selectedEquipmentIds.forEach((id) => removeEquipment(id));
-        clearSelection();
-        showToast(`${selectedEquipmentIds.length}개 장비가 삭제되었습니다`, 'success');
-      } else {
-        // 단일 선택
-        removeEquipment(contextMenu.equipmentId);
-        showToast('장비가 삭제되었습니다', 'success');
+      try {
+        // 다중 선택된 경우 모두 삭제
+        if (selectedEquipmentIds.length > 1) {
+          await Promise.all(
+            selectedEquipmentIds.map(async (id) => {
+              const equipmentToDelete = equipment.find((eq) => eq.id === id);
+              if (equipmentToDelete) {
+                await deleteEquipment(equipmentToDelete);
+                removeEquipment(id);
+              }
+            })
+          );
+          clearSelection();
+          showToast(`${selectedEquipmentIds.length}개 장치가 삭제되었습니다`, 'success');
+        } else {
+          // 단일 선택
+          const equipmentToDelete = equipment.find((eq) => eq.id === contextMenu.equipmentId);
+          if (equipmentToDelete) {
+            await deleteEquipment(equipmentToDelete);
+            removeEquipment(contextMenu.equipmentId);
+            showToast('장치가 삭제되었습니다', 'success');
+          }
+        }
+        setContextMenu(null);
+      } catch (error) {
+        console.error('Failed to delete equipment:', error);
+        showToast('장치 삭제에 실패했습니다', 'error');
       }
-      setContextMenu(null);
     }
-  }, [contextMenu, selectedEquipmentIds, removeEquipment, clearSelection, showToast]);
+  }, [contextMenu, selectedEquipmentIds, equipment, removeEquipment, clearSelection, showToast]);
   
   // 다중 선택된 장비 삭제
-  const handleDeleteSelectedEquipment = useCallback(() => {
+  const handleDeleteSelectedEquipment = useCallback(async () => {
     if (selectedEquipmentIds.length > 0) {
-      selectedEquipmentIds.forEach((id) => removeEquipment(id));
-      clearSelection();
-      showToast(`${selectedEquipmentIds.length}개 장비가 삭제되었습니다`, 'success');
+      try {
+        await Promise.all(
+          selectedEquipmentIds.map(async (id) => {
+            const equipmentToDelete = equipment.find((eq) => eq.id === id);
+            if (equipmentToDelete) {
+              await deleteEquipment(equipmentToDelete);
+              removeEquipment(id);
+            }
+          })
+        );
+        clearSelection();
+        showToast(`${selectedEquipmentIds.length}개 장치가 삭제되었습니다`, 'success');
+      } catch (error) {
+        console.error('Failed to delete equipment:', error);
+        showToast('장치 삭제에 실패했습니다', 'error');
+      }
     }
-  }, [selectedEquipmentIds, removeEquipment, clearSelection, showToast]);
+  }, [selectedEquipmentIds, equipment, removeEquipment, clearSelection, showToast]);
 
   // 격자 설정 변경
   // const handleGridChange = (key: 'rows' | 'columns', value: number) => {

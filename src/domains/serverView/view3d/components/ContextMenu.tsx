@@ -40,7 +40,7 @@ function ContextMenu({ x, y, onClose, onDelete }: ContextMenuProps) {
       className="fixed bg-gray-50/30 backdrop-blur-md shadow-lg rounded-md border border-slate-300/40 z-50 min-w-[120px]"
       style={{
         left: `${x+20}px`,
-        top: `${y-110}px`,
+        top: `${y-50}px`,
       }}
     >
       <button

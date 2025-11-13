@@ -8,8 +8,11 @@ import type {
   CreateDeviceResponse,
   CreateRackRequest,
   CreateRackResponse,
+  UpdateDeviceRequest,
+  UpdateDeviceResponse,
 } from "../types";
 import { DEFAULT_GRID_CONFIG } from "../constants/config";
+import { getNextDeviceNumber, generateDeviceCode } from "../utils/deviceNameGenerator";
 
 // 공통 API 클라이언트 사용
 const apiClient = client;
@@ -60,11 +63,11 @@ export function transformToBackendEquipment(
 
 /**
  * 서버실의 장비 목록 조회
- * @returns 장비 목록과 그리드 설정 정보
+ * @returns 장비 목록, 그리드 설정 정보, 서버실 정보
  */
 export async function fetchServerRoomEquipment(
   serverRoomId: string,
-): Promise<{ equipment: Equipment3D[]; gridConfig: { rows: number; columns: number; cellSize: number } }> {
+): Promise<{ equipment: Equipment3D[]; gridConfig: { rows: number; columns: number; cellSize: number }; serverRoomName: string }> {
   try {
     const response = await apiClient.get<ServerRoomEquipmentResponse>(
       `/devices/serverroom/${serverRoomId}`,
@@ -83,7 +86,7 @@ export async function fetchServerRoomEquipment(
       cellSize: DEFAULT_GRID_CONFIG.cellSize, 
     };
 
-    return { equipment, gridConfig };
+    return { equipment, gridConfig, serverRoomName: serverRoom.name };
   } catch (error) {
     console.error("Failed to fetch server room equipment:", error);
     throw error;
@@ -111,29 +114,55 @@ export async function saveServerRoomEquipment(
 }
 
 /**
- * 특정 장비 업데이트
+ * 특정 장비 업데이트 (위치, 회전, 메타데이터)
+ * PUT /api/devices/{deviceId}
+ * 
+ * @param equipment 업데이트할 장비 정보 (equipmentId와 변경할 필드 포함)
+ * @returns 업데이트된 장비 정보
  */
 export async function updateEquipment(
-  serverRoomId: string,
-  equipmentId: string,
-  updates: Partial<Equipment3D>,
-): Promise<void> {
+  equipment: Equipment3D,
+): Promise<Equipment3D> {
   try {
-    await apiClient.patch(
-      `/server-rooms/${serverRoomId}/equipment/${equipmentId}`,
-      {
-        gridPosition:
-          updates.gridX !== undefined
-            ? {
-                x: updates.gridX,
-                y: updates.gridY,
-                z: updates.gridZ,
-              }
-            : undefined,
-        rotation: updates.rotation,
-        metadata: updates.metadata,
-      },
+    const requestData: UpdateDeviceRequest = {
+      gridY: equipment.gridY,
+      gridX: equipment.gridX,
+      gridZ: equipment.gridZ,
+      rotation: Math.round((equipment.rotation * 180) / Math.PI), // radian -> degree
+      deviceName: equipment.metadata?.name,
+      status: equipment.metadata?.status,
+      modelName: equipment.metadata?.modelName as string | undefined,
+      manufacturer: equipment.metadata?.manufacturer as string | undefined,
+      serialNumber: equipment.metadata?.serialNumber as string | undefined,
+      purchaseDate: equipment.metadata?.purchaseDate as string | undefined,
+      warrantyEndDate: equipment.metadata?.warrantyEndDate as string | undefined,
+      notes: equipment.metadata?.notes as string | undefined,
+    };
+
+    const response = await apiClient.put<UpdateDeviceResponse>(
+      `/devices/${equipment.equipmentId}`,
+      requestData,
     );
+
+    const updatedDevice = response.data.result;
+
+    // 백엔드 응답을 프론트엔드 형식으로 변환
+    return {
+      id: updatedDevice.id.toString(),
+      type: updatedDevice.deviceType,
+      gridX: updatedDevice.gridX,
+      gridY: updatedDevice.gridY ?? 0,
+      gridZ: updatedDevice.gridZ,
+      rotation: (updatedDevice.rotation * Math.PI) / 180, // degree -> radian
+      equipmentId: updatedDevice.id.toString(),
+      rackId: updatedDevice.rackId?.toString(),
+      metadata: {
+        name: updatedDevice.deviceName,
+        code: updatedDevice.deviceCode,
+        status: updatedDevice.status,
+        rackName: updatedDevice.rackName ?? undefined,
+      },
+    };
   } catch (error) {
     console.error("Failed to update equipment:", error);
     throw error;
@@ -142,15 +171,22 @@ export async function updateEquipment(
 
 /**
  * 장비 삭제
+ * - server 타입: rack 삭제 API 호출 (백엔드에서 자동으로 server 장치 삭제됨)
+ * - 기타 타입: device 삭제 API 호출
+ * 
+ * @param equipment 삭제할 장비 정보 (타입 및 rackId 확인용)
  */
 export async function deleteEquipment(
-  serverRoomId: string,
-  equipmentId: string,
+  equipment: Equipment3D,
 ): Promise<void> {
   try {
-    await apiClient.delete(
-      `/server-rooms/${serverRoomId}/equipment/${equipmentId}`,
-    );
+    // server 타입인 경우 rack 삭제 (cascade로 device도 삭제됨)
+    if (equipment.type === "server" && equipment.rackId) {
+      await apiClient.delete(`/racks/${equipment.rackId}`);
+    } else {
+      // 기타 장비는 device 삭제
+      await apiClient.delete(`/devices/${equipment.equipmentId}`);
+    }
   } catch (error) {
     console.error("Failed to delete equipment:", error);
     throw error;
@@ -260,12 +296,14 @@ async function createRack(
  * @param equipment 추가할 장비 정보
  * @param serverRoomId 서버실 ID
  * @param datacenterId 데이터센터 ID
+ * @param existingEquipment 기존 장비 목록 (카운터 기반 코드 생성용)
  * @returns 생성된 장비 정보
  */
 export async function createDevice(
   equipment: Omit<Equipment3D, "id" | "equipmentId">,
   serverRoomId: number,
   datacenterId: number,
+  existingEquipment: Equipment3D[] = [],
 ): Promise<Equipment3D> {
   try {
     // 장비 타입에 따른 deviceTypeId 결정
@@ -277,8 +315,9 @@ export async function createDevice(
       rackId = await createRack(equipment, serverRoomId);
     }
 
-    // 장비 코드 자동 생성 (예: DEV-2025-8364)
-    const deviceCode = `DEV-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`;
+    // 장비 코드 생성 (최대 번호 + 1 방식)
+    const nextNumber = getNextDeviceNumber(existingEquipment, equipment.type, serverRoomId);
+    const deviceCode = generateDeviceCode(equipment.type, serverRoomId, nextNumber);
 
     const requestData: CreateDeviceRequest = {
       deviceName: equipment.metadata?.name || `New ${equipment.type}`,

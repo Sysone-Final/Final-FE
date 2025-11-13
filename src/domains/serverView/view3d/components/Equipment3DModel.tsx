@@ -647,7 +647,7 @@ const MemoizedEquipment3DModel = memo(
       nextProps.selectedEquipmentIds?.includes(nextProps.equipment.id) ?? false;
     const selectionEqual = wasSelected === isNowSelected;
 
-    // 🔥 콜백 함수는 비교하지 않음 (Zustand에서 매번 새로 생성될 수 있음)
+    // 콜백 함수는 비교하지 않음 (Zustand에서 매번 새로 생성될 수 있음)
     // 대신 equipment와 selection 상태만으로 리렌더링 결정
     const shouldSkipRender =
       equipmentEqual && otherPropsEqual && selectionEqual;
