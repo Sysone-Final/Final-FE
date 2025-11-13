@@ -93,6 +93,29 @@ export interface CreateDeviceResponse {
   result: BackendDevice;
 }
 
+// 장비 수정 요청 데이터 구조
+export interface UpdateDeviceRequest {
+  gridY: number;
+  gridX: number;
+  gridZ?: number;
+  rotation: number; // 각도 (degree)
+  deviceName?: string;
+  status?: string;
+  modelName?: string;
+  manufacturer?: string;
+  serialNumber?: string;
+  purchaseDate?: string;
+  warrantyEndDate?: string;
+  notes?: string;
+}
+
+// 장비 수정 응답 구조
+export interface UpdateDeviceResponse {
+  status_code: number;
+  status_message: string;
+  result: BackendDevice;
+}
+
 // 랙 생성 요청 데이터 구조
 export interface CreateRackRequest {
   rackName: string;

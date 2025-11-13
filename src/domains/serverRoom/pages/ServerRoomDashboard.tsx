@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import ServerRoomList from '../components/ServerRoomList';
 import ServerRoomCreateModal from '../components/ServerRoomCreateModal';
 import { useServerRooms } from '../hooks/useServerRoomQueries';
-import { useAuthStore } from '../../login/store/useAuthStore';
+import { useAuthStore } from '@domains/login/store/useAuthStore';
 import '../css/serverRoomDashboard.css'; 
 
 const ServerRoomDashboard: React.FC = () => {

@@ -2,69 +2,32 @@ import client from "@api/client";
 import type {
   Equipment3D,
   ServerRoomEquipmentResponse,
-  BackendDevice,
-  BackendEquipment,
-  CreateDeviceRequest,
   CreateDeviceResponse,
-  CreateRackRequest,
   CreateRackResponse,
+  UpdateDeviceResponse,
 } from "../types";
 import { DEFAULT_GRID_CONFIG } from "../constants/config";
+import { getNextDeviceNumber, generateDeviceCode } from "../utils/deviceNameGenerator";
+import {
+  transformBackendDevicesToEquipment,
+  transformBackendDeviceToEquipment,
+} from "../transformers/equipmentTransformer";
+import {
+  buildCreateDeviceRequest,
+  buildCreateRackRequest,
+  buildUpdateDeviceRequest,
+} from "../transformers/requestBuilder";
 
 // 공통 API 클라이언트 사용
 const apiClient = client;
 
 /**
- * 백엔드 디바이스 데이터를 프론트엔드 형식으로 변환
- */
-export function transformBackendDevice(
-  backendDevices: BackendDevice[],
-): Equipment3D[] {
-  return backendDevices.map((item) => ({
-    id: item.id.toString(), // 숫자 ID를 문자열로 변환
-    type: item.deviceType,
-    gridX: item.gridX,
-    gridY: item.gridY ?? 0, // null인 경우 0으로 처리
-    gridZ: item.gridZ,
-    rotation: (item.rotation * Math.PI) / 180, // degree를 radian으로 변환
-    equipmentId: item.id.toString(), // 원본 백엔드 ID 보관
-    rackId: item.rackId?.toString(),
-    metadata: {
-      name: item.deviceName,
-      code: item.deviceCode,
-      status: item.status,
-      rackName: item.rackName ?? undefined,
-    },
-  }));
-}
-
-
-/**
- * 프론트엔드 장비 데이터를 백엔드 형식으로 변환 (저장 시)
- */
-export function transformToBackendEquipment(
-  equipment: Equipment3D[],
-): Omit<BackendEquipment, "equipmentId">[] {
-  return equipment.map((item) => ({
-    equipmentType: item.type,
-    rackId: item.rackId,
-    gridPosition: {
-      x: item.gridX,
-      y: item.gridY,
-      z: item.gridZ,
-    },
-    rotation: item.rotation,
-    metadata: item.metadata,
-  }));
-}
-
-/**
  * 서버실의 장비 목록 조회
- * @returns 장비 목록과 그리드 설정 정보
+ * @returns 장비 목록, 그리드 설정 정보, 서버실 정보
  */
 export async function fetchServerRoomEquipment(
   serverRoomId: string,
-): Promise<{ equipment: Equipment3D[]; gridConfig: { rows: number; columns: number; cellSize: number } }> {
+): Promise<{ equipment: Equipment3D[]; gridConfig: { rows: number; columns: number; cellSize: number }; serverRoomName: string }> {
   try {
     const response = await apiClient.get<ServerRoomEquipmentResponse>(
       `/devices/serverroom/${serverRoomId}`,
@@ -74,7 +37,7 @@ export async function fetchServerRoomEquipment(
     const { serverRoom, devices } = response.data.result;
 
     // 백엔드 디바이스 데이터를 프론트엔드 형식으로 변환
-    const equipment = transformBackendDevice(devices);
+    const equipment = transformBackendDevicesToEquipment(devices);
 
     // 서버실 그리드 설정 반환 
     const gridConfig = {
@@ -83,7 +46,7 @@ export async function fetchServerRoomEquipment(
       cellSize: DEFAULT_GRID_CONFIG.cellSize, 
     };
 
-    return { equipment, gridConfig };
+    return { equipment, gridConfig, serverRoomName: serverRoom.name };
   } catch (error) {
     console.error("Failed to fetch server room equipment:", error);
     throw error;
@@ -91,14 +54,26 @@ export async function fetchServerRoomEquipment(
 }
 
 /**
- * 서버실 장비 배치 저장
+ * 서버실 장비 배치 저장 (레거시 API - deprecated)
+ * @deprecated 개별 장비 업데이트 API 사용 권장
  */
 export async function saveServerRoomEquipment(
   serverRoomId: string,
   equipment: Equipment3D[],
 ): Promise<void> {
   try {
-    const backendEquipment = transformToBackendEquipment(equipment);
+    // 레거시 변환 로직 유지 (추후 제거 예정)
+    const backendEquipment = equipment.map((item) => ({
+      equipmentType: item.type,
+      rackId: item.rackId,
+      gridPosition: {
+        x: item.gridX,
+        y: item.gridY,
+        z: item.gridZ,
+      },
+      rotation: item.rotation,
+      metadata: item.metadata,
+    }));
 
     await apiClient.post(
       `/server-rooms/${serverRoomId}/equipment`,
@@ -111,29 +86,27 @@ export async function saveServerRoomEquipment(
 }
 
 /**
- * 특정 장비 업데이트
+ * 특정 장비 업데이트 (위치, 회전, 메타데이터)
+ * PUT /api/devices/{deviceId}
+ * 
+ * @param equipment 업데이트할 장비 정보 (equipmentId와 변경할 필드 포함)
+ * @returns 업데이트된 장비 정보
  */
 export async function updateEquipment(
-  serverRoomId: string,
-  equipmentId: string,
-  updates: Partial<Equipment3D>,
-): Promise<void> {
+  equipment: Equipment3D,
+): Promise<Equipment3D> {
   try {
-    await apiClient.patch(
-      `/server-rooms/${serverRoomId}/equipment/${equipmentId}`,
-      {
-        gridPosition:
-          updates.gridX !== undefined
-            ? {
-                x: updates.gridX,
-                y: updates.gridY,
-                z: updates.gridZ,
-              }
-            : undefined,
-        rotation: updates.rotation,
-        metadata: updates.metadata,
-      },
+    const requestData = buildUpdateDeviceRequest(equipment);
+
+    const response = await apiClient.put<UpdateDeviceResponse>(
+      `/devices/${equipment.equipmentId}`,
+      requestData,
     );
+
+    const updatedDevice = response.data.result;
+
+    // 백엔드 응답을 프론트엔드 형식으로 변환
+    return transformBackendDeviceToEquipment(updatedDevice);
   } catch (error) {
     console.error("Failed to update equipment:", error);
     throw error;
@@ -142,15 +115,22 @@ export async function updateEquipment(
 
 /**
  * 장비 삭제
+ * - server 타입: rack 삭제 API 호출 (백엔드에서 자동으로 server 장치 삭제됨)
+ * - 기타 타입: device 삭제 API 호출
+ * 
+ * @param equipment 삭제할 장비 정보 (타입 및 rackId 확인용)
  */
 export async function deleteEquipment(
-  serverRoomId: string,
-  equipmentId: string,
+  equipment: Equipment3D,
 ): Promise<void> {
   try {
-    await apiClient.delete(
-      `/server-rooms/${serverRoomId}/equipment/${equipmentId}`,
-    );
+    // server 타입인 경우 rack 삭제 (cascade로 device도 삭제됨)
+    if (equipment.type === "server" && equipment.rackId) {
+      await apiClient.delete(`/racks/${equipment.rackId}`);
+    } else {
+      // 기타 장비는 device 삭제
+      await apiClient.delete(`/devices/${equipment.equipmentId}`);
+    }
   } catch (error) {
     console.error("Failed to delete equipment:", error);
     throw error;
@@ -158,14 +138,23 @@ export async function deleteEquipment(
 }
 
 /**
- * 새 장비 추가
+ * 새 장비 추가 (레거시 API - deprecated)
+ * @deprecated createDevice 함수 사용 권장
  */
 export async function addEquipment(
   serverRoomId: string,
   equipment: Omit<Equipment3D, "id" | "equipmentId">,
 ): Promise<Equipment3D> {
   try {
-    const response = await apiClient.post<BackendEquipment>(
+    // 레거시 변환 로직 유지
+    const response = await apiClient.post<{
+      equipmentId: string;
+      equipmentType: string;
+      rackId?: string;
+      gridPosition: { x: number; y: number; z: number };
+      rotation: number;
+      metadata?: Record<string, unknown>;
+    }>(
       `/server-rooms/${serverRoomId}/equipment/add`,
       {
         equipmentType: equipment.type,
@@ -183,39 +172,20 @@ export async function addEquipment(
     // 생성된 장비를 프론트엔드 형식으로 변환
     return {
       id: response.data.equipmentId,
-      type: response.data.equipmentType,
+      type: response.data.equipmentType as Equipment3D["type"],
       gridX: response.data.gridPosition.x,
       gridY: response.data.gridPosition.y,
       gridZ: response.data.gridPosition.z,
       rotation: response.data.rotation,
       equipmentId: response.data.equipmentId,
       rackId: response.data.rackId,
-      metadata: response.data.metadata,
+      metadata: response.data.metadata as Equipment3D["metadata"],
     };
   } catch (error) {
     console.error("Failed to add equipment:", error);
     throw error;
   }
 }
-
-/**
- * deviceTypeId 매핑 (EquipmentType -> deviceTypeId)
- * DB 테이블 기준:
- * 1 = SERVER (서버 랙)
- * 2 = DOOR (출입문)
- * 3 = CLIMATIC_CHAMBER (항온항습기)
- * 4 = FIRE_EXTINGUISHER (소화기)
- * 5 = THERMOMETER (온도 센서)
- * 6 = AIRCON (정밀 에어컨)
- */
-const DEVICE_TYPE_ID_MAP: Record<string, number> = {
-  server: 1,
-  door: 2,
-  climatic_chamber: 3,     
-  fire_extinguisher: 4,
-  thermometer: 5,    
-  aircon: 6,
-};
 
 /**
  * 새 랙 생성
@@ -228,21 +198,7 @@ async function createRack(
   equipment: Omit<Equipment3D, "id" | "equipmentId">,
   serverRoomId: number,
 ): Promise<number> {
-  const rackRequest: CreateRackRequest = {
-    rackName: equipment.metadata?.name || `RACK-${Date.now()}`,
-    gridX: equipment.gridX,
-    gridY: equipment.gridY,
-    totalUnits: 42, // 기본값: 42U
-    doorDirection: "FRONT",
-    zoneDirection: "EAST",
-    maxPowerCapacity: 5000.0,
-    manufacturer: equipment.metadata?.manufacturer as string | undefined,
-    serialNumber: equipment.metadata?.serialNumber as string | undefined,
-    status: "ACTIVE",
-    rackType: "STANDARD",
-    notes: equipment.metadata?.notes as string | undefined,
-    serverRoomId,
-  };
+  const rackRequest = buildCreateRackRequest(equipment, serverRoomId);
 
   const response = await apiClient.post<CreateRackResponse>(
     `/racks`,
@@ -260,45 +216,33 @@ async function createRack(
  * @param equipment 추가할 장비 정보
  * @param serverRoomId 서버실 ID
  * @param datacenterId 데이터센터 ID
+ * @param existingEquipment 기존 장비 목록 (카운터 기반 코드 생성용)
  * @returns 생성된 장비 정보
  */
 export async function createDevice(
   equipment: Omit<Equipment3D, "id" | "equipmentId">,
   serverRoomId: number,
   datacenterId: number,
+  existingEquipment: Equipment3D[] = [],
 ): Promise<Equipment3D> {
   try {
-    // 장비 타입에 따른 deviceTypeId 결정
-    const deviceTypeId = DEVICE_TYPE_ID_MAP[equipment.type] || 1;
-
     // server 타입인 경우 먼저 랙 생성
     let rackId: number | null = null;
     if (equipment.type === "server") {
       rackId = await createRack(equipment, serverRoomId);
     }
 
-    // 장비 코드 자동 생성 (예: DEV-2025-8364)
-    const deviceCode = `DEV-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`;
+    // 장비 코드 생성 (최대 번호 + 1 방식)
+    const nextNumber = getNextDeviceNumber(existingEquipment, equipment.type, serverRoomId);
+    const deviceCode = generateDeviceCode(equipment.type, serverRoomId, nextNumber);
 
-    const requestData: CreateDeviceRequest = {
-      deviceName: equipment.metadata?.name || `New ${equipment.type}`,
+    const requestData = buildCreateDeviceRequest(
+      equipment,
       deviceCode,
-      gridY: equipment.gridY,
-      gridX: equipment.gridX,
-      gridZ: equipment.gridZ,
-      rotation: Math.round((equipment.rotation * 180) / Math.PI), // radian -> degree
-      status: equipment.metadata?.status || "NORMAL",
-      modelName: equipment.metadata?.modelName as string | undefined,
-      manufacturer: equipment.metadata?.manufacturer as string | undefined,
-      serialNumber: equipment.metadata?.serialNumber as string | undefined,
-      purchaseDate: equipment.metadata?.purchaseDate as string | undefined,
-      warrantyEndDate: equipment.metadata?.warrantyEndDate as string | undefined,
-      notes: equipment.metadata?.notes as string | undefined,
-      deviceTypeId,
       datacenterId,
-      rackId: rackId ?? (equipment.rackId ? Number(equipment.rackId) : null), // 생성된 rackId 우선 사용
       serverRoomId,
-    };
+      rackId ?? undefined
+    );
 
     const response = await apiClient.post<CreateDeviceResponse>(
       `/devices`,
@@ -308,22 +252,7 @@ export async function createDevice(
     const createdDevice = response.data.result;
 
     // 백엔드 응답을 프론트엔드 형식으로 변환
-    return {
-      id: createdDevice.id.toString(),
-      type: createdDevice.deviceType,
-      gridX: createdDevice.gridX,
-      gridY: createdDevice.gridY ?? 0,
-      gridZ: createdDevice.gridZ,
-      rotation: (createdDevice.rotation * Math.PI) / 180, // degree -> radian
-      equipmentId: createdDevice.id.toString(),
-      rackId: createdDevice.rackId?.toString(),
-      metadata: {
-        name: createdDevice.deviceName,
-        code: createdDevice.deviceCode,
-        status: createdDevice.status,
-        rackName: createdDevice.rackName ?? undefined,
-      },
-    };
+    return transformBackendDeviceToEquipment(createdDevice);
   } catch (error) {
     console.error("Failed to create device:", error);
     throw error;

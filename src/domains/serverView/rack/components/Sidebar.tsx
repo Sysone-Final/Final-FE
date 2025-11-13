@@ -13,7 +13,7 @@ function Sidebar({ onCardClick, isOpen }: SidebarProps) {
         flex-col items-center justify-start flex-shrink-0
         bg-[#404452]/90 backdrop-blur-sm
         border-r border-slate-300/40
-        rounded-l-xl
+        rounded-lb-xl
         pt-10 transition-all duration-300 ease-in-out
         ${isOpen ? "w-[56px] opacity-100" : "w-0 opacity-0"}
         overflow-visible

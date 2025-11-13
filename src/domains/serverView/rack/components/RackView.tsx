@@ -4,7 +4,7 @@ import Sidebar from "./Sidebar";
 import RackHeader from "./RackHeader";
 import Button from "./Button";
 import { useState } from "react";
-import ServerDashboard from "../../serverDashboard/components/serverDashboard";
+import ServerDashboard from "@domains/serverView/serverDashboard/components/serverDashboard";
 
 interface RackViewProps {
   onClose?: () => void;

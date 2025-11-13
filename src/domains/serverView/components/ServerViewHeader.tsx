@@ -15,6 +15,8 @@ import { Settings, Eye, Undo2, Redo2, ZoomIn, ZoomOut,
 } from 'lucide-react';
 import { useSidebarStore } from '../floorPlan/store/useSidebarStore';
 import { useConfirmationModal } from '../floorPlan/hooks/useConfirmationModal';
+import { useServerRoomEquipment } from '../view3d/hooks/useServerRoomEquipment';
+
 interface ServerViewHeaderProps {
   serverRoomId?: string;
   viewDimension: '2D' | '3D';
@@ -27,6 +29,7 @@ function ServerViewHeader({
   onViewDimensionChange,
 }: ServerViewHeaderProps) {
   const navigate = useNavigate();
+  const { serverRoomName } = useServerRoomEquipment(serverRoomId ?? '');
 
   const { confirm } = useConfirmationModal();
 
@@ -133,7 +136,7 @@ const handleBackNavigation = () => {
         </button>
         <div className="h-6 w-px bg-gray-600" />
         <h1 className="text-xl font-bold text-white">
-          {serverRoomId ? `서버실 ${serverRoomId}` : '제1서버실 A-Zone'}
+          {serverRoomName? `서버실 ${serverRoomName}` : 'N/A'}
         </h1>
       </div>
 
