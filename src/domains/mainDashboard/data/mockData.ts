@@ -1,0 +1,290 @@
+import type { Datacenter, Equipment, SystemMetric, NetworkMetric, StorageMetric } from '../types/dashboard.types';
+
+// 하드코딩 메트릭 데이터 생성 헬퍼
+const generateSystemMetric = (equipmentId: number): SystemMetric => {
+  const cpuIdle = Math.random() * 40 + 60; // 60-100%
+  const memoryUsage = Math.random() * 50 + 30; // 30-80%
+  
+  return {
+    id: equipmentId,
+    equipment_id: equipmentId,
+    context_switches: Math.floor(Math.random() * 10000 + 2000),
+    cpu_idle: cpuIdle,
+    cpu_irq: Math.random() * 2,
+    cpu_nice: Math.random() * 1,
+    cpu_softirq: Math.random() * 2,
+    cpu_steal: Math.random() * 1,
+    cpu_system: Math.random() * 8 + 2,
+    cpu_user: Math.random() * 15 + 5,
+    cpu_wait: Math.random() * 4,
+    free_memory: Math.floor(Math.random() * 5000000000 + 5000000000),
+    generate_time: new Date().toISOString(),
+    load_avg1: Math.random() * 2 + 0.5,
+    load_avg15: Math.random() * 1.5 + 0.5,
+    load_avg5: Math.random() * 1.8 + 0.5,
+    memory_active: Math.floor(Math.random() * 5000000000),
+    memory_buffers: Math.floor(Math.random() * 1000000000),
+    memory_cached: Math.floor(Math.random() * 2000000000),
+    memory_inactive: Math.floor(Math.random() * 2500000000),
+    total_memory: 17179869184,
+    total_swap: 8589934592,
+    used_memory: Math.floor(17179869184 * (memoryUsage / 100)),
+    used_memory_percentage: memoryUsage,
+    used_swap: Math.floor(Math.random() * 500000000),
+    used_swap_percentage: Math.random() * 5,
+  };
+};
+
+const generateNetworkMetric = (equipmentId: number, index: number): NetworkMetric => {
+  const rxUsage = Math.random() * 20 + 5; // 5-25%
+  const txUsage = Math.random() * 15 + 3; // 3-18%
+  
+  return {
+    id: equipmentId * 10 + index,
+    equipment_id: equipmentId,
+    generate_time: new Date().toISOString(),
+    in_bytes_per_sec: Math.random() * 20000000 + 5000000,
+    in_bytes_tot: Math.floor(Math.random() * 300000000),
+    in_discard_pkts_tot: Math.floor(Math.random() * 3),
+    in_error_pkts_tot: Math.floor(Math.random() * 5),
+    in_pkts_per_sec: Math.random() * 15000 + 3000,
+    in_pkts_tot: Math.floor(Math.random() * 200000),
+    nic_name: `eth${index}`,
+    oper_status: 1,
+    out_bytes_per_sec: Math.random() * 15000000 + 3000000,
+    out_bytes_tot: Math.floor(Math.random() * 200000000),
+    out_discard_pkts_tot: Math.floor(Math.random() * 2),
+    out_error_pkts_tot: Math.floor(Math.random() * 4),
+    out_pkts_per_sec: Math.random() * 10000 + 2000,
+    out_pkts_tot: Math.floor(Math.random() * 150000),
+    rx_usage: rxUsage,
+    tx_usage: txUsage,
+  };
+};
+
+const generateStorageMetric = (equipmentId: number): StorageMetric => {
+  const usedPercentage = Math.random() * 50 + 30; // 30-80%
+  const totalBytes = 536870912000; // 500GB
+  const usedBytes = Math.floor(totalBytes * (usedPercentage / 100));
+  
+  return {
+    id: equipmentId,
+    equipment_id: equipmentId,
+    free_bytes: totalBytes - usedBytes,
+    free_inodes: Math.floor(Math.random() * 10000000 + 15000000),
+    generate_time: new Date().toISOString(),
+    io_read_bps: Math.random() * 15000000 + 3000000,
+    io_read_count: Math.floor(Math.random() * 50000 + 10000),
+    io_time_percentage: Math.random() * 30 + 5,
+    io_write_bps: Math.random() * 12000000 + 2000000,
+    io_write_count: Math.floor(Math.random() * 40000 + 8000),
+    total_bytes: totalBytes,
+    total_inodes: 32000000,
+    used_bytes: usedBytes,
+    used_inode_percentage: Math.random() * 40 + 15,
+    used_inodes: Math.floor(Math.random() * 15000000 + 5000000),
+    used_percentage: usedPercentage,
+  };
+};
+
+const getEquipmentStatus = (cpuUsage: number, memoryUsage: number, diskUsage: number) => {
+  if (cpuUsage > 90 || memoryUsage > 95 || diskUsage > 95) return 'critical';
+  if (cpuUsage > 80 || memoryUsage > 85 || diskUsage > 85) return 'warning';
+  return 'online';
+};
+
+// 장비 생성
+let equipmentIdCounter = 1;
+
+const createEquipment = (rackId: number, positionU: number, type: Equipment['type']): Equipment => {
+  const id = equipmentIdCounter++;
+  const systemMetric = generateSystemMetric(id);
+  const networkMetrics = [generateNetworkMetric(id, 0), generateNetworkMetric(id, 1)];
+  const storageMetric = generateStorageMetric(id);
+  
+  const cpuUsage = 100 - systemMetric.cpu_idle;
+  const memoryUsage = systemMetric.used_memory_percentage;
+  const diskUsage = storageMetric.used_percentage;
+  
+  return {
+    id,
+    name: `${type}-${String(id).padStart(3, '0')}`,
+    type,
+    rack_id: rackId,
+    position_u: positionU,
+    height_u: type === 'Server' ? 2 : 1,
+    ip_address: `192.168.${Math.floor(id / 254) + 1}.${id % 254 + 1}`,
+    status: getEquipmentStatus(cpuUsage, memoryUsage, diskUsage),
+    systemMetric,
+    networkMetrics,
+    storageMetric,
+  };
+};
+
+// Mock 데이터 생성
+export const mockDatacenters: Datacenter[] = [
+  {
+    id: 1,
+    name: '서울 데이터센터',
+    location: '서울특별시 강남구',
+    serverRooms: [
+      {
+        id: 1,
+        name: '서버실 A',
+        datacenter_id: 1,
+        location: '1층 동관',
+        area: 500,
+        racks: Array.from({ length: 5 }, (_, rackIdx) => {
+          let currentU = 0;
+          const equipments: Equipment[] = [];
+          const numEquipments = Math.floor(Math.random() * 6) + 5; // 5-10개
+          
+          for (let i = 0; i < numEquipments; i++) {
+            const types: Equipment['type'][] = ['Server', 'Switch', 'Storage', 'Router'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            const equipment = createEquipment(rackIdx + 1, currentU, type);
+            currentU += equipment.height_u;
+            equipments.push(equipment);
+            
+            if (currentU >= 40) break; // 42U 랙 제한
+          }
+          
+          return {
+            id: rackIdx + 1,
+            name: `Rack-A${String(rackIdx + 1).padStart(2, '0')}`,
+            server_room_id: 1,
+            total_u: 42,
+            equipments,
+          };
+        }),
+      },
+      {
+        id: 2,
+        name: '서버실 B',
+        datacenter_id: 1,
+        location: '1층 서관',
+        area: 400,
+        racks: Array.from({ length: 5 }, (_, rackIdx) => {
+          let currentU = 0;
+          const equipments: Equipment[] = [];
+          const numEquipments = Math.floor(Math.random() * 6) + 5;
+          
+          for (let i = 0; i < numEquipments; i++) {
+            const types: Equipment['type'][] = ['Server', 'Switch', 'Storage', 'Router'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            const equipment = createEquipment(rackIdx + 6, currentU, type);
+            currentU += equipment.height_u;
+            equipments.push(equipment);
+            
+            if (currentU >= 40) break;
+          }
+          
+          return {
+            id: rackIdx + 6,
+            name: `Rack-B${String(rackIdx + 1).padStart(2, '0')}`,
+            server_room_id: 2,
+            total_u: 42,
+            equipments,
+          };
+        }),
+      },
+      {
+        id: 3,
+        name: '서버실 C',
+        datacenter_id: 1,
+        location: '2층 동관',
+        area: 450,
+        racks: Array.from({ length: 5 }, (_, rackIdx) => {
+          let currentU = 0;
+          const equipments: Equipment[] = [];
+          const numEquipments = Math.floor(Math.random() * 6) + 5;
+          
+          for (let i = 0; i < numEquipments; i++) {
+            const types: Equipment['type'][] = ['Server', 'Switch', 'Storage', 'Router'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            const equipment = createEquipment(rackIdx + 11, currentU, type);
+            currentU += equipment.height_u;
+            equipments.push(equipment);
+            
+            if (currentU >= 40) break;
+          }
+          
+          return {
+            id: rackIdx + 11,
+            name: `Rack-C${String(rackIdx + 1).padStart(2, '0')}`,
+            server_room_id: 3,
+            total_u: 42,
+            equipments,
+          };
+        }),
+      },
+    ],
+  },
+  {
+    id: 2,
+    name: '부산 데이터센터',
+    location: '부산광역시 해운대구',
+    serverRooms: [
+      {
+        id: 4,
+        name: '서버실 A',
+        datacenter_id: 2,
+        location: '1층',
+        area: 600,
+        racks: Array.from({ length: 7 }, (_, rackIdx) => {
+          let currentU = 0;
+          const equipments: Equipment[] = [];
+          const numEquipments = Math.floor(Math.random() * 6) + 5;
+          
+          for (let i = 0; i < numEquipments; i++) {
+            const types: Equipment['type'][] = ['Server', 'Switch', 'Storage', 'Router'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            const equipment = createEquipment(rackIdx + 16, currentU, type);
+            currentU += equipment.height_u;
+            equipments.push(equipment);
+            
+            if (currentU >= 40) break;
+          }
+          
+          return {
+            id: rackIdx + 16,
+            name: `Rack-A${String(rackIdx + 1).padStart(2, '0')}`,
+            server_room_id: 4,
+            total_u: 42,
+            equipments,
+          };
+        }),
+      },
+      {
+        id: 5,
+        name: '서버실 B',
+        datacenter_id: 2,
+        location: '2층',
+        area: 550,
+        racks: Array.from({ length: 6 }, (_, rackIdx) => {
+          let currentU = 0;
+          const equipments: Equipment[] = [];
+          const numEquipments = Math.floor(Math.random() * 6) + 5;
+          
+          for (let i = 0; i < numEquipments; i++) {
+            const types: Equipment['type'][] = ['Server', 'Switch', 'Storage', 'Router'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            const equipment = createEquipment(rackIdx + 23, currentU, type);
+            currentU += equipment.height_u;
+            equipments.push(equipment);
+            
+            if (currentU >= 40) break;
+          }
+          
+          return {
+            id: rackIdx + 23,
+            name: `Rack-B${String(rackIdx + 1).padStart(2, '0')}`,
+            server_room_id: 5,
+            total_u: 42,
+            equipments,
+          };
+        }),
+      },
+    ],
+  },
+];
