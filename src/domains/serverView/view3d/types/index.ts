@@ -81,7 +81,6 @@ export interface CreateDeviceRequest {
   warrantyEndDate?: string;
   notes?: string;
   deviceTypeId: number;
-  datacenterId: number;
   rackId?: number | null;
   serverRoomId: number;
 }

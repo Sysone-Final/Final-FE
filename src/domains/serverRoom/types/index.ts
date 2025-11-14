@@ -1,29 +1,24 @@
 export interface ServerRoom {
-  id: string;
-  name: string; // dataCenterName
+  id: number;
+  name: string; // 서버실 이름
   code: string; // 서버실 코드
-  location: string; // 위치 정보
-  description: string; // 설명
-  rackCount?: number; // 옵셔널로 변경
-  status?: "Normal" | "Warning" | "Critical" | "Maintenance"; // 옵셔널로 변경
+  location: string | null; // 위치 정보
+  floor: number; // 층수
+  status: "ACTIVE" | "INACTIVE" | "MAINTENANCE"; // 상태
+}
+
+// 데이터센터 정보
+export interface DataCenterGroup {
+  dataCenterId: number;
+  dataCenterName: string;
+  dataCenterCode: string;
+  dataCenterAddress: string;
+  serverRooms: ServerRoom[];
 }
 
 // API 응답 타입
-export interface CompanyServerRoomMapping {
-  id: number;
-  companyId: number;
-  companyName: string;
-  serverRoomId: number;
-  serverRoomName: string;
-  code: string; // 서버실 코드
-  description: string;
-  location: string; // 위치 정보
-  grantedBy: string;
-  createdAt: string;
-}
-
 export interface CompanyServerRoomsResponse {
   status_code: number;
   status_message: string;
-  result: CompanyServerRoomMapping[];
+  result: DataCenterGroup[];
 }

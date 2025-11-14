@@ -20,10 +20,9 @@ import { LoadingSpinner } from '@/shared/loading';
 interface BabylonDatacenterViewProps {
   mode?: 'edit' | 'view'; // 초기 모드 (기본값: view)
   serverRoomId?: string; // 서버실 ID
-  datacenterId?: number; // 데이터센터 ID (장비 생성 시 필요)
 }
 
-function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId, datacenterId = 1 }: BabylonDatacenterViewProps = {}) {
+function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: BabylonDatacenterViewProps = {}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sceneRef = useRef<Scene | null>(null);
   const hasAppliedInitialModeRef = useRef(false);
@@ -70,13 +69,11 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId, datac
     handleMultipleEquipmentPositionsChange,
   } = useEquipmentActions({ 
     serverRoomId, 
-    datacenterId, 
     showToast 
   });
 
   const { handleDrop, handleDragOver } = useEquipmentDragAndDrop({
     serverRoomId,
-    datacenterId,
     gridConfig,
     canvasRef,
     sceneRef,

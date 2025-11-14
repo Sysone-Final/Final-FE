@@ -12,20 +12,24 @@ const ServerRoomDashboard: React.FC = () => {
   const { user } = useAuthStore();
   const companyId = user?.companyId;
   
-  const { data: serverRooms = [], isLoading, isError, error } = useServerRooms(companyId!);
+  const { data: dataCenters = [], isLoading, isError, error } = useServerRooms(companyId!);
 
   const stats = useMemo(() => {
-    const totalRooms = serverRooms.length;
-    const totalRacks = serverRooms.reduce((sum, room) => sum + (room.rackCount || 0), 0);
-    // status가 없는 경우 대비하여 안전하게 처리
-    const normalStatus = serverRooms.filter(room => room.status?.toLowerCase() === 'normal').length;
-    const needAttention = serverRooms.filter(room => 
-      room.status && ['warning', 'critical'].includes(room.status.toLowerCase())
-    ).length;
-    return { totalRooms, totalRacks, normalStatus, needAttention };
-  }, [serverRooms]);
+    const totalRooms = dataCenters.reduce((sum, dc) => sum + dc.serverRooms.length, 0);
+    const totalDataCenters = dataCenters.length;
+    const activeRooms = dataCenters.reduce(
+      (sum, dc) => sum + dc.serverRooms.filter(room => room.status === 'ACTIVE').length, 
+      0
+    );
+    const maintenanceRooms = dataCenters.reduce(
+      (sum, dc) => sum + dc.serverRooms.filter(room => room.status === 'MAINTENANCE').length, 
+      0
+    );
+    
+    return { totalRooms, totalDataCenters, activeRooms, maintenanceRooms };
+  }, [dataCenters]);
 
-  // companyId! (변경예정)
+  // companyId 체크
   if (!companyId) {
     return (
       <div className="tab-layout">
@@ -38,7 +42,7 @@ const ServerRoomDashboard: React.FC = () => {
     );
   }
 
-  // 로딩 상태 처리 (변경예정)
+  // 로딩 상태 처리
   if (isLoading) {
     return (
       <div className="tab-layout">
@@ -49,7 +53,7 @@ const ServerRoomDashboard: React.FC = () => {
     );
   }
 
-  // 에러 상태 처리 (변경예정)
+  // 에러 상태 처리
   if (isError) {
     return (
       <div className="tab-layout">
@@ -67,9 +71,7 @@ const ServerRoomDashboard: React.FC = () => {
       {/* Header */}
       <header className="tab-header">
         <div>
-          {/* 텍스트 클래스 적용 */}
           <h1 className="tab-title text-main-title">서버실 관리</h1>
-          {/* 텍스트 클래스 및 색상 조정 */}
           <p className="tab-subtitle text-body-primary text-gray-400">데이터 센터 인프라를 모니터링하고 관리하세요</p>
         </div>
         <button 
@@ -82,43 +84,34 @@ const ServerRoomDashboard: React.FC = () => {
       
       {/* Main Content */}
       <main className="dashboard-main">
-        <ServerRoomList rooms={serverRooms} />
+        <ServerRoomList dataCenters={dataCenters} />
 
         {/* Statistics Section */}
         <section className="statistics-section">
-          {/* 텍스트 클래스 적용 */}
           <h2 className="statistics-title text-subtitle">전체 통계</h2>
           <div className="stats-grid">
             {/* Stat Item 1 */}
             <div className="stat-item">
-              {/* 텍스트 클래스 적용 */}
-              <span className="stat-value text-gray-50">{stats.totalRooms}</span>
-              {/* 텍스트 클래스 및 색상 조정 */}
-              <span className="stat-label text-body-primary text-gray-400">총 서버실</span>
+              <span className="stat-value text-gray-50">{stats.totalDataCenters}</span>
+              <span className="stat-label text-body-primary text-gray-400">총 데이터센터</span>
             </div>
             
             {/* Stat Item 2 */}
             <div className="stat-item">
-               {/* 텍스트 클래스 적용 */}
-              <span className="stat-value text-gray-50">{stats.totalRacks}</span>
-               {/* 텍스트 클래스 및 색상 조정 */}
-              <span className="stat-label text-body-primary text-gray-400">총 랙 수</span>
+              <span className="stat-value text-gray-50">{stats.totalRooms}</span>
+              <span className="stat-label text-body-primary text-gray-400">총 서버실</span>
             </div>
             
             {/* Stat Item 3 */}
             <div className="stat-item">
-              {/* 상태별 색상 클래스 직접 적용 */}
-              <span className="stat-value stat-value-success">{stats.normalStatus}</span>
-               {/* 텍스트 클래스 및 색상 조정 */}
-              <span className="stat-label text-body-primary text-gray-400">정상 상태</span>
+              <span className="stat-value stat-value-success">{stats.activeRooms}</span>
+              <span className="stat-label text-body-primary text-gray-400">활성 상태</span>
             </div>
             
             {/* Stat Item 4 */}
             <div className="stat-item">
-              {/* 상태별 색상 클래스 직접 적용 */}
-              <span className="stat-value stat-value-warning">{stats.needAttention}</span>
-               {/* 텍스트 클래스 및 색상 조정 */}
-              <span className="stat-label text-body-primary text-gray-400">주의 필요</span>
+              <span className="stat-value stat-value-warning">{stats.maintenanceRooms}</span>
+              <span className="stat-label text-body-primary text-gray-400">유지보수</span>
             </div>
           </div>
         </section>

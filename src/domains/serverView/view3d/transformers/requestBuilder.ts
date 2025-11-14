@@ -13,7 +13,6 @@ import { radianToDegree } from "../transformers/equipmentTransformer";
 export function buildCreateDeviceRequest(
   equipment: Omit<Equipment3D, "id" | "equipmentId">,
   deviceCode: string,
-  datacenterId: number,
   serverRoomId: number,
   rackId?: number
 ): CreateDeviceRequest {
@@ -34,7 +33,6 @@ export function buildCreateDeviceRequest(
     warrantyEndDate: equipment.metadata?.warrantyEndDate as string | undefined,
     notes: equipment.metadata?.notes as string | undefined,
     deviceTypeId,
-    datacenterId,
     rackId: rackId ?? (equipment.rackId ? Number(equipment.rackId) : null),
     serverRoomId,
   };

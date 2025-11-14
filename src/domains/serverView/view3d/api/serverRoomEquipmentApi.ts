@@ -215,14 +215,12 @@ async function createRack(
  * 
  * @param equipment 추가할 장비 정보
  * @param serverRoomId 서버실 ID
- * @param datacenterId 데이터센터 ID
  * @param existingEquipment 기존 장비 목록 (카운터 기반 코드 생성용)
  * @returns 생성된 장비 정보
  */
 export async function createDevice(
   equipment: Omit<Equipment3D, "id" | "equipmentId">,
   serverRoomId: number,
-  datacenterId: number,
   existingEquipment: Equipment3D[] = [],
 ): Promise<Equipment3D> {
   try {
@@ -239,7 +237,6 @@ export async function createDevice(
     const requestData = buildCreateDeviceRequest(
       equipment,
       deviceCode,
-      datacenterId,
       serverRoomId,
       rackId ?? undefined
     );
