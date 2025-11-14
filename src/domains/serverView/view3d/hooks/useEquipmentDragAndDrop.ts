@@ -8,7 +8,6 @@ import type { ToastSeverity } from './useToast';
 
 interface UseEquipmentDragAndDropParams {
   serverRoomId?: string;
-  datacenterId?: number;
   gridConfig: GridConfig;
   canvasRef: React.RefObject<HTMLCanvasElement>;
   sceneRef: React.RefObject<Scene | null>;
@@ -18,7 +17,6 @@ interface UseEquipmentDragAndDropParams {
 /** 드래그앤드롭으로 장비 추가 */
 export function useEquipmentDragAndDrop({
   serverRoomId,
-  datacenterId = 1,
   gridConfig,
   canvasRef,
   sceneRef,
@@ -103,7 +101,6 @@ export function useEquipmentDragAndDrop({
             },
           },
           Number(serverRoomId),
-          datacenterId,
           equipment
         );
 
@@ -119,7 +116,6 @@ export function useEquipmentDragAndDrop({
     },
     [
       serverRoomId,
-      datacenterId,
       screenToGrid,
       isValidPosition,
       isPositionOccupied,

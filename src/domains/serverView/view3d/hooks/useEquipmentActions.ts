@@ -7,14 +7,12 @@ import type { ToastSeverity } from './useToast';
 
 interface UseEquipmentActionsParams {
   serverRoomId?: string;
-  datacenterId?: number;
   showToast: (message: string, severity?: ToastSeverity) => void;
 }
 
 /** 장비 추가/삭제/회전 액션 관리 */
 export function useEquipmentActions({
   serverRoomId,
-  datacenterId = 1,
   showToast,
 }: UseEquipmentActionsParams) {
   const {
@@ -58,7 +56,6 @@ export function useEquipmentActions({
             },
           },
           Number(serverRoomId),
-          datacenterId,
           equipment
         );
 
@@ -72,7 +69,7 @@ export function useEquipmentActions({
         showToast('장치 추가에 실패했습니다', 'error');
       }
     },
-    [serverRoomId, datacenterId, gridConfig.columns, gridConfig.rows, equipment, showToast]
+    [serverRoomId, gridConfig.columns, gridConfig.rows, equipment, showToast]
   );
 
   // 장비 회전
