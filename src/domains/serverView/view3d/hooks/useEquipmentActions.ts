@@ -1,0 +1,188 @@
+import { useCallback } from 'react';
+import { useBabylonDatacenterStore } from '../stores/useBabylonDatacenterStore';
+import { createDevice, deleteEquipment, updateEquipment } from '../api/serverRoomEquipmentApi';
+import { getNextDeviceNumber, generateDeviceName } from '../utils/deviceNameGenerator';
+import type { EquipmentType } from '../types';
+import type { ToastSeverity } from './useToast';
+
+interface UseEquipmentActionsParams {
+  serverRoomId?: string;
+  datacenterId?: number;
+  showToast: (message: string, severity?: ToastSeverity) => void;
+}
+
+/** 장비 추가/삭제/회전 액션 관리 */
+export function useEquipmentActions({
+  serverRoomId,
+  datacenterId = 1,
+  showToast,
+}: UseEquipmentActionsParams) {
+  const {
+    gridConfig,
+    equipment,
+    selectedEquipmentId,
+    rotateEquipment90,
+    removeEquipment,
+    clearSelection,
+    isValidPosition,
+    isPositionOccupied,
+    updateEquipmentPosition,
+    updateMultipleEquipmentPositions,
+  } = useBabylonDatacenterStore();
+
+  // 장비 추가
+  const handleAddEquipment = useCallback(
+    async (type: EquipmentType) => {
+      if (!serverRoomId) {
+        showToast('서버실 ID가 없습니다', 'error');
+        return;
+      }
+
+      try {
+        const centerX = Math.floor(gridConfig.columns / 2);
+        const centerY = Math.floor(gridConfig.rows / 2);
+
+        const nextNumber = getNextDeviceNumber(equipment, type, serverRoomId);
+        const deviceName = generateDeviceName(type, serverRoomId, nextNumber);
+
+        const createdEquipment = await createDevice(
+          {
+            type,
+            gridX: centerX,
+            gridY: centerY,
+            gridZ: 0,
+            rotation: 0,
+            metadata: {
+              name: deviceName,
+              status: 'NORMAL',
+            },
+          },
+          Number(serverRoomId),
+          datacenterId,
+          equipment
+        );
+
+        useBabylonDatacenterStore.setState((state) => ({
+          equipment: [...state.equipment, createdEquipment],
+        }));
+
+        showToast('장치가 추가되었습니다', 'success');
+      } catch (error) {
+        console.error('Failed to add equipment:', error);
+        showToast('장치 추가에 실패했습니다', 'error');
+      }
+    },
+    [serverRoomId, datacenterId, gridConfig.columns, gridConfig.rows, equipment, showToast]
+  );
+
+  // 장비 회전
+  const handleRotateEquipment = useCallback(
+    (clockwise: boolean) => {
+      if (!selectedEquipmentId) return;
+
+      const equipmentToRotate = equipment.find((eq) => eq.id === selectedEquipmentId);
+      if (!equipmentToRotate) return;
+
+      rotateEquipment90(selectedEquipmentId, clockwise);
+
+      const rotation90 = Math.PI / 2;
+      const newRotation = clockwise
+        ? equipmentToRotate.rotation + rotation90
+        : equipmentToRotate.rotation - rotation90;
+      const normalizedRotation = ((newRotation % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+
+      updateEquipment({
+        ...equipmentToRotate,
+        rotation: normalizedRotation,
+      }).catch((error) => {
+        console.error('Failed to rotate equipment:', error);
+        showToast('장비 회전에 실패했습니다', 'error');
+      });
+    },
+    [selectedEquipmentId, equipment, rotateEquipment90, showToast]
+  );
+
+  // 장비 삭제
+  const handleDeleteEquipment = useCallback(
+    async (equipmentIds: string[]) => {
+      try {
+        await Promise.all(
+          equipmentIds.map(async (id) => {
+            const equipmentToDelete = equipment.find((eq) => eq.id === id);
+            if (equipmentToDelete) {
+              await deleteEquipment(equipmentToDelete);
+              removeEquipment(id);
+            }
+          })
+        );
+        clearSelection();
+        showToast(`${equipmentIds.length}개 장치가 삭제되었습니다`, 'success');
+      } catch (error) {
+        console.error('Failed to delete equipment:', error);
+        showToast('장치 삭제에 실패했습니다', 'error');
+      }
+    },
+    [equipment, removeEquipment, clearSelection, showToast]
+  );
+
+  // 장비 위치 업데이트 (유효성 검사 포함)
+  const handleEquipmentPositionChange = useCallback(
+    (id: string, gridX: number, gridY: number): boolean => {
+      const result = updateEquipmentPosition(id, gridX, gridY);
+
+      if (!result) {
+        if (!isValidPosition(gridX, gridY)) {
+          showToast('격자 범위를 벗어났습니다', 'error');
+        } else if (isPositionOccupied(gridX, gridY, id)) {
+          showToast('이미 장비가 배치되어 있습니다', 'error');
+        }
+        return false;
+      }
+
+      const equipmentToUpdate = equipment.find((eq) => eq.id === id);
+      if (equipmentToUpdate) {
+        updateEquipment({
+          ...equipmentToUpdate,
+          gridX,
+          gridY,
+        }).catch((error) => {
+          console.error('Failed to update equipment position:', error);
+          showToast('장비 위치 업데이트에 실패했습니다', 'error');
+        });
+      }
+
+      return true;
+    },
+    [updateEquipmentPosition, isValidPosition, isPositionOccupied, equipment, showToast]
+  );
+
+  // 다중 장비 위치 업데이트
+  const handleMultipleEquipmentPositionsChange = useCallback(
+    (
+      updates: {
+        id: string;
+        gridX: number;
+        gridY: number;
+        originalGridX: number;
+        originalGridY: number;
+      }[]
+    ): boolean => {
+      const result = updateMultipleEquipmentPositions(updates);
+
+      if (!result) {
+        showToast('선택된 장치들을 이동할 수 없습니다 (격자 범위 벗어남 또는 위치 중복)', 'error');
+      }
+
+      return result;
+    },
+    [updateMultipleEquipmentPositions, showToast]
+  );
+
+  return {
+    handleAddEquipment,
+    handleRotateEquipment,
+    handleDeleteEquipment,
+    handleEquipmentPositionChange,
+    handleMultipleEquipmentPositionsChange,
+  };
+}
