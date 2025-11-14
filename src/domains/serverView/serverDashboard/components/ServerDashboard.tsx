@@ -1,21 +1,35 @@
-interface DashboardProps {
+import ServerDashboardHeader from "./ServerDashboardHeader";
+
+interface ServerDashboardProps {
   deviceId: number;
   deviceName: string;
   onClose: () => void;
+  isOpen: boolean;
 }
 
-function ServerDashboard({ deviceName }: DashboardProps) {
+function ServerDashboard({
+  deviceName,
+  isOpen,
+  onClose,
+}: ServerDashboardProps) {
   return (
-    <div className="h-full w-full rounded-xl flex flex-col border border-white/20 overflow-hidden">
-      {/* 헤더 */}
-      <div className="flex justify-between items-center h-14 border-b border-slate-300/20 w-full px-0">
-        <h2 className="text-2xl font-bold text-white ml-4">{deviceName}</h2>
-      </div>
-
+    <div
+      className={`
+        absolute top-0 right-0
+        h-full w-full
+        rounded-xl flex flex-col overflow-hidden
+        bg-[#404452]/70 backdrop-blur-md border border-slate-300/40
+        transition-transform duration-300 ease-out
+        px-6 py-3
+        ${isOpen ? "translate-x-0" : "translate-x-full"}
+      `}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <ServerDashboardHeader deviceName={deviceName} onClose={onClose} />
       {/* 컨텐츠 */}
       <div className="flex-1 overflow-y-auto">
         <div className="flex items-center justify-center h-full text-slate-400">
-          <p className="text-lg">대시보드 컨텐츠 영역</p>
+          <div className="text-lg">장비를 클릭해주세요.</div>
         </div>
       </div>
     </div>
