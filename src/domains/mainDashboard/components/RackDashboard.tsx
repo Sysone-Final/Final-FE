@@ -1,11 +1,17 @@
-import { useState } from 'react';
-import { useReactTable, getCoreRowModel, getPaginationRowModel, getSortedRowModel, type SortingState } from '@tanstack/react-table';
-import { DataTable, DataTablePagination } from '@/shared/table';
-import type { Rack } from '../types/dashboard.types';
-import { equipmentColumns } from './equipmentTable.config';
-import { Layers, AlertTriangle } from 'lucide-react';
-import MetricsGaugeGrid from './MetricsGaugeGrid';
-import NetworkTrafficChart from './NetworkTrafficChart';
+import { useState } from "react";
+import {
+  useReactTable,
+  getCoreRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  type SortingState,
+} from "@tanstack/react-table";
+import { DataTable, DataTablePagination } from "@/shared/table";
+import type { Rack } from "../types/dashboard.types";
+import { equipmentColumns } from "./equipmentTable.config";
+import { Layers, AlertTriangle } from "lucide-react";
+import { CpuGauge, MemoryGauge, DiskGauge } from "./index";
+import NetworkTrafficChart from "./NetworkTrafficChart";
 
 interface RackDashboardProps {
   rack: Rack;
@@ -21,28 +27,44 @@ export default function RackDashboard({ rack }: RackDashboardProps) {
   const rackUsagePercent = Math.round((usedU / rack.total_u) * 1000) / 10;
 
   const avgCpuUsage =
-    rack.equipments.reduce((sum, eq) => sum + (100 - (eq.systemMetric?.cpu_idle || 0)), 0) / totalEquipments || 0;
+    rack.equipments.reduce(
+      (sum, eq) => sum + (100 - (eq.systemMetric?.cpu_idle || 0)),
+      0
+    ) / totalEquipments || 0;
 
   const avgMemoryUsage =
-    rack.equipments.reduce((sum, eq) => sum + (eq.systemMetric?.used_memory_percentage || 0), 0) / totalEquipments ||
-    0;
+    rack.equipments.reduce(
+      (sum, eq) => sum + (eq.systemMetric?.used_memory_percentage || 0),
+      0
+    ) / totalEquipments || 0;
 
   const avgDiskUsage =
-    rack.equipments.reduce((sum, eq) => sum + (eq.storageMetric?.used_percentage || 0), 0) / totalEquipments || 0;
+    rack.equipments.reduce(
+      (sum, eq) => sum + (eq.storageMetric?.used_percentage || 0),
+      0
+    ) / totalEquipments || 0;
 
   const totalNetworkIn = rack.equipments.reduce((sum, eq) => {
-    const networkIn = eq.networkMetrics?.reduce((s, nm) => s + nm.in_bytes_per_sec, 0) || 0;
+    const networkIn =
+      eq.networkMetrics?.reduce((s, nm) => s + nm.in_bytes_per_sec, 0) || 0;
     return sum + networkIn;
   }, 0);
 
   const totalNetworkOut = rack.equipments.reduce((sum, eq) => {
-    const networkOut = eq.networkMetrics?.reduce((s, nm) => s + nm.out_bytes_per_sec, 0) || 0;
+    const networkOut =
+      eq.networkMetrics?.reduce((s, nm) => s + nm.out_bytes_per_sec, 0) || 0;
     return sum + networkOut;
   }, 0);
 
-  const onlineCount = rack.equipments.filter((eq) => eq.status === 'online').length;
-  const warningCount = rack.equipments.filter((eq) => eq.status === 'warning').length;
-  const criticalCount = rack.equipments.filter((eq) => eq.status === 'critical').length;
+  const onlineCount = rack.equipments.filter(
+    (eq) => eq.status === "online"
+  ).length;
+  const warningCount = rack.equipments.filter(
+    (eq) => eq.status === "warning"
+  ).length;
+  const criticalCount = rack.equipments.filter(
+    (eq) => eq.status === "critical"
+  ).length;
 
   const table = useReactTable({
     data: rack.equipments,
@@ -65,7 +87,9 @@ export default function RackDashboard({ rack }: RackDashboardProps) {
             <h3 className="text-sm font-semibold text-gray-300">랙 점유율</h3>
           </div>
           <div className="flex items-end gap-2">
-            <span className="text-3xl font-bold text-gray-100">{rackUsagePercent}%</span>
+            <span className="text-3xl font-bold text-gray-100">
+              {rackUsagePercent}%
+            </span>
             <span className="text-sm text-gray-400 mb-1">
               ({usedU}U / {rack.total_u}U)
             </span>
@@ -82,7 +106,9 @@ export default function RackDashboard({ rack }: RackDashboardProps) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-400 text-sm">정상</p>
-              <p className="text-3xl font-bold text-green-400 mt-1">{onlineCount}</p>
+              <p className="text-3xl font-bold text-green-400 mt-1">
+                {onlineCount}
+              </p>
             </div>
             <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
           </div>
@@ -92,7 +118,9 @@ export default function RackDashboard({ rack }: RackDashboardProps) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-400 text-sm">경고</p>
-              <p className="text-3xl font-bold text-yellow-400 mt-1">{warningCount}</p>
+              <p className="text-3xl font-bold text-yellow-400 mt-1">
+                {warningCount}
+              </p>
             </div>
             <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
           </div>
@@ -102,7 +130,9 @@ export default function RackDashboard({ rack }: RackDashboardProps) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-400 text-sm">위험</p>
-              <p className="text-3xl font-bold text-red-400 mt-1">{criticalCount}</p>
+              <p className="text-3xl font-bold text-red-400 mt-1">
+                {criticalCount}
+              </p>
             </div>
             <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
           </div>
@@ -110,18 +140,17 @@ export default function RackDashboard({ rack }: RackDashboardProps) {
       </div>
 
       {/* 게이지 차트 */}
-      <MetricsGaugeGrid
-        avgCpuUsage={avgCpuUsage}
-        avgMemoryUsage={avgMemoryUsage}
-        avgDiskUsage={avgDiskUsage}
-        avgLoadAvg1={0}
-      />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <CpuGauge value={avgCpuUsage} />
+        <MemoryGauge value={avgMemoryUsage} />
+        <DiskGauge value={avgDiskUsage} />
+        <NetworkTrafficChart
+          networkInMbps={totalNetworkIn / 1024 / 1024}
+          networkOutMbps={totalNetworkOut / 1024 / 1024}
+          height="180px"
+        />
+      </div>
 
-      {/* 네트워크 트래픽 */}
-      <NetworkTrafficChart
-        networkInMbps={totalNetworkIn / 1024 / 1024}
-        networkOutMbps={totalNetworkOut / 1024 / 1024}
-      />
 
       {/* 알람 */}
       {(warningCount > 0 || criticalCount > 0) && (
@@ -131,15 +160,28 @@ export default function RackDashboard({ rack }: RackDashboardProps) {
             <span className="font-semibold">활성 알람</span>
           </div>
           <div className="mt-2 text-sm text-gray-300">
-            {criticalCount > 0 && <div className="text-red-400">• Critical: {criticalCount}개 장비</div>}
-            {warningCount > 0 && <div className="text-yellow-400">• Warning: {warningCount}개 장비</div>}
+            {criticalCount > 0 && (
+              <div className="text-red-400">
+                • Critical: {criticalCount}개 장비
+              </div>
+            )}
+            {warningCount > 0 && (
+              <div className="text-yellow-400">
+                • Warning: {warningCount}개 장비
+              </div>
+            )}
           </div>
         </div>
       )}
 
       {/* 장비 테이블 */}
       <div className="bg-neutral-800 rounded-lg border border-neutral-700">
-        <DataTable table={table} columns={equipmentColumns} isLoading={false} isError={false} />
+        <DataTable
+          table={table}
+          columns={equipmentColumns}
+          isLoading={false}
+          isError={false}
+        />
         <div className="p-4 border-t border-neutral-700">
           <DataTablePagination
             table={table}

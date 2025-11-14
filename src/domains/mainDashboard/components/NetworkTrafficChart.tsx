@@ -4,9 +4,10 @@ import { Network } from 'lucide-react';
 interface NetworkTrafficChartProps {
   networkInMbps: number;
   networkOutMbps: number;
+  height?: string;
 }
 
-export default function NetworkTrafficChart({ networkInMbps, networkOutMbps }: NetworkTrafficChartProps) {
+export default function NetworkTrafficChart({ networkInMbps, networkOutMbps, height = '250px' }: NetworkTrafficChartProps) {
   const option = {
     tooltip: {
       trigger: 'axis',
@@ -104,7 +105,7 @@ export default function NetworkTrafficChart({ networkInMbps, networkOutMbps }: N
         <Network size={20} className="text-cyan-400" />
         <h3 className="text-lg font-semibold text-gray-100">네트워크 트래픽</h3>
       </div>
-      <ReactECharts option={option} style={{ height: '250px' }} opts={{ renderer: 'svg' }} />
+      <ReactECharts option={option} style={{ height }} opts={{ renderer: 'svg' }} />
     </div>
   );
 }
