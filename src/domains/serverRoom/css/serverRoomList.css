@@ -1,5 +1,29 @@
 @import "tailwindcss";
 
+.server-room-list-container {
+  @apply flex flex-col gap-8;
+}
+
+.datacenter-group {
+  @apply flex flex-col gap-4;
+}
+
+.datacenter-header {
+  @apply flex flex-col gap-2 pb-4 border-b border-gray-700;
+}
+
+.datacenter-title {
+  @apply flex items-center gap-2;
+}
+
+.datacenter-code {
+  @apply text-sm;
+}
+
+.datacenter-address {
+  @apply text-sm;
+}
+
 .server-room-list {
   @apply grid grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-6 py-6;
 }

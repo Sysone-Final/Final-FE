@@ -1,11 +1,12 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
-import ServerRoomDashboard from "./domains/serverRoom/pages/ServerRoomDashboard";
-import ServerViewPage from "./domains/serverView/pages/ServerViewPage";
-import ResourceManagePage from "./domains/resourceManage/pages/ResourceManagePage";
-import LoginPage from "./domains/login/LoginPage";
-import HumanResource from "./domains/humanResource/pages/HumanResource";
-import ProtectedRoute from "./shared/ProtectedRoute";
+import ServerRoomDashboard from "@domains/serverRoom/pages/ServerRoomDashboard";
+import ServerViewPage from "@domains/serverView/pages/ServerViewPage";
+import ResourceManagePage from "@domains/resourceManage/pages/ResourceManagePage";
+import LoginPage from "@domains/login/LoginPage";
+import HumanResource from "@domains/humanResource/pages/HumanResource";
+import ProtectedRoute from "@shared/ProtectedRoute";
+import MainDashboard from "@domains/mainDashboard/pages/MainDashboard";
 
 const router = createBrowserRouter([
   {
@@ -21,7 +22,7 @@ const router = createBrowserRouter([
         children: [
           {
             path: "dashboard",
-            element: <ServerRoomDashboard />,
+            element: <MainDashboard />,
           },
           {
             path: "server-room-dashboard",
@@ -38,7 +39,7 @@ const router = createBrowserRouter([
           {
             path: "hr",
             element: <HumanResource />,
-          },
+          }
         ],
       },
     ],
