@@ -1,5 +1,5 @@
 import client from "@api/client";
-import type { ServerRoom, CompanyServerRoomsResponse } from "../types";
+import type { DataCenterGroup, ServerRoom, CompanyServerRoomsResponse } from "../types";
 
 // 데이터센터 타입
 export interface DataCenter {
@@ -23,22 +23,16 @@ export const getDataCenters = async (): Promise<DataCenter[]> => {
 };
 
 /**
- * 회사의 서버실 매핑 조회 (GET)
+ * 회사의 서버실 매핑 조회 (GET) - 데이터센터별 그룹화
  * @param companyId 회사 ID
  */
-export const getCompanyServerRooms = async (companyId: number): Promise<ServerRoom[]> => {
+export const getCompanyServerRooms = async (companyId: number): Promise<DataCenterGroup[]> => {
   const response = await client.get<CompanyServerRoomsResponse>(
     `/company-serverrooms/company/${companyId}`
   );
   
-  // API 응답을 ServerRoom 형태로 변환
-  return response.data.result.map((item) => ({
-    id: item.serverRoomId.toString(),
-    name: item.serverRoomName,
-    code: item.code || "N/A",
-    location: item.location || "위치 정보 없음",
-    description: item.description || "설명 없음",
-  }));
+  // API 응답을 그대로 반환 (이미 DataCenterGroup[] 형태)
+  return response.data.result;
 };
 
 /**
