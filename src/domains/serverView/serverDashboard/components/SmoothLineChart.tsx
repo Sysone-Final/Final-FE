@@ -26,8 +26,8 @@ interface TooltipParams {
 const SmoothLineChart = ({
   xAxisData,
   series,
-  yAxisUnit,
-  height,
+  yAxisUnit = "",
+  height = "100%",
 }: SmoothLineChartProps) => {
   const option = {
     backgroundColor: "transparent",

@@ -41,7 +41,7 @@ function AreaLineChart({
       textStyle: {
         color: "#fff",
       },
-      formatter: function (params: TooltipParams[]) {
+      formatter: (params: TooltipParams[]) => {
         let result = `<div style="padding: 5px;">`;
         result += `<div style="font-weight: bold; margin-bottom: 5px;">${params[0].axisValue}</div>`;
 

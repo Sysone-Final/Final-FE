@@ -4,7 +4,6 @@ interface GaugeChartProps {
   value: number;
   max?: number;
   min?: number;
-  unit?: string;
   color?: string;
 }
 
