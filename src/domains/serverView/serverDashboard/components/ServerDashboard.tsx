@@ -205,7 +205,7 @@ function ServerDashboard({
     >
       <ServerDashboardHeader deviceName={deviceName} onClose={onClose} />
 
-      <div className="dashboard-content">
+      <div className="dashboard-content scrollbar-none">
         <div className="chart-grid">
           {/* 첫 번째 행 - 3개 열 (small) */}
           <div className="chart-row-small">
