@@ -19,8 +19,8 @@ interface SmoothLineChartProps {
 const SmoothLineChart = ({
   xAxisData,
   series,
-  yAxisUnit = "%",
-  height = "100%",
+  yAxisUnit,
+  height,
 }: SmoothLineChartProps) => {
   const option = {
     backgroundColor: "transparent",
@@ -74,13 +74,15 @@ const SmoothLineChart = ({
     yAxis: {
       type: "value",
       scale: true,
+      name: yAxisUnit,
+      nameLocation: "middle",
+      nameRotate: 90,
       nameTextStyle: {
         color: "#fff",
         fontSize: 12,
       },
       axisLabel: {
         color: "#fff",
-        formatter: `{value}${yAxisUnit}`,
       },
       axisLine: {
         lineStyle: {

@@ -54,7 +54,7 @@ function BarChart({
       bottom: 10,
     },
     grid: {
-      left: "3%",
+      left: "5%",
       right: "4%",
       bottom: "15%",
       top: "5%",
@@ -78,13 +78,16 @@ function BarChart({
       type: "value",
       name: yAxisUnit,
       scale: true,
+      nameLocation: "middle",
+      nameRotate: 90,
+      nameGap: 30,
       nameTextStyle: {
         color: "#fff",
+        fontSize: 12,
       },
       axisLabel: {
         color: "#fff",
         fontSize: 12,
-        formatter: `{value}${yAxisUnit}`,
       },
       axisLine: {
         lineStyle: {

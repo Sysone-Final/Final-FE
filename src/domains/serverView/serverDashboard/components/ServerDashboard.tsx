@@ -82,7 +82,7 @@ function ServerDashboard({
               <div className="flex items-center m-3 gap-2">
                 <img src={CpuIcon} alt="CPU" className="w-4 h-4" />
                 <span className="text-white text-sm font-semibold">
-                  CPU 사용률
+                  CPU 사용률 %
                 </span>
               </div>
               <div className="flex-1 flex items-center justify-center w-full h-full">
@@ -95,7 +95,7 @@ function ServerDashboard({
               <div className="flex items-center m-3 gap-2">
                 <img src={MemoryIcon} alt="MEMORY" className="w-4 h-4" />
                 <span className="text-white text-sm font-semibold">
-                  MEMORY 사용률
+                  MEMORY 사용률 %
                 </span>
               </div>
               <div className="flex-1 flex items-center justify-center w-full h-full">
@@ -108,7 +108,7 @@ function ServerDashboard({
               <div className="flex items-center m-3 gap-2">
                 <img src={DiskIcon} alt="DISK" className="w-4 h-4" />
                 <span className="text-white text-sm font-semibold">
-                  DISK 사용률
+                  DISK 사용률 %
                 </span>
               </div>
               <div className="flex-1 flex items-center justify-center w-full h-full">
@@ -125,7 +125,7 @@ function ServerDashboard({
                   CPU 사용 모드별 분포
                 </span>
               </div>
-              <div className="flex-1">
+              <div className="flex-1 m-3">
                 <BarChart
                   xAxisData={barTimeLabels}
                   series={[
@@ -155,7 +155,7 @@ function ServerDashboard({
                       color: "#7E84E8",
                     },
                   ]}
-                  yAxisUnit=""
+                  yAxisUnit="%"
                   height="100%"
                 />
               </div>
@@ -186,7 +186,7 @@ function ServerDashboard({
                       color: "#10B981",
                     },
                   ]}
-                  yAxisUnit=""
+                  yAxisUnit="%"
                   height="100%"
                 />
               </div>
@@ -202,7 +202,7 @@ function ServerDashboard({
                   메모리 & 스왑 사용률
                 </span>
               </div>
-              <div className="flex-1">
+              <div className="flex-1 m-3">
                 <SmoothLineChart
                   xAxisData={timeLabels}
                   series={[
@@ -220,7 +220,7 @@ function ServerDashboard({
                       lineType: "dashed",
                     },
                   ]}
-                  yAxisUnit=""
+                  yAxisUnit="%"
                   height="100%"
                 />
               </div>
@@ -235,7 +235,7 @@ function ServerDashboard({
                   네트워크 대역폭
                 </span>
               </div>
-              <div className="flex-1">
+              <div className="flex-1 m-3">
                 <AreaLineChart
                   xAxisData={timeLabels}
                   series={[
@@ -291,7 +291,7 @@ function ServerDashboard({
                       lineType: "dashed",
                     },
                   ]}
-                  yAxisUnit=""
+                  yAxisUnit="count/s"
                   height="100%"
                 />
               </div>
@@ -306,7 +306,7 @@ function ServerDashboard({
                   디스크 읽기/쓰기 속도
                 </span>
               </div>
-              <div className="flex-1">
+              <div className="flex-1 m-3">
                 <AreaLineChart
                   xAxisData={timeLabels}
                   series={[
@@ -348,7 +348,7 @@ function ServerDashboard({
                       color: "#F59E0B",
                     },
                   ]}
-                  yAxisUnit=""
+                  yAxisUnit="IOPS"
                   height="100%"
                 />
               </div>

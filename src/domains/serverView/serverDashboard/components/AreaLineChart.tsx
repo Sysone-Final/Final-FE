@@ -61,10 +61,10 @@ function AreaLineChart({
       },
     },
     grid: {
-      left: "3%",
+      left: "5%",
       right: "4%",
       bottom: "20%",
-      top: "5%",
+      top: "10%",
       containLabel: true,
     },
     toolbox: showToolbox
@@ -105,14 +105,20 @@ function AreaLineChart({
     yAxis: {
       type: "value",
       scale: true,
-      splitNumber: 5,
+      name: yAxisUnit,
+      nameLocation: "middle",
+      nameGap: 30,
+      nameRotate: 90,
+      nameTextStyle: {
+        color: "#fff",
+        fontSize: 12,
+      },
       axisLine: {
         show: false,
       },
       axisLabel: {
         color: "#fff",
         fontSize: 12,
-        formatter: `{value}`,
       },
       splitLine: {
         lineStyle: {
