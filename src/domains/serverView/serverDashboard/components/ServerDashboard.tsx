@@ -17,6 +17,16 @@ interface ServerDashboardProps {
   isOpen: boolean;
 }
 
+const generateConsistentValue = (
+  deviceId: number,
+  base: number,
+  variance: number
+) => {
+  const seed = deviceId * 9301 + 49297;
+  const random = (seed % 233280) / 233280;
+  return base + (random - 0.5) * variance;
+};
+
 function ServerDashboard({
   deviceName,
   isOpen,
@@ -47,12 +57,6 @@ function ServerDashboard({
     );
   };
 
-  const generateConsistentValue = (base: number, variance: number) => {
-    const seed = deviceId * 9301 + 49297;
-    const random = (seed % 233280) / 233280;
-    return base + (random - 0.5) * variance;
-  };
-
   const chartData = useMemo(() => {
     const timeLabels = generateTimeLabels();
     const barTimeLabels = generateTimeLabels(12);
@@ -60,9 +64,9 @@ function ServerDashboard({
     return {
       timeLabels,
       barTimeLabels,
-      cpuUsage: Math.round(generateConsistentValue(60, 40)),
-      memoryUsage: Math.round(generateConsistentValue(50, 40)),
-      diskUsage: Math.round(generateConsistentValue(30, 40)),
+      cpuUsage: Math.round(generateConsistentValue(deviceId, 60, 40)),
+      memoryUsage: Math.round(generateConsistentValue(deviceId, 50, 40)),
+      diskUsage: Math.round(generateConsistentValue(deviceId, 30, 40)),
 
       cpuModes: [
         {
