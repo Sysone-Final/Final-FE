@@ -1,4 +1,17 @@
 @import "tailwindcss";
+
+@layer utilities {
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+}
+
+/* 의사 요소는 밖에서 */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 /* 대시보드 컨테이너 */
 .dashboard-container {
   @apply absolute top-0 right-0 h-full w-full rounded-xl flex flex-col overflow-hidden;
@@ -16,7 +29,8 @@
 
 /* 컨텐츠 영역 */
 .dashboard-content {
-  @apply flex-1 overflow-y-auto scrollbar-none mt-3;
+  @apply flex-1 overflow-y-auto mt-3;
+  /* scrollbar-none 제거됨 */
 }
 
 /* 차트 그리드 컨테이너 */
