@@ -771,7 +771,7 @@ if (resourceId) {
 
   return (
     //  모달 배경 스타일 
-    <div className="fixed inset-0 z-50 flex justify-center items-center p-4 backdrop-blur-sm bg-black/20">
+    <div className="modal-bg">
       {/* 모달창 스타일 */}
       <div className="modal max-w-xl">
         <div className="p-6 md:p-8">
