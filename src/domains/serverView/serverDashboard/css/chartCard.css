@@ -40,5 +40,5 @@
 
 /* 차트 컨텐츠 영역 */
 .chart-content {
-  @apply flex-1 m-3;
+  @apply flex-1 m-1;
 }
