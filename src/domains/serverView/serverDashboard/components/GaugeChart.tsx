@@ -5,6 +5,7 @@ interface GaugeChartProps {
   max?: number;
   min?: number;
   color?: string;
+  unit?: string;
 }
 
 function GaugeChart({
@@ -12,6 +13,7 @@ function GaugeChart({
   max = 100,
   min = 0,
   color = "#58D9F9",
+  unit = "%",
 }: GaugeChartProps) {
   const option = {
     series: [
@@ -71,9 +73,10 @@ function GaugeChart({
         detail: {
           show: true,
           valueAnimation: true,
-          formatter: "{value}%",
+          formatter: `{value}${unit}`,
           fontSize: 24,
-          offsetCenter: [0, "30%"],
+          fontWeight: "bold",
+          offsetCenter: [0, "55%"],
           color: "#fff",
         },
         data: [
