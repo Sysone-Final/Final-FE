@@ -180,11 +180,11 @@ export default function NetworkTrafficChart({ data, height = '250px' }: NetworkT
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Network size={20} className="text-cyan-400" />
-          <h3 className="text-lg font-semibold text-gray-100">네트워크 트래픽</h3>
+          <h3 className="text-lg font-semibold text-gray-100">네트워크</h3>
         </div>
-        <div className="text-sm text-gray-400">
+        {/* <div className="text-sm text-gray-400">
           최근 5분 (15초 간격)
-        </div>
+        </div> */}
       </div>
       <ReactECharts option={option} style={{ height }} opts={{ renderer: 'svg' }} />
     </div>
