@@ -12,6 +12,7 @@ import { equipmentColumns } from "./equipmentTable.config";
 import { Layers, AlertTriangle } from "lucide-react";
 import { CpuGauge, MemoryGauge, DiskGauge } from "./index";
 import NetworkTrafficChart from "./NetworkTrafficChart";
+import { mockNetworkTrafficData } from "../data/mockData";
 
 interface RackDashboardProps {
   rack: Rack;
@@ -43,18 +44,6 @@ export default function RackDashboard({ rack }: RackDashboardProps) {
       (sum, eq) => sum + (eq.storageMetric?.used_percentage || 0),
       0
     ) / totalEquipments || 0;
-
-  const totalNetworkIn = rack.equipments.reduce((sum, eq) => {
-    const networkIn =
-      eq.networkMetrics?.reduce((s, nm) => s + nm.in_bytes_per_sec, 0) || 0;
-    return sum + networkIn;
-  }, 0);
-
-  const totalNetworkOut = rack.equipments.reduce((sum, eq) => {
-    const networkOut =
-      eq.networkMetrics?.reduce((s, nm) => s + nm.out_bytes_per_sec, 0) || 0;
-    return sum + networkOut;
-  }, 0);
 
   const onlineCount = rack.equipments.filter(
     (eq) => eq.status === "online"
@@ -144,11 +133,7 @@ export default function RackDashboard({ rack }: RackDashboardProps) {
         <CpuGauge value={avgCpuUsage} />
         <MemoryGauge value={avgMemoryUsage} />
         <DiskGauge value={avgDiskUsage} />
-        <NetworkTrafficChart
-          networkInMbps={totalNetworkIn / 1024 / 1024}
-          networkOutMbps={totalNetworkOut / 1024 / 1024}
-          height="180px"
-        />
+        <NetworkTrafficChart data={mockNetworkTrafficData} height="180px" />
       </div>
 
 

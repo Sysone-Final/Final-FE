@@ -68,9 +68,14 @@ export default function HierarchySidebar({ datacenters, selectedNode, onSelectNo
           onItemClick={(_event, itemId) => handleItemClick(itemId)}
           defaultExpandedItems={[`datacenter-${datacenters[0]?.id}`]}
           sx={{
+            minHeight: 352,
+            minWidth: 250,
             '& .MuiTreeItem-content': {
-              padding: '8px',
+              padding: '6px 8px',
+              paddingLeft:
+                'calc(8px + var(--TreeView-itemChildrenIndentation) * var(--TreeView-itemDepth))',
               borderRadius: '6px',
+              marginBottom: '2px',
               '&:hover': {
                 backgroundColor: 'rgba(64, 64, 64, 0.8)',
               },
@@ -84,12 +89,17 @@ export default function HierarchySidebar({ datacenters, selectedNode, onSelectNo
             '& .MuiTreeItem-label': {
               fontSize: '14px',
               color: '#d1d5db',
+              paddingLeft: '4px',
             },
             '& .MuiTreeItem-iconContainer': {
               color: '#9ca3af',
+              width: '24px',
+              marginRight: '0',
             },
             '& .MuiTreeItem-group': {
-              marginLeft: '24px',
+              marginLeft: '20px',
+              paddingLeft: '12px',
+              borderLeft: '1px solid rgba(156, 163, 175, 0.2)',
             },
           }}
         >

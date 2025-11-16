@@ -137,3 +137,16 @@ export interface AggregatedMetrics {
   totalNetworkOutMbps: number;
   avgLoadAvg1: number;
 }
+
+// 네트워크 트래픽 시계열 데이터 타입
+export interface NetworkUsageTrend {
+  time: string;
+  rxBytesPerSec: number;
+  txBytesPerSec: number;
+}
+
+export interface NetworkTrafficData {
+  currentRxBytesPerSec: number;
+  currentTxBytesPerSec: number;
+  networkUsageTrend: NetworkUsageTrend[];
+}

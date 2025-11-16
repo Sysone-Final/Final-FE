@@ -1,5 +1,6 @@
 import MetricsGaugeGrid from './MetricsGaugeGrid';
 import NetworkTrafficChart from './NetworkTrafficChart';
+import { mockNetworkTrafficData } from '../data/mockData';
 import type { AggregatedMetrics } from '../types/dashboard.types';
 import { Activity } from 'lucide-react';
 
@@ -73,12 +74,9 @@ export default function DatacenterDashboard({ metrics }: DatacenterDashboardProp
 
       {/* 네트워크 현황 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <NetworkTrafficChart
-          networkInMbps={metrics.totalNetworkInMbps}
-          networkOutMbps={metrics.totalNetworkOutMbps}
-        />
+        <NetworkTrafficChart data={mockNetworkTrafficData} />
 
-        <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+        {/* <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
           <div className="flex items-center gap-2 mb-4">
             <Activity size={20} className="text-yellow-400" />
             <h3 className="text-lg font-semibold text-gray-100">알람/경고</h3>
@@ -102,7 +100,7 @@ export default function DatacenterDashboard({ metrics }: DatacenterDashboardProp
               </div>
             )}
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import type { Datacenter, Equipment, SystemMetric, NetworkMetric, StorageMetric } from '../types/dashboard.types';
+import type { Datacenter, Equipment, SystemMetric, NetworkMetric, StorageMetric, NetworkTrafficData } from '../types/dashboard.types';
 
 // 하드코딩 메트릭 데이터 생성 헬퍼
 const generateSystemMetric = (equipmentId: number): SystemMetric => {
@@ -288,3 +288,39 @@ export const mockDatacenters: Datacenter[] = [
     ],
   },
 ];
+
+// 네트워크 트래픽 시계열 목 데이터 (최근 5분간, 15초 간격)
+const generateNetworkTrafficData = (): NetworkTrafficData => {
+  const now = new Date();
+  const trend: NetworkTrafficData['networkUsageTrend'] = [];
+  
+  // 5분 = 300초, 15초 간격 = 20개 데이터 포인트
+  for (let i = 19; i >= 0; i--) {
+    const timestamp = new Date(now.getTime() - i * 15 * 1000);
+    
+    // 실제 API 응답처럼 변동성 있는 데이터 생성
+    // 기본 베이스 값에 랜덤 변동 추가
+    const baseRx = 3.6e10; // 약 36 Gbps
+    const baseTx = 6.8e10; // 약 68 Gbps
+    
+    // 주기적인 패턴과 노이즈 추가
+    const variation = Math.sin(i * 0.5) * 0.1 + (Math.random() - 0.5) * 0.05;
+    
+    trend.push({
+      time: timestamp.toISOString(),
+      rxBytesPerSec: baseRx * (1 + variation),
+      txBytesPerSec: baseTx * (1 + variation),
+    });
+  }
+  
+  // 현재 값은 마지막 트렌드 데이터
+  const lastTrend = trend[trend.length - 1];
+  
+  return {
+    currentRxBytesPerSec: lastTrend.rxBytesPerSec,
+    currentTxBytesPerSec: lastTrend.txBytesPerSec,
+    networkUsageTrend: trend,
+  };
+};
+
+export const mockNetworkTrafficData = generateNetworkTrafficData();

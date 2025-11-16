@@ -1,5 +1,6 @@
 import MetricsGaugeGrid from './MetricsGaugeGrid';
 import NetworkTrafficChart from './NetworkTrafficChart';
+import { mockNetworkTrafficData } from '../data/mockData';
 import type { AggregatedMetrics, ServerRoom } from '../types/dashboard.types';
 import { Activity, TrendingUp } from 'lucide-react';
 import ReactECharts from 'echarts-for-react';
@@ -165,10 +166,7 @@ export default function ServerRoomDashboard({ serverRoom, metrics }: ServerRoomD
       </div>
 
       {/* 네트워크 트래픽 */}
-      <NetworkTrafficChart
-        networkInMbps={metrics.totalNetworkInMbps}
-        networkOutMbps={metrics.totalNetworkOutMbps}
-      />
+      <NetworkTrafficChart data={mockNetworkTrafficData} />
     </div>
   );
 }

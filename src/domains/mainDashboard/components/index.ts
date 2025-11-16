@@ -1,13 +1,13 @@
-// Individual metric gauge components
+// 메트릭 게이지
 export { default as CpuGauge } from './CpuGauge';
 export { default as MemoryGauge } from './MemoryGauge';
 export { default as DiskGauge } from './DiskGauge';
 export { default as SystemLoadGauge } from './SystemLoadGauge';
 
-// Combined grid component
+// 종합 메트릭 4개
 export { default as MetricsGaugeGrid } from './MetricsGaugeGrid';
 
-// Other components
+//다른 컴포넌트
 export { default as ProgressGauge } from './ProgressGauge';
 export { default as NetworkTrafficChart } from './NetworkTrafficChart';
 export { default as Breadcrumb } from './Breadcrumb';
