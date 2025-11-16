@@ -21,7 +21,7 @@ export default function Breadcrumb({ selectedNode, datacenters }: BreadcrumbProp
         {selectedNode.level !== 'datacenter' && (
           <>
             <ChevronRight size={16} className="text-gray-600" />
-            <span className={selectedNode.level === 'serverRoom' ? 'text-blue-400 font-medium' : 'text-gray-400 hover:text-gray-200 cursor-pointer'}>
+            <span className={selectedNode.level === 'serverRoom' ? 'text-green-600 font-medium' : 'text-gray-400 hover:text-gray-200 cursor-pointer'}>
               {serverRoom?.name || '서버실'}
             </span>
           </>
@@ -30,7 +30,7 @@ export default function Breadcrumb({ selectedNode, datacenters }: BreadcrumbProp
         {selectedNode.level === 'rack' && (
           <>
             <ChevronRight size={16} className="text-gray-600" />
-            <span className="text-blue-400 font-medium">
+            <span className="text-green-600 font-medium">
               {rack?.name || '랙'}
             </span>
           </>

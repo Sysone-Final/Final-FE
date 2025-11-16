@@ -1,4 +1,4 @@
-import MetricsGaugeGrid from './MetricsGaugeGrid';
+import { CpuGauge, MemoryGauge, DiskGauge, SystemLoadGauge } from './index';
 import NetworkTrafficChart from './NetworkTrafficChart';
 import { mockNetworkTrafficData } from '../data/mockData';
 import type { AggregatedMetrics } from '../types/dashboard.types';
@@ -64,13 +64,13 @@ export default function DatacenterDashboard({ metrics }: DatacenterDashboardProp
         </div>
       </div>
 
-      {/* 게이지 차트 그리드 */}
-      <MetricsGaugeGrid
-        avgCpuUsage={metrics.avgCpuUsage}
-        avgMemoryUsage={metrics.avgMemoryUsage}
-        avgDiskUsage={metrics.avgDiskUsage}
-        avgLoadAvg1={metrics.avgLoadAvg1}
-      />
+      {/* 게이지 차트 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <CpuGauge value={metrics.avgCpuUsage} />
+        <MemoryGauge value={metrics.avgMemoryUsage} />
+        <DiskGauge value={metrics.avgDiskUsage} />
+        <SystemLoadGauge value={metrics.avgLoadAvg1} />
+      </div>
 
       {/* 네트워크 현황 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

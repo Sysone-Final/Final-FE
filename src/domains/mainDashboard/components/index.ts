@@ -4,9 +4,6 @@ export { default as MemoryGauge } from './MemoryGauge';
 export { default as DiskGauge } from './DiskGauge';
 export { default as SystemLoadGauge } from './SystemLoadGauge';
 
-// 종합 메트릭 4개
-export { default as MetricsGaugeGrid } from './MetricsGaugeGrid';
-
 //다른 컴포넌트
 export { default as ProgressGauge } from './ProgressGauge';
 export { default as NetworkTrafficChart } from './NetworkTrafficChart';

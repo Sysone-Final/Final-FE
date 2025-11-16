@@ -45,7 +45,7 @@ function MainDashboard() {
   return (
     <div className="flex h-screen bg-neutral-900">
       {/* 왼쪽 사이드바 */}
-      <div className="w-80 flex-shrink-0">
+      <div className="w-70 flex-shrink-0">
         <HierarchySidebar
           datacenters={mockDatacenters}
           selectedNode={selectedNode}

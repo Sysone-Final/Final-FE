@@ -1,4 +1,4 @@
-import MetricsGaugeGrid from './MetricsGaugeGrid';
+import { CpuGauge, MemoryGauge, DiskGauge, SystemLoadGauge } from './index';
 import NetworkTrafficChart from './NetworkTrafficChart';
 import { mockNetworkTrafficData } from '../data/mockData';
 import type { AggregatedMetrics, ServerRoom } from '../types/dashboard.types';
@@ -149,12 +149,12 @@ export default function ServerRoomDashboard({ serverRoom, metrics }: ServerRoomD
       </div>
 
       {/* 게이지 차트 */}
-      <MetricsGaugeGrid
-        avgCpuUsage={metrics.avgCpuUsage}
-        avgMemoryUsage={metrics.avgMemoryUsage}
-        avgDiskUsage={metrics.avgDiskUsage}
-        avgLoadAvg1={metrics.avgLoadAvg1}
-      />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <CpuGauge value={metrics.avgCpuUsage} />
+        <MemoryGauge value={metrics.avgMemoryUsage} />
+        <DiskGauge value={metrics.avgDiskUsage} />
+        <SystemLoadGauge value={metrics.avgLoadAvg1} />
+      </div>
 
       {/* 랙별 비교 차트 */}
       <div className="bg-neutral-800 rounded-lg p-6 border border-neutral-700">
