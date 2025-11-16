@@ -76,7 +76,7 @@ function GaugeChart({
           formatter: `{value}${unit}`,
           fontSize: 24,
           fontWeight: "bold",
-          offsetCenter: [0, "55%"],
+          offsetCenter: [0, "30%"],
           color: "#fff",
         },
         data: [
