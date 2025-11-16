@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+/* 기본 차트 카드 */
+.chart-card {
+  @apply bg-[#2A2D34] rounded-lg flex flex-col;
+}
+
+/* 크기별 스타일 */
+.chart-card-small {
+  @apply flex-1;
+}
+
+.chart-card-medium {
+  @apply flex-1;
+}
+
+.chart-card-large {
+  @apply w-full;
+}
+
+/* 차트 헤더 */
+.chart-header {
+  @apply flex items-center m-3;
+}
+
+/* 아이콘 포함 헤더 */
+.chart-header-with-icon {
+  @apply flex items-center m-3 gap-2;
+}
+
+/* 차트 제목 */
+.chart-title {
+  @apply text-white text-sm font-semibold;
+}
+
+/* 차트 아이콘 */
+.chart-icon {
+  @apply w-4 h-4;
+}
+
+/* 차트 컨텐츠 영역 */
+.chart-content {
+  @apply flex-1 m-3;
+}
