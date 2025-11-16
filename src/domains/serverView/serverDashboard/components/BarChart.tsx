@@ -44,10 +44,8 @@ function BarChart({
         color: "#fff",
       },
       formatter: (params: TooltipParams[]) => {
-        // 👈 타입 지정
         let result = `${params[0].axisValue}<br/>`;
         params.forEach((item: TooltipParams) => {
-          // 👈 타입 지정
           const value =
             typeof item.value === "number" ? item.value.toFixed(2) : item.value;
           result += `${item.marker} ${item.seriesName}: ${value}${yAxisUnit}<br/>`;
