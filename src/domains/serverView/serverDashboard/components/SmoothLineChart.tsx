@@ -16,6 +16,13 @@ interface SmoothLineChartProps {
   height?: string;
 }
 
+interface TooltipParams {
+  axisValue: string;
+  marker: string;
+  seriesName: string;
+  value: number | string;
+}
+
 const SmoothLineChart = ({
   xAxisData,
   series,
@@ -34,9 +41,9 @@ const SmoothLineChart = ({
       textStyle: {
         color: "#fff",
       },
-      formatter: (params: any) => {
+      formatter: (params: TooltipParams[]) => {
         let result = `${params[0].axisValue}<br/>`;
-        params.forEach((item: any) => {
+        params.forEach((item: TooltipParams) => {
           const value =
             typeof item.value === "number" ? item.value.toFixed(2) : item.value;
           result += `${item.marker} ${item.seriesName}: ${value}${yAxisUnit}<br/>`;

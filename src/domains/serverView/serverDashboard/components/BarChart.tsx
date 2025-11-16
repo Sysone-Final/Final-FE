@@ -14,6 +14,13 @@ interface BarChartProps {
   stacked?: boolean;
 }
 
+interface TooltipParams {
+  axisValue: string;
+  marker: string;
+  seriesName: string;
+  value: number | string;
+}
+
 function BarChart({
   xAxisData,
   series,
@@ -36,9 +43,11 @@ function BarChart({
       textStyle: {
         color: "#fff",
       },
-      formatter: (params: any) => {
+      formatter: (params: TooltipParams[]) => {
+        // 👈 타입 지정
         let result = `${params[0].axisValue}<br/>`;
-        params.forEach((item: any) => {
+        params.forEach((item: TooltipParams) => {
+          // 👈 타입 지정
           const value =
             typeof item.value === "number" ? item.value.toFixed(2) : item.value;
           result += `${item.marker} ${item.seriesName}: ${value}${yAxisUnit}<br/>`;
@@ -88,6 +97,7 @@ function BarChart({
       axisLabel: {
         color: "#fff",
         fontSize: 12,
+        formatter: "{value}",
       },
       axisLine: {
         lineStyle: {

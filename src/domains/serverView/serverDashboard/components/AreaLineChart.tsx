@@ -17,6 +17,14 @@ interface AreaLineChartProps {
   showToolbox?: boolean;
 }
 
+interface TooltipParams {
+  axisValue: string;
+  marker: string;
+  seriesName: string;
+  value: number | string;
+  color: string;
+}
+
 function AreaLineChart({
   xAxisData,
   series,
@@ -33,11 +41,11 @@ function AreaLineChart({
       textStyle: {
         color: "#fff",
       },
-      formatter: function (params: any) {
+      formatter: function (params: TooltipParams[]) {
         let result = `<div style="padding: 5px;">`;
         result += `<div style="font-weight: bold; margin-bottom: 5px;">${params[0].axisValue}</div>`;
 
-        params.forEach((param: any) => {
+        params.forEach((param: TooltipParams) => {
           const value =
             typeof param.value === "number"
               ? param.value.toFixed(2)
