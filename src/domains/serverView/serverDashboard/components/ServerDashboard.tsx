@@ -209,7 +209,7 @@ function ServerDashboard({
         <div className="chart-grid">
           {/* 첫 번째 행 - 3개 열 (small) */}
           <div className="chart-row-small">
-            <ChartCard title="CPU 사용률 %" icon={CpuIcon} size="small">
+            <ChartCard title="CPU 사용률" icon={CpuIcon} size="small">
               <div className="gauge-container">
                 <GaugeChart
                   value={chartData.cpuUsage}
@@ -220,7 +220,7 @@ function ServerDashboard({
               </div>
             </ChartCard>
 
-            <ChartCard title="MEMORY 사용률 %" icon={MemoryIcon} size="small">
+            <ChartCard title="MEMORY 사용률" icon={MemoryIcon} size="small">
               <div className="gauge-container">
                 <GaugeChart
                   value={chartData.memoryUsage}
@@ -231,7 +231,7 @@ function ServerDashboard({
               </div>
             </ChartCard>
 
-            <ChartCard title="DISK 사용률 %" icon={DiskIcon} size="small">
+            <ChartCard title="DISK 사용률" icon={DiskIcon} size="small">
               <div className="gauge-container">
                 <GaugeChart
                   value={chartData.diskUsage}

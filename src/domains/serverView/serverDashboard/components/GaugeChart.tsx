@@ -69,7 +69,12 @@ function GaugeChart({
           fontSize: 13,
         },
         detail: {
-          show: false,
+          show: true,
+          valueAnimation: true,
+          formatter: "{value}%",
+          fontSize: 24,
+          offsetCenter: [0, "30%"],
+          color: "#fff",
         },
         data: [
           {
