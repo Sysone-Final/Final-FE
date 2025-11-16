@@ -170,9 +170,9 @@ export function useRackManager({
 
   // Enter 누름 → 이름 확정 & 배치 → 그 다음 서버 요청
   const handleDeviceNameConfirm = useCallback(
-    (device: Equipments) => {
-      const inputName = tempDeviceName.get(device.id) || "";
-      const finalName = inputName.trim() || device.equipmentType;
+    (device: Equipments, inputName?: string) => {
+      const name = inputName ?? tempDeviceName.get(device.id) ?? "";
+      const finalName = name.trim() || device.equipmentType;
 
       if (!device.equipmentCode?.startsWith("TEMP-")) {
         console.log("임시 장비가 아닙니다");
