@@ -1,4 +1,3 @@
-import { useState } from "react";
 import serverImg from "../assets/server.svg";
 import storageImg from "../assets/storage.svg";
 import switchImg from "../assets/switch.svg";
@@ -9,17 +8,13 @@ import loadBalanceImg from "../assets/loadbalance.svg";
 import type { DeviceCard } from "../types";
 import { typeColorMap } from "../utils/colorMap";
 import Tooltip from "./Tooltip";
-import Dropdown from "./Dropdown";
 
 interface ToolsProps {
   onCardClick: (card: DeviceCard) => void;
+  onContextMenu: (e: React.MouseEvent, card: DeviceCard) => void;
 }
 
-function Tools({ onCardClick }: ToolsProps) {
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [dropdownPosition, setDropdownPosition] = useState({ x: 0, y: 0 });
-  const [selectedCard, setSelectedCard] = useState<DeviceCard | null>(null);
-
+function Tools({ onCardClick, onContextMenu }: ToolsProps) {
   const deviceCards: DeviceCard[] = [
     {
       key: "server",
@@ -79,73 +74,38 @@ function Tools({ onCardClick }: ToolsProps) {
     },
   ];
 
-  const handleContextMenu = (e: React.MouseEvent, card: DeviceCard) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-
-    setDropdownPosition({
-      x: rect.left - 180,
-      y: rect.top,
-    });
-
-    setSelectedCard(card);
-    setDropdownOpen(true);
-  };
-
-  const handleDropdownSelect = (item: DeviceCard) => {
-    onCardClick(item);
-    setDropdownOpen(false);
-  };
-
-  const handleDropdownClose = () => {
-    setDropdownOpen(false);
-  };
-
   return (
-    <>
-      <div className="text-white flex flex-col items-start">
-        {deviceCards.map((card) => {
-          const color = typeColorMap[card.type] || "#64748b";
-          return (
-            <Tooltip key={card.key} content={card.label}>
-              <div
-                key={card.key}
-                onClick={() => onCardClick(card)}
-                onContextMenu={(e) => handleContextMenu(e, card)}
-                className="
-              flex items-center justify-center
-              w-10 h-10 m-2 p-2
-              rounded-[4px]
-              transition-transform duration-150
-              cursor-pointer
-              hover:scale-105 active:scale-95
-              shadow-md
-            "
-                style={{
-                  backgroundColor: color,
-                }}
-              >
-                <img
-                  src={card.img}
-                  alt={`${card.label} icon`}
-                  className="w-7 h-7 filter brightness-0 invert"
-                />
-              </div>
-            </Tooltip>
-          );
-        })}
-      </div>
-
-      <Dropdown
-        open={dropdownOpen}
-        position={dropdownPosition}
-        items={selectedCard ? [selectedCard] : []}
-        onSelect={handleDropdownSelect}
-        onClose={handleDropdownClose}
-      />
-    </>
+    <div className="text-white flex flex-col items-start">
+      {deviceCards.map((card) => {
+        const color = typeColorMap[card.type] || "#64748b";
+        return (
+          <Tooltip key={card.key} content={card.label}>
+            <div
+              onClick={() => onCardClick(card)}
+              onContextMenu={(e) => onContextMenu(e, card)}
+              className="
+                flex items-center justify-center
+                w-10 h-10 m-2 p-2
+                rounded-[4px]
+                transition-transform duration-150
+                cursor-pointer
+                hover:scale-105 active:scale-95
+                shadow-md
+              "
+              style={{
+                backgroundColor: color,
+              }}
+            >
+              <img
+                src={card.img}
+                alt={`${card.label} icon`}
+                className="w-7 h-7 filter brightness-0 invert"
+              />
+            </div>
+          </Tooltip>
+        );
+      })}
+    </div>
   );
 }
 
