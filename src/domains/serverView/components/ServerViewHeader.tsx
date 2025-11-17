@@ -4,9 +4,8 @@ import {
   useFloorPlanStore,
   toggleMode,
   groupSelectedAssets,
-  setDisplayMode,
+  // setDisplayMode,
   zoom,
-  // useHasUnsavedChanges,
 } from '../floorPlan/store/floorPlanStore';
 
 import { useBabylonDatacenterStore } from '../view3d/stores/useBabylonDatacenterStore';
@@ -33,18 +32,12 @@ function ServerViewHeader({
 
   const { confirm } = useConfirmationModal();
 
-  // 스토어에서는 '데이터'만 가져옵니다.
   const mode = useFloorPlanStore((state) => state.mode);
-  // const hasUnsavedChanges = useHasUnsavedChanges();
   const selectedAssetIds = useFloorPlanStore((state) => state.selectedAssetIds);
-  const displayMode = useFloorPlanStore((state) => state.displayMode);
+  // const displayMode = useFloorPlanStore((state) => state.displayMode);
 
 const handleBackNavigation = () => {
-    // 1. window.confirm() 로직을 '모두 삭제'합니다.
-    // 2. 히스토리 클리어 로직을 '삭제'합니다. (Gatekeeper가 처리)
-    
-    // 3. 오직 "나가겠다"는 신호(navigate)만 보냅니다.
-    //    이후의 모든 처리는 ServerViewPage.tsx의 useBlocker가 담당합니다.
+
     navigate('/server-room-dashboard');
   };
 
@@ -99,12 +92,7 @@ const handleBackNavigation = () => {
     toggleMode3d();
   };
   
-  // 활성화된 'handleDisplayModeChange' 함수를 사용
-  // const handleDisplayModeChange = (
-  //   e: React.ChangeEvent<HTMLSelectElement>,
-  // ) => {
-  //   setDisplayMode(e.target.value as 'status' | 'customColor');
-  // };
+
 
   const handleZoomIn = () => zoom('in'); 
   const handleZoomOut = () => zoom('out'); 
@@ -149,7 +137,7 @@ const handleBackNavigation = () => {
             {mode === 'view' && (
               <>
                 {/* Display Mode Select */}
-                <div className="flex items-center rounded-md p-1 bg-gray-700/50 border border-gray-600">
+                {/* <div className="flex items-center rounded-md p-1 bg-gray-700/50 border border-gray-600">
                   <button
                     onClick={() => setDisplayMode('customColor')} // '상면도' 모드
                     className={`px-3 py-1 rounded-md transition-colors ${
@@ -170,27 +158,25 @@ const handleBackNavigation = () => {
                   >
                     📊 상태 임계값
                   </button>
-                </div>
+                </div> */}
                 {/* Zoom Buttons */}
-                {displayMode === 'customColor' && (
-                  <div className="flex items-center border border-gray-600 rounded-lg p-1 bg-gray-700/50">
-                    <button
-                      onClick={handleZoomOut}
-                      className="p-1 rounded-md text-gray-100 hover:bg-gray-600 transition-colors"
-                    >
-                      {' '}
-                      <ZoomOut className="w-5 h-5" />{' '}
-                    </button>
-                    <span className="px-2 select-none text-gray-100">Zoom</span>
-                    <button
-                      onClick={handleZoomIn}
-                      className="p-1 rounded-md text-gray-100 hover:bg-gray-600 transition-colors"
-                    >
-                      {' '}
-                      <ZoomIn className="w-5 h-5" />{' '}
-                    </button>
+                {/* 🌟 조건부 {displayMode === 'customColor' && ( ... )} 제거 */}
+                <div className="flex items-center border border-gray-600 rounded-lg p-1 bg-gray-700/50">
+                  <button
+                    onClick={handleZoomOut}
+                    className="p-1 rounded-md text-gray-100 hover:bg-gray-600 transition-colors"
+                  >
+                    <ZoomOut className="w-5 h-5" />
+                  </button>
+                  <span className="px-2 select-none text-gray-100">Zoom</span>
+                  <button
+                    onClick={handleZoomIn}
+                    className="p-1 rounded-md text-gray-100 hover:bg-gray-600 transition-colors"
+                  >
+                    <ZoomIn className="w-5 h-5" />
+      _             </button>
                   </div>
-                )}
+                
               </>
             )}
             {/* 편집 모드 컨트롤 */}

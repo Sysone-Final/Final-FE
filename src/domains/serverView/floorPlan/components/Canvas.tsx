@@ -10,7 +10,7 @@ import {
 import AssetRenderer from './AssetRenderer';
 import CanvasGrid from './CanvasGrid';
 import HeatmapLayer from './HeatmapLayer';
-import type { AssetLayer } from '../types';
+import type { AssetLayer, DisplayMode } from '../types';
 
 interface CanvasProps {
  containerRef: React.RefObject<HTMLDivElement>;
@@ -27,7 +27,7 @@ const Canvas: React.FC<CanvasProps> = ({ containerRef }) => {
  const gridCols = useFloorPlanStore((state) => state.gridCols);
  const gridRows = useFloorPlanStore((state) => state.gridRows);
  const stage = useFloorPlanStore((state) => state.stage);
- const displayMode = useFloorPlanStore((state) => state.displayMode);
+//  const displayMode = useFloorPlanStore((state) => state.displayMode);
  const displayOptions = useFloorPlanStore((state) => state.displayOptions);
 
  const visibleLayers = useFloorPlanStore((state) => state.visibleLayers);
@@ -35,7 +35,10 @@ const Canvas: React.FC<CanvasProps> = ({ containerRef }) => {
  const dashboardMetricView = useFloorPlanStore(
   (state) => state.dashboardMetricView,
  );
- const isDashboardView = displayMode === 'status';
+const synthesizedDisplayMode: DisplayMode =
+  dashboardMetricView === 'layout' ? 'customColor' : 'status';
+
+ const isDashboardView = synthesizedDisplayMode === 'status';
  const isHeatmapView =
   isDashboardView && dashboardMetricView.startsWith('heatmap');
 
@@ -188,7 +191,7 @@ const Canvas: React.FC<CanvasProps> = ({ containerRef }) => {
         cols={gridCols}
         rows={gridRows}
         gridSize={CANVAS_VIEW_CONFIG.CELL_SIZE}
-        displayMode={displayMode}
+        displayMode={synthesizedDisplayMode}
        />
        {/* 2. 자산 (히트맵 뷰일 때 30% 투명도) */}
        <Group opacity={isHeatmapView ? 0.3 : 1}>
@@ -200,9 +203,10 @@ const Canvas: React.FC<CanvasProps> = ({ containerRef }) => {
           headerPadding={CANVAS_VIEW_CONFIG.HEADER_PADDING}
           isSelected={selectedAssetIds.includes(asset.id)}
           displayMode={
-           isHeatmapView ? 'customColor' : displayMode
+           isHeatmapView ? 'customColor' : synthesizedDisplayMode
           }
           displayOptions={displayOptions}
+          currentScale={stage.scale}
          />
         ))}
        </Group>
