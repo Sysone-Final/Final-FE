@@ -16,6 +16,7 @@ import RightSidebar from '../components/RightSidebar';
 import StatusLegendAndFilters from '../components/LeftSidebar/StatusLegendAndFilters'; 
 import TopNWidget from '../components/TopNWidget'; 
 import AssetLibrary from '../components/LeftSidebar/AssetLibrary';
+import { FloorPlanConfirmationModal } from '../components/FloorPlanConfirmationModal';
 
 interface FloorPlanPageProps {
   containerRef: React.RefObject<HTMLDivElement>;
@@ -158,6 +159,7 @@ const FloorPlanPage: React.FC<FloorPlanPageProps> = ({ containerRef, serverRoomI
           
         )}
         <RackModal />
+        <FloorPlanConfirmationModal />
       </div>
     </DndContext>
   );
