@@ -35,10 +35,15 @@ export default function NetworkTrafficChart({ data, height = '250px' }: NetworkT
       textStyle: {
         color: '#fff',
       },
-      formatter: (params: any) => {
+      formatter: (params: Array<{
+        axisValue: string;
+        seriesName: string;
+        value: string;
+        color: string;
+      }>) => {
         const time = params[0].axisValue;
         let result = `<div style="font-weight: bold; margin-bottom: 5px;">${time}</div>`;
-        params.forEach((param: any) => {
+        params.forEach((param) => {
           result += `
             <div style="display: flex; align-items: center; margin-top: 5px;">
               <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: ${param.color}; margin-right: 5px;"></span>

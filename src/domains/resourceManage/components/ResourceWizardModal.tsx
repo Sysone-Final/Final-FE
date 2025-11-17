@@ -771,9 +771,9 @@ if (resourceId) {
 
   return (
     //  모달 배경 스타일 
-    <div className="modal-bg">
+    <div className="modal-bg animate-fadeIn" onClick={handleClose}>
       {/* 모달창 스타일 */}
-      <div className="modal max-w-xl">
+      <div className="modal animate-modalFadeIn max-w-xl" onClick={(e) => e.stopPropagation()}>
         <div className="p-6 md:p-8">
           {/* 헤더 */}
           <div className="flex justify-between items-center mb-6">
