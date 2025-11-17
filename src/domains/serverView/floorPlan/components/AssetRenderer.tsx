@@ -2,7 +2,7 @@
 import React from 'react';
 import { useFloorPlanStore } from '../store/floorPlanStore';
 import type { Asset, DisplayMode, DisplayOptionsType } from '../types';
-
+import type { KonvaEventObject } from 'konva/lib/Node';
 import LayoutAssetView from './LayoutAssetView';
 import DashboardAssetView from './DashboardAssetView';
 
@@ -13,6 +13,8 @@ export interface AssetRendererProps {
   isSelected: boolean;
   displayMode: DisplayMode;
   displayOptions: DisplayOptionsType;
+  currentScale: number;
+  onContextMenu?: (e: KonvaEventObject<PointerEvent>) => void;
 }
 
 const AssetRenderer: React.FC<AssetRendererProps> = (props) => {
@@ -32,24 +34,22 @@ const AssetRenderer: React.FC<AssetRendererProps> = (props) => {
   }
 
   // 2. "보기" 모드일 때
-  if (mode === 'view') {
+if (mode === 'view') {
     if (displayMode === 'status') { // '상태 임계값' 모드
       if (asset.assetType === 'rack') {
-        // 랙만 DashboardAssetView로 렌더링
+        // 🌟 2. currentScale prop 전달
         return <DashboardAssetView {...props} />;
       } else {
-
+        // 🌟 2. currentScale prop 전달
         return <LayoutAssetView {...props} />;
-
       }
-    } else { 
-      // 모든 자산을 LayoutAssetView로 렌더링
+    } else {
+      // 🌟 2. currentScale prop 전달
       return <LayoutAssetView {...props} />;
     }
   }
 
-
-  return null; 
+  return null;
 };
 
 export default AssetRenderer;

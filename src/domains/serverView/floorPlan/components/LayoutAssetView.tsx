@@ -38,6 +38,7 @@ const LayoutAssetView: React.FC<AssetRendererProps> = ({
  isSelected,
  displayMode,
  displayOptions,
+ onContextMenu,
 }) => {
  const mode = useFloorPlanStore((state) => state.mode);
  const assets = useFloorPlanStore((state) => state.assets);
@@ -181,6 +182,7 @@ const handleClick = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
    onTap={handleClick}
    draggable={mode === 'edit' && !asset.isLocked}
    onDragEnd={handleDragEnd}
+   onContextMenu={onContextMenu}
   >
    <Rect
     width={pixelWidth}

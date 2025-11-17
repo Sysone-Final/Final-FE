@@ -6,19 +6,19 @@ import type {
   FloorPlanState,
   Asset,
   DisplayOptionsType,
-  DisplayMode,
-  // Mode,
+  // DisplayMode,
   DashboardMetricView,
   AssetLayer,
   AssetStatus,
 } from '../types';
-// import { useBabylonDatacenterStore } from '@/domains/serverView/view3d/stores/useBabylonDatacenterStore';
-
+import { updateEquipment, deleteEquipment } from '@/domains/serverView/view3d/api/serverRoomEquipmentApi';
+// import { getDeviceTypeId } from '@/domains/serverView/view3d/constants/deviceTypes';
+import type { Equipment3D } from '@/domains/serverView/view3d/types';
 import toast from 'react-hot-toast';
 
 export const initialState: FloorPlanState = {
   mode: 'view',
-  displayMode: 'status',
+  // displayMode: 'status',
   dashboardMetricView: 'default',
   visibleLayers: {
     floor: true,
@@ -62,7 +62,7 @@ export const useFloorPlanStore = create<FloorPlanState>()(
       gridCols: state.gridCols,
       gridRows: state.gridRows,
       mode: state.mode,
-      displayMode: state.displayMode,
+      // displayMode: state.displayMode,
       dashboardMetricView: state.dashboardMetricView,
       visibleLayers: state.visibleLayers,
       visibleSeverities: state.visibleSeverities,
@@ -70,34 +70,6 @@ export const useFloorPlanStore = create<FloorPlanState>()(
   }),
 );
 
-// --- Actions ---
-
-// export const fetchFloorPlan = async (roomId: string) => {
-//   useFloorPlanStore.setState({ isLoading: true, error: null });
-//   try {
-//     const response = await fetch(`/api/server-rooms/${roomId}/floorplan`);
-//     if (!response.ok) {
-//       const errorText = await response.text();
-//       console.error('Fetch error response:', errorText);
-//       throw new Error(
-//         `Failed to fetch floor plan data. Status: ${response.status}`,
-//       );
-//     }
-//     const data = await response.json();
-//     useFloorPlanStore.setState({
-//       assets: data.assets,
-//       gridCols: data.gridCols,
-//       gridRows: data.gridRows,
-//       isLoading: false,
-//     });
-//   } catch (err) {
-//     console.error('Error in fetchFloorPlan:', err);
-//     useFloorPlanStore.setState({
-//       isLoading: false,
-//       error: err instanceof Error ? err.message : String(err),
-//     });
-//   }
-// };
 
 export const addAsset = async (newAsset: Omit<Asset, 'id'>) => {
   try {
@@ -132,54 +104,75 @@ export const updateAsset = async (
   }));
 
   try {
-    const response = await fetch(`/api/floorplan/assets/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newProps),
-    });
-    if (!response.ok) throw new Error('Failed to update asset');
+    const updatedAsset = useFloorPlanStore.getState().assets.find(a => a.id === id);
+    if (!updatedAsset) return;
+
+    // 2D Asset -> 3D Equipment 포맷으로 변환 (API 호환용)
+    // 실제로는 API가 id와 변경할 필드만 요구하므로 필요한 정보만 매핑합니다.
+    const equipmentPayload: Equipment3D = {
+      id: updatedAsset.id,
+      equipmentId: updatedAsset.id, // ID 매핑 주의
+      type: 'server', // 기본값, 실제로는 assetType 매핑 필요하지만 update API는 주로 ID사용
+      gridX: updatedAsset.gridX - 1, // 2D(padded) -> 3D(raw) 좌표 변환
+      gridY: updatedAsset.gridY - 1,
+      gridZ: 0,
+      // degree -> radian 변환 (API는 내부적으로 degree를 기대할 수 있으나, 
+      // 제공해주신 3D 코드는 radian을 받아서 degree로 변환해 보냄.
+      // 여기서는 2D가 degree를 쓰므로 API 스펙에 맞춰 조정 필요.
+      // serverRoomEquipmentApi.ts의 buildUpdateDeviceRequest가 radianToDegree를 수행하므로
+      // 여기서는 Radian으로 변환해서 줘야 함)
+      rotation: (updatedAsset.rotation || 0) * (Math.PI / 180), 
+      metadata: {
+        name: updatedAsset.name,
+        status: updatedAsset.status,
+      }
+    };
+    await updateEquipment(equipmentPayload);
+
   } catch (err) {
     console.error('Error updating asset:', err);
-    useFloorPlanStore.setState({ assets: originalAssets });
-    // TODO: 사용자에게 에러 알림
+    useFloorPlanStore.setState({ assets: originalAssets }); // 롤백
+    toast.error('자산 업데이트에 실패했습니다.');
   }
 };
 
 export const deleteAsset = async (id: string) => {
- // 삭제 전, asset 이름 확보
- const { assets: originalAssets, selectedAssetIds: originalSelectedIds } =
-  useFloorPlanStore.getState();
+  const { assets: originalAssets, selectedAssetIds: originalSelectedIds } =
+    useFloorPlanStore.getState();
 
- //  삭제할 자산의 이름 찾기
- const assetToDelete = originalAssets.find((asset) => asset.id === id);
- const assetName = assetToDelete?.name ?? '자산'; // 이름이 없으면 '자산'
+  const assetToDelete = originalAssets.find((asset) => asset.id === id);
+  const assetName = assetToDelete?.name ?? '자산';
 
- //  Optimistic UI 업데이트 (즉시 상태 변경)
- useFloorPlanStore.setState((state) => ({
-  assets: state.assets.filter((asset) => asset.id !== id),
-  selectedAssetIds: state.selectedAssetIds.filter((sid) => sid !== id),
- }));
+  // Optimistic Update
+  useFloorPlanStore.setState((state) => ({
+    assets: state.assets.filter((asset) => asset.id !== id),
+    selectedAssetIds: state.selectedAssetIds.filter((sid) => sid !== id),
+  }));
 
- // 성공 토스트 (즉시 띄움)
- toast.success(`"${assetName}"이(가) 삭제되었습니다.`);
+  toast.success(`"${assetName}"이(가) 삭제되었습니다.`);
 
- try {
-  //  API 호출
-  const response = await fetch(`/api/floorplan/assets/${id}`, {
-   method: 'DELETE',
-  });
-  if (!response.ok) throw new Error('Failed to delete asset');
+  try {
+    // 공통 API 호출
+    // deleteEquipment는 타입과 rackId 등을 확인하므로 최소한의 정보 구성
+    const equipmentPayload: Equipment3D = {
+      id: id,
+      equipmentId: id,
+      type: assetToDelete?.assetType === 'rack' ? 'server' : 'door', // 단순 매핑
+      gridX: 0, gridY: 0, gridZ: 0, rotation: 0,
+      rackId: assetToDelete?.data?.rackServerId?.toString() // rackId가 있다면 전달
+    };
 
- } catch (err) {
-  console.error('Error deleting asset:', err);
-  
-  //  롤백 및 에러 토스트
-  useFloorPlanStore.setState({
-   assets: originalAssets,
-   selectedAssetIds: originalSelectedIds,
-  });
-  toast.error(`"${assetName}" 삭제에 실패했습니다. (서버 오류)`);
- }
+    await deleteEquipment(equipmentPayload);
+
+  } catch (err) {
+    console.error('Error deleting asset:', err);
+    // 롤백
+    useFloorPlanStore.setState({
+      assets: originalAssets,
+      selectedAssetIds: originalSelectedIds,
+    });
+    toast.error(`"${assetName}" 삭제에 실패했습니다.`);
+  }
 };
 
 export const duplicateAsset = async (id: string) => {
@@ -215,9 +208,16 @@ export const duplicateAsset = async (id: string) => {
 
 
 export const toggleMode = () =>
-  useFloorPlanStore.setState((state) => ({
-    mode: state.mode === 'view' ? 'edit' : 'view',
-  }));
+  useFloorPlanStore.setState((state) => {
+    const nextMode = state.mode === 'view' ? 'edit' : 'view';
+    
+    return {
+      mode: nextMode,
+      dashboardMetricView: nextMode === 'edit' ? 'layout' : state.dashboardMetricView,
+      selectedAssetIds: [],
+      isRackModalOpen: false,
+    };
+  });
 
 export const setDashboardMetricView = (view: DashboardMetricView) =>
   useFloorPlanStore.setState({ dashboardMetricView: view });
@@ -243,8 +243,8 @@ export const setDisplayOptions = (newOptions: Partial<DisplayOptionsType>) =>
     displayOptions: { ...state.displayOptions, ...newOptions },
   }));
 
-export const setDisplayMode = (newMode: DisplayMode) =>
-  useFloorPlanStore.setState({ displayMode: newMode });
+// export const setDisplayMode = (newMode: DisplayMode) =>
+//   useFloorPlanStore.setState({ displayMode: newMode });
 
 export const setGridSize = (cols: number, rows: number) =>
   useFloorPlanStore.setState({ gridCols: cols, gridRows: rows });
@@ -277,31 +277,7 @@ export const updateServerRoomDetails = async (
   toast.error('서버실 크기 저장에 실패했습니다.');
  }
 };
-// export const updateServerRoomDetails = async (
-//   roomId: string,
-//   newDetails: { gridCols?: number; gridRows?: number },
-// ) => {
-//   const { gridCols: oldCols, gridRows: oldRows } = useFloorPlanStore.getState();
-//   const oldSettings = { gridCols: oldCols, gridRows: oldRows };
-  
-//   useFloorPlanStore.setState(newDetails);
 
-//   try {
-//     const response = await fetch(`/api/server-rooms/${roomId}/floorplan/details`, {
-//       method: 'PUT',
-//       headers: { 'Content-Type': 'application/json' },
-//       body: JSON.stringify(newDetails),
-//     });
-//     if (!response.ok) throw new Error('Failed to update server room details');
-  
-//     console.log('Server room details updated successfully');
-  
-//   } catch (err) {
-//     console.error('Error updating server room details:', err);
-//     useFloorPlanStore.setState(oldSettings);
-//     alert('서버실 크기 저장에 실패했습니다.');
-//   }
-// };
 
 export const setStage = (newStage: FloorPlanState['stage']) =>
   useFloorPlanStore.setState({ stage: newStage });
