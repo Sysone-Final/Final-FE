@@ -1,25 +1,31 @@
-import { useNavigate } from 'react-router-dom';
-import { useStore } from 'zustand';
+import { useNavigate } from "react-router-dom";
+import { useStore } from "zustand";
 import {
   useFloorPlanStore,
   toggleMode,
   groupSelectedAssets,
   // setDisplayMode,
   zoom,
-} from '../floorPlan/store/floorPlanStore';
+} from "../floorPlan/store/floorPlanStore";
 
-import { useBabylonDatacenterStore } from '../view3d/stores/useBabylonDatacenterStore';
-import { Settings, Eye, Undo2, Redo2, ZoomIn, ZoomOut, 
-  // Palette 
-} from 'lucide-react';
-import { useSidebarStore } from '../floorPlan/store/useSidebarStore';
-import { useConfirmationModal } from '../floorPlan/hooks/useConfirmationModal';
-import { useServerRoomEquipment } from '../view3d/hooks/useServerRoomEquipment';
+import { useBabylonDatacenterStore } from "../view3d/stores/useBabylonDatacenterStore";
+import {
+  Settings,
+  Eye,
+  Undo2,
+  Redo2,
+  ZoomIn,
+  ZoomOut,
+  // Palette
+} from "lucide-react";
+import { useSidebarStore } from "../floorPlan/store/useSidebarStore";
+import { useConfirmationModal } from "../floorPlan/hooks/useConfirmationModal";
+import { useServerRoomEquipment } from "../view3d/hooks/useServerRoomEquipment";
 
 interface ServerViewHeaderProps {
   serverRoomId?: string;
-  viewDimension: '2D' | '3D';
-  onViewDimensionChange: (dimension: '2D' | '3D') => void;
+  viewDimension: "2D" | "3D";
+  onViewDimensionChange: (dimension: "2D" | "3D") => void;
 }
 
 function ServerViewHeader({
@@ -28,7 +34,7 @@ function ServerViewHeader({
   onViewDimensionChange,
 }: ServerViewHeaderProps) {
   const navigate = useNavigate();
-  const { serverRoomName } = useServerRoomEquipment(serverRoomId ?? '');
+  const { serverRoomName } = useServerRoomEquipment(serverRoomId ?? "");
 
   const { confirm } = useConfirmationModal();
 
@@ -36,20 +42,19 @@ function ServerViewHeader({
   const selectedAssetIds = useFloorPlanStore((state) => state.selectedAssetIds);
   // const displayMode = useFloorPlanStore((state) => state.displayMode);
 
-const handleBackNavigation = () => {
-
-    navigate('/server-room-dashboard');
+  const handleBackNavigation = () => {
+    navigate("/server-room-dashboard");
   };
 
   const undo = useStore(useFloorPlanStore.temporal, (state) => state.undo);
   const redo = useStore(useFloorPlanStore.temporal, (state) => state.redo);
 
   const { setLeftSidebarOpen, setRightSidebarOpen } = useSidebarStore();
-  const mode3d = useBabylonDatacenterStore((state) => state.mode); 
-  const toggleMode3d = useBabylonDatacenterStore((state) => state.toggleMode); 
+  const mode3d = useBabylonDatacenterStore((state) => state.mode);
+  const toggleMode3d = useBabylonDatacenterStore((state) => state.toggleMode);
 
   const handleToggleMode2D = () => {
-    if (mode === 'view') {
+    if (mode === "view") {
       // 공통으로 실행될 로직
       const switchToEditMode = (shouldGroup: boolean) => {
         if (shouldGroup) {
@@ -63,7 +68,7 @@ const handleBackNavigation = () => {
       if (selectedAssetIds.length > 1) {
         // 5. window.confirm()을 confirm() 훅으로 대체
         confirm({
-          title: '자산 그룹화',
+          title: "자산 그룹화",
           message: (
             <p>
               여러 개의 자산(<strong>{selectedAssetIds.length}개</strong>)이
@@ -71,7 +76,7 @@ const handleBackNavigation = () => {
               <br />이 자산들을 하나의 그룹으로 묶으시겠습니까?
             </p>
           ),
-          confirmText: '그룹화',
+          confirmText: "그룹화",
           confirmAction: () => switchToEditMode(true), // 확인 시 그룹화 후 전환
           cancelAction: () => switchToEditMode(false), // 취소 시 그냥 전환
         });
@@ -86,19 +91,16 @@ const handleBackNavigation = () => {
     }
   };
 
-
   //  3D 토글 핸들러(main)와 Zoom 핸들러(HEAD)를 모두 유지합니다.
-  const handleToggleMode3D = () => { 
+  const handleToggleMode3D = () => {
     toggleMode3d();
   };
-  
 
-
-  const handleZoomIn = () => zoom('in'); 
-  const handleZoomOut = () => zoom('out'); 
+  const handleZoomIn = () => zoom("in");
+  const handleZoomOut = () => zoom("out");
 
   return (
-    // 헤더 태그 
+    // 헤더 태그
     <header className="bg-gray-500/30 backdrop-blur-sm border-b border-gray-700 px-6 py-2 flex items-center justify-between flex-shrink-0">
       <div className="flex items-center gap-4">
         {/* ... (뒤로가기 버튼 코드) ... */}
@@ -112,29 +114,29 @@ const handleBackNavigation = () => {
             stroke="currentColor"
             viewBox="0 0 24 24"
           >
-            {' '}
+            {" "}
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
               d="M15 19l-7-7 7-7"
-            />{' '}
+            />{" "}
           </svg>
           <span>뒤로 가기</span>
         </button>
         <div className="h-6 w-px bg-gray-600" />
         <h1 className="text-xl font-bold text-white">
-          {serverRoomName? `서버실 ${serverRoomName}` : 'N/A'}
+          {serverRoomName ? `서버실 ${serverRoomName}` : "N/A"}
         </h1>
       </div>
 
       {/* 오른쪽 컨트롤 영역 */}
       <div className="flex items-center gap-4">
         {/* 3D/2D 분기를 위해 '?' 삼항 연산자 사용  */}
-        {viewDimension === '2D' ? (
+        {viewDimension === "2D" ? (
           <>
             {/* 보기 모드 컨트롤 */}
-            {mode === 'view' && (
+            {mode === "view" && (
               <>
                 {/* Display Mode Select */}
                 {/* <div className="flex items-center rounded-md p-1 bg-gray-700/50 border border-gray-600">
@@ -173,28 +175,27 @@ const handleBackNavigation = () => {
                     onClick={handleZoomIn}
                     className="p-1 rounded-md text-gray-100 hover:bg-gray-600 transition-colors"
                   >
-                    <ZoomIn className="w-5 h-5" />
-      _             </button>
-                  </div>
-                
+                    <ZoomIn className="w-5 h-5" />{" "}
+                  </button>
+                </div>
               </>
             )}
             {/* 편집 모드 컨트롤 */}
-            {mode === 'edit' && (
+            {mode === "edit" && (
               <div className="flex items-center gap-2 border border-gray-600 rounded-lg p-1 bg-gray-700/50">
                 <button
                   onClick={() => undo()}
                   className="p-2 rounded-md flex items-center gap-1.5 text-gray-100 hover:bg-gray-600 transition-colors"
                 >
-                  {' '}
-                  <Undo2 className="w-4 h-4" /> 되돌리기{' '}
+                  {" "}
+                  <Undo2 className="w-4 h-4" /> 되돌리기{" "}
                 </button>
                 <button
                   onClick={() => redo()}
                   className="p-2 rounded-md flex items-center gap-1.5 text-gray-100 hover:bg-gray-600 transition-colors"
                 >
-                  {' '}
-                  <Redo2 className="w-4 h-4" /> 다시 실행{' '}
+                  {" "}
+                  <Redo2 className="w-4 h-4" /> 다시 실행{" "}
                 </button>
               </div>
             )}
@@ -203,12 +204,12 @@ const handleBackNavigation = () => {
               onClick={handleToggleMode2D}
               className="py-2 px-4 rounded-lg flex items-center gap-2 transition-colors bg-gray-700/50 text-gray-100 hover:bg-gray-600 border border-gray-600"
             >
-              {mode === 'view' ? (
+              {mode === "view" ? (
                 <Settings className="w-5 h-5" />
               ) : (
                 <Eye className="w-5 h-5" />
               )}
-              {mode === 'view' ? '편집 모드' : '보기 모드'}
+              {mode === "view" ? "편집 모드" : "보기 모드"}
             </button>
           </>
         ) : (
@@ -217,37 +218,37 @@ const handleBackNavigation = () => {
             onClick={handleToggleMode3D}
             className="py-2 px-4 rounded-lg flex items-center gap-2 transition-colors bg-gray-700/50 text-gray-100 hover:bg-gray-600 border border-gray-600"
           >
-            {mode3d === 'view' ? (
+            {mode3d === "view" ? (
               <Settings className="w-5 h-5" />
             ) : (
               <Eye className="w-5 h-5" />
             )}
-            {mode3d === 'view' ? '편집 모드' : '보기 모드'}
+            {mode3d === "view" ? "편집 모드" : "보기 모드"}
           </button>
         )}
         {/* 2D/3D 토글 버튼 */}
         <div className="flex items-center rounded-md p-1 bg-gray-700/50 border border-gray-600">
           <button
-            onClick={() => onViewDimensionChange('2D')}
+            onClick={() => onViewDimensionChange("2D")}
             className={`px-3 py-1 rounded-md transition-colors ${
-              viewDimension === '2D'
-                ? 'bg-gray-400 text-white shadow-lg'
-                : 'text-gray-300 hover:text-white'
+              viewDimension === "2D"
+                ? "bg-gray-400 text-white shadow-lg"
+                : "text-gray-300 hover:text-white"
             }`}
           >
-            {' '}
-            2D{' '}
+            {" "}
+            2D{" "}
           </button>
           <button
-            onClick={() => onViewDimensionChange('3D')}
+            onClick={() => onViewDimensionChange("3D")}
             className={`px-3 py-1 rounded-md transition-colors ${
-              viewDimension === '3D'
-                ? 'bg-gray-400 text-white shadow-lg'
-                : 'text-gray-300 hover:text-white'
+              viewDimension === "3D"
+                ? "bg-gray-400 text-white shadow-lg"
+                : "text-gray-300 hover:text-white"
             }`}
           >
-            {' '}
-            3D{' '}
+            {" "}
+            3D{" "}
           </button>
         </div>
       </div>
@@ -256,4 +257,3 @@ const handleBackNavigation = () => {
 }
 
 export default ServerViewHeader;
-
