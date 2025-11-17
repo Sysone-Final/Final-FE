@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import type { ServerRoom } from "../types";
 import { FaMapMarkerAlt, FaPencilAlt, FaTrash } from "react-icons/fa";
 import { RiBarcodeLine } from "react-icons/ri";
+import { IoDocumentSharp } from "react-icons/io5";
 import { MdLayers } from "react-icons/md";
 import "../css/serverRoomCard.css";
 
@@ -45,6 +46,10 @@ function ServerRoomCard({ room, dataCenterAddress }: Props) {
         <p className="card-info text-body-primary">
           <MdLayers className="info-icon" />
           {room.floor}층
+        </p>
+        <p className="card-info text-body-primary">
+          <IoDocumentSharp className="info-icon" />  
+          {room.description}
         </p>
       </div>
       <div className="card-footer">
