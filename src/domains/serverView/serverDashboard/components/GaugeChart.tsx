@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import ReactECharts from "echarts-for-react";
 
 interface GaugeChartProps {
@@ -15,6 +16,11 @@ function GaugeChart({
   color = "#58D9F9",
   unit = "%",
 }: GaugeChartProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const option = {
     series: [
       {
@@ -88,11 +94,15 @@ function GaugeChart({
     ],
   };
 
+  if (!mounted) return null;
+
   return (
     <ReactECharts
       option={option}
       style={{ height: "100%", width: "100%" }}
       opts={{ renderer: "svg" }}
+      notMerge={true}
+      lazyUpdate={true}
     />
   );
 }

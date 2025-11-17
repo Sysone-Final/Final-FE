@@ -1,4 +1,5 @@
 import ReactECharts from "echarts-for-react";
+import { useEffect, useState } from "react";
 
 interface SeriesData {
   name: string;
@@ -28,6 +29,12 @@ function BarChart({
   height = "100%",
   stacked = true,
 }: BarChartProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const option = {
     backgroundColor: "transparent",
     textStyle: {
@@ -122,11 +129,15 @@ function BarChart({
     })),
   };
 
+  if (!mounted) return null;
+
   return (
     <ReactECharts
       option={option}
       style={{ height, width: "100%" }}
       notMerge={true}
+      lazyUpdate={true}
+      opts={{ renderer: "canvas" }}
     />
   );
 }

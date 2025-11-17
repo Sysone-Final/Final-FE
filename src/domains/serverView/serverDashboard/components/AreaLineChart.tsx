@@ -1,4 +1,5 @@
 import ReactECharts from "echarts-for-react";
+import { useEffect, useState } from "react";
 
 interface SeriesData {
   name: string;
@@ -32,6 +33,12 @@ function AreaLineChart({
   height = "100%",
   showToolbox = false,
 }: AreaLineChartProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const option = {
     tooltip: {
       trigger: "axis",
@@ -145,6 +152,8 @@ function AreaLineChart({
       ];
       const color = s.color || defaultColors[index % defaultColors.length];
 
+      if (!mounted) return null;
+
       return {
         name: s.name,
         type: "line",
@@ -237,6 +246,8 @@ function AreaLineChart({
       option={option}
       style={{ height: height, width: "100%" }}
       opts={{ renderer: "canvas" }}
+      notMerge={true} // ✅ 추가
+      lazyUpdate={true} // ✅ 추가
     />
   );
 }

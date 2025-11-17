@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import ReactECharts from "echarts-for-react";
 
 interface SeriesData {
@@ -23,12 +24,18 @@ interface TooltipParams {
   value: number | string;
 }
 
-const SmoothLineChart = ({
+function SmoothLineChart({
   xAxisData,
   series,
   yAxisUnit = "",
   height = "100%",
-}: SmoothLineChartProps) => {
+}: SmoothLineChartProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const option = {
     backgroundColor: "transparent",
     textStyle: {
@@ -140,13 +147,16 @@ const SmoothLineChart = ({
     })),
   };
 
+  if (!mounted) return null;
+
   return (
     <ReactECharts
       option={option}
       style={{ height, width: "100%" }}
       notMerge={true}
+      lazyUpdate={true}
     />
   );
-};
+}
 
 export default SmoothLineChart;
