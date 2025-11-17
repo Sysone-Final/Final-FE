@@ -2,7 +2,7 @@
 import React from 'react';
 import { useFloorPlanStore } from '../store/floorPlanStore';
 import type { Asset, DisplayMode, DisplayOptionsType } from '../types';
-
+import type { KonvaEventObject } from 'konva/lib/Node';
 import LayoutAssetView from './LayoutAssetView';
 import DashboardAssetView from './DashboardAssetView';
 
@@ -14,6 +14,7 @@ export interface AssetRendererProps {
   displayMode: DisplayMode;
   displayOptions: DisplayOptionsType;
   currentScale: number;
+  onContextMenu?: (e: KonvaEventObject<PointerEvent>) => void;
 }
 
 const AssetRenderer: React.FC<AssetRendererProps> = (props) => {
