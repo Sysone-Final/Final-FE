@@ -51,7 +51,7 @@ function Sidebar({ onCardClick, isOpen }: SidebarProps) {
         border-r border-slate-300/40
         rounded-lb-xl
         pt-10 transition-all duration-300 ease-in-out
-        ${isOpen ? "w-[56px] opacity-100" : "w-0 opacity-0"}
+        ${isOpen ? "w-[56px] opacity-100" : "w-0 opacity-0 pointer-events-none"}
         overflow-visible
       `}
     >
