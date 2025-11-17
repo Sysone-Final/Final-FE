@@ -88,7 +88,7 @@ function RackView({ rackName, serverRoomId, onClose }: RackViewProps) {
         />
       </div>
 
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-visible relative">
         <div className="h-full flex flex-col bg-[#404452]/70 backdrop-blur-md border border-slate-300/40 rounded-xl">
           <header className="flex justify-between items-center px-6 py-4 border-b border-slate-300/40 flex-shrink-0">
             <div className="flex-1">
@@ -110,7 +110,7 @@ function RackView({ rackName, serverRoomId, onClose }: RackViewProps) {
           </header>
 
           {/* 메인 컨텐츠 영역 */}
-          <div className="flex flex-1 min-h-0">
+          <div className="flex flex-1 min-h-0 overflow-visible">
             <Sidebar
               onCardClick={rackManager.handleCardClick}
               isOpen={editMode}
