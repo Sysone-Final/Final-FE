@@ -6,19 +6,17 @@ import type {
   FloorPlanState,
   Asset,
   DisplayOptionsType,
-  DisplayMode,
-  // Mode,
+  // DisplayMode,
   DashboardMetricView,
   AssetLayer,
   AssetStatus,
 } from '../types';
-// import { useBabylonDatacenterStore } from '@/domains/serverView/view3d/stores/useBabylonDatacenterStore';
 
 import toast from 'react-hot-toast';
 
 export const initialState: FloorPlanState = {
   mode: 'view',
-  displayMode: 'status',
+  // displayMode: 'status',
   dashboardMetricView: 'default',
   visibleLayers: {
     floor: true,
@@ -62,7 +60,7 @@ export const useFloorPlanStore = create<FloorPlanState>()(
       gridCols: state.gridCols,
       gridRows: state.gridRows,
       mode: state.mode,
-      displayMode: state.displayMode,
+      // displayMode: state.displayMode,
       dashboardMetricView: state.dashboardMetricView,
       visibleLayers: state.visibleLayers,
       visibleSeverities: state.visibleSeverities,
@@ -70,34 +68,6 @@ export const useFloorPlanStore = create<FloorPlanState>()(
   }),
 );
 
-// --- Actions ---
-
-// export const fetchFloorPlan = async (roomId: string) => {
-//   useFloorPlanStore.setState({ isLoading: true, error: null });
-//   try {
-//     const response = await fetch(`/api/server-rooms/${roomId}/floorplan`);
-//     if (!response.ok) {
-//       const errorText = await response.text();
-//       console.error('Fetch error response:', errorText);
-//       throw new Error(
-//         `Failed to fetch floor plan data. Status: ${response.status}`,
-//       );
-//     }
-//     const data = await response.json();
-//     useFloorPlanStore.setState({
-//       assets: data.assets,
-//       gridCols: data.gridCols,
-//       gridRows: data.gridRows,
-//       isLoading: false,
-//     });
-//   } catch (err) {
-//     console.error('Error in fetchFloorPlan:', err);
-//     useFloorPlanStore.setState({
-//       isLoading: false,
-//       error: err instanceof Error ? err.message : String(err),
-//     });
-//   }
-// };
 
 export const addAsset = async (newAsset: Omit<Asset, 'id'>) => {
   try {
@@ -243,8 +213,8 @@ export const setDisplayOptions = (newOptions: Partial<DisplayOptionsType>) =>
     displayOptions: { ...state.displayOptions, ...newOptions },
   }));
 
-export const setDisplayMode = (newMode: DisplayMode) =>
-  useFloorPlanStore.setState({ displayMode: newMode });
+// export const setDisplayMode = (newMode: DisplayMode) =>
+//   useFloorPlanStore.setState({ displayMode: newMode });
 
 export const setGridSize = (cols: number, rows: number) =>
   useFloorPlanStore.setState({ gridCols: cols, gridRows: rows });
@@ -277,31 +247,7 @@ export const updateServerRoomDetails = async (
   toast.error('서버실 크기 저장에 실패했습니다.');
  }
 };
-// export const updateServerRoomDetails = async (
-//   roomId: string,
-//   newDetails: { gridCols?: number; gridRows?: number },
-// ) => {
-//   const { gridCols: oldCols, gridRows: oldRows } = useFloorPlanStore.getState();
-//   const oldSettings = { gridCols: oldCols, gridRows: oldRows };
-  
-//   useFloorPlanStore.setState(newDetails);
 
-//   try {
-//     const response = await fetch(`/api/server-rooms/${roomId}/floorplan/details`, {
-//       method: 'PUT',
-//       headers: { 'Content-Type': 'application/json' },
-//       body: JSON.stringify(newDetails),
-//     });
-//     if (!response.ok) throw new Error('Failed to update server room details');
-  
-//     console.log('Server room details updated successfully');
-  
-//   } catch (err) {
-//     console.error('Error updating server room details:', err);
-//     useFloorPlanStore.setState(oldSettings);
-//     alert('서버실 크기 저장에 실패했습니다.');
-//   }
-// };
 
 export const setStage = (newStage: FloorPlanState['stage']) =>
   useFloorPlanStore.setState({ stage: newStage });
