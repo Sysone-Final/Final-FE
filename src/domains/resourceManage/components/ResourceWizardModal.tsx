@@ -10,7 +10,8 @@ import type {
   UseFormWatch,
   UseFormGetValues,
 } from "react-hook-form";
-import type { Resource, Rack , ServerRoom} from "../types/resource.types";
+// [수정] Resource 타입을 추가로 import 했습니다.
+import type { ServerRoomGroup, Rack, Resource } from "../types/resource.types"; 
 import {
   useCreateResource,
   useUpdateResource,
@@ -20,6 +21,7 @@ import {
 } from "../hooks/useResourceQueries";
 import { X, ArrowLeft, Loader2 } from "lucide-react";
 import { EQUIPMENT_TYPE_OPTIONS } from "../constants/resource.constants";
+
 const labelStyle = "block text-sm font-medium text-white mb-1";
 const gridContainerStyle = "grid grid-cols-1 md:grid-cols-2 gap-4";
 const gridSpanFullStyle = "md:col-span-2";
@@ -28,14 +30,9 @@ const errorTextStyle = "text-xs text-red-400 mt-1";
 
 type FormValues = Partial<Resource>;
 
-// type FileChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => void;
-
 interface Step1Props {
   register: UseFormRegister<FormValues>;
   errors: FieldErrors<FormValues>;
-  // handleFileChange: FileChangeHandler;
-  // imageFrontPreview: string | null;
-  // imageRearPreview: string | null;
 }
 
 interface Step2Props {
@@ -45,13 +42,13 @@ interface Step2Props {
   getValues: UseFormGetValues<FormValues>;
   isUnallocated?: boolean;
 
-  serverRooms: ServerRoom[] | undefined;
- isLoadingServerRooms: boolean;
- isErrorServerRooms: boolean;
- racks: Rack[] | undefined;
- isLoadingRacks: boolean;
- isErrorRacks: boolean;
- watchedServerRoomId: number | null | undefined;
+  serverRooms: ServerRoomGroup[] | undefined;
+  isLoadingServerRooms: boolean;
+  isErrorServerRooms: boolean;
+  racks: Rack[] | undefined;
+  isLoadingRacks: boolean;
+  isErrorRacks: boolean;
+  watchedServerRoomId: number | null | undefined;
 }
 
 interface Step3Props {
@@ -64,9 +61,7 @@ interface Step3Props {
 const Step1Identity = ({
   register,
   errors,
-
 }: Step1Props) => (
-  // 3. inputStyle 대신 modal-input 적용
   <div className={gridContainerStyle}>
     {/* --- 필수 --- */}
     <div>
@@ -131,16 +126,14 @@ const Step1Identity = ({
         className="modal-input"
       />
     </div>
-
-    
   </div>
 );
 
 // --- 스텝 2 컴포넌트 ---
-const Step2Location = ({ 
-  register, 
-  errors, 
-  watch, 
+const Step2Location = ({
+  register,
+  errors,
+  watch,
   getValues,
   isUnallocated = false,
   // --- props로 데이터 받기 ---
@@ -152,19 +145,8 @@ const Step2Location = ({
   isErrorRacks,
   watchedServerRoomId
 }: Step2Props) => {
- // const watchedServerRoomId = watch("serverRoomId"); // 모달에서 이미 watch함
   const watchedRackId = watch("rackId");
-
-  // const {
-  //   data: serverRooms,
-  //   isLoading: isLoadingServerRooms,
-  //   isError: isErrorServerRooms,
-  // } = useGetServerRooms();
-  // const {
-  //   data: racks,
-  //   isLoading: isLoadingRacks,
-  //   isError: isErrorRacks,
-  // } = useGetRacksByServerRoom(watchedServerRoomId || null);
+  const currentServerRoomId = watch("serverRoomId");
 
   const selectedRack = useMemo(() => {
     if (!watchedRackId || !racks || !Array.isArray(racks)) return null;
@@ -174,7 +156,6 @@ const Step2Location = ({
   const maxUnits = selectedRack?.totalUnits || 48;
 
   return (
-    //    div에 grid 스타일을 바로 적용하여 평평하게 만듦
     <div>
       {/* 2-1. 물리적 위치 */}
       <div className={gridContainerStyle}>
@@ -184,27 +165,35 @@ const Step2Location = ({
           </label>
           <select
             {...register("serverRoomId", {
-       validate: (value) =>
-        isUnallocated || !!value || "서버실을 선택해야 합니다.",
-       valueAsNumber: true,
-      })}
-      className={`modal-input ${errors.serverRoomId ? "border-red-500" : ""}`}
-      disabled={isLoadingServerRooms || isErrorServerRooms || isUnallocated}
-     >
-            <option value="">
-              {isLoadingServerRooms
-                ? "불러오는 중..."
-                : isErrorServerRooms
-                  ? "오류 발생"
-                  : "-- 서버실 선택 --"}
-            </option>
+              required: false,
+              valueAsNumber: true,
+            })}
+            className={`modal-input ${errors.serverRoomId ? "border-red-500" : ""}`}
+            disabled={isLoadingServerRooms || isErrorServerRooms}
+          >
+            <option value="">-- 위치 미지정 (창고/대기) --</option>
+
+            {/* 이중 map을 사용하여 optgroup 렌더링 */}
             {Array.isArray(serverRooms) &&
-              serverRooms.map((dc) => (
-                <option key={dc.id} value={dc.id}>
-                  {dc.name}
-                </option>
+              serverRooms.map((group) => (
+                <optgroup
+                  key={group.dataCenterId}
+                  label={group.dataCenterName}
+                  className="text-gray-300 font-bold bg-gray-800"
+                >
+                  {group.serverRooms.map((room) => (
+                    <option
+                      key={room.id}
+                      value={room.id}
+                      className="text-white bg-gray-700 font-normal"
+                    >
+                      {room.name} {room.floor ? `(${room.floor}층)` : ''}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
           </select>
+
           {errors.serverRoomId && (
             <p className={errorTextStyle}>{errors.serverRoomId.message}</p>
           )}
@@ -212,30 +201,31 @@ const Step2Location = ({
         <div>
           <label className={labelStyle}>
             랙 (Rack) {isUnallocated ? "" : <span className="text-red-500">*</span>}
-     </label>
-     <select
-      {...register("rackId", {
-       validate: (value) =>
-        isUnallocated || !!value || "랙을 선택해야 합니다.",
-       valueAsNumber: true,
-      })}
-      className={`modal-input ${errors.rackId ? "border-red-500" : ""}`}
-      disabled={!watchedServerRoomId || isLoadingRacks || isErrorRacks || isUnallocated}
-     >
+          </label>
+          <select
+            {...register("rackId", {
+              valueAsNumber: true,
+              validate: (value) => {
+                if (currentServerRoomId && !value) {
+                  return "서버실을 선택했다면 랙도 선택해야 합니다.";
+                }
+                return true;
+              }
+            })}
+            className={`modal-input ${errors.rackId ? "border-red-500" : ""}`}
+            disabled={!watchedServerRoomId || isLoadingRacks || isErrorRacks}
+          >
             <option value="">
               {isLoadingRacks
                 ? "불러오는 중..."
                 : !watchedServerRoomId
                   ? "-- 서버실 먼저 선택 --"
-                  : isErrorRacks
-                    ? "오류 발생"
-                    : "-- 랙 선택 --"}
+                  : "-- 랙 선택 --"}
             </option>
             {Array.isArray(racks) &&
               racks.map((rack) => (
-               <option key={rack.id} value={rack.id}>
-                  {rack.rackName} ({rack.availableUnits}U / {rack.totalUnits}
-                  U)
+                <option key={rack.id} value={rack.id}>
+                  {rack.rackName} ({rack.availableUnits}U / {rack.totalUnits}U)
                 </option>
               ))}
           </select>
@@ -246,28 +236,27 @@ const Step2Location = ({
 
         <div>
           <label className={labelStyle}>
-            시작 유닛 {isUnallocated ? "" : <span className="text-red-500">*</span>}
-     </label>
-     <input
-      type="number"
-      {...register("startUnit", {
-       required: isUnallocated ? false : "시작 유닛을 입력하세요.",
-       valueAsNumber: true,
-       min: isUnallocated
-        ? undefined
-        : { value: 1, message: "시작 유닛은 1 이상이어야 합니다." },
-       max: isUnallocated
-        ? undefined
-        : {
-          value: maxUnits,
-          message: `이 랙의 최대 유닛(${maxUnits}U)을 초과할 수 없습니다.`,
-         },
-      })}
-      min="1"
-      max={maxUnits}
-      className={`modal-input ${errors.startUnit ? "border-red-500" : ""}`}
-      disabled={!watchedRackId || isUnallocated}
-     />
+            시작 유닛 {watchedRackId && <span className="text-red-500">*</span>}
+          </label>
+          <input
+            type="number"
+            {...register("startUnit", {
+              valueAsNumber: true,
+              validate: (value) => {
+                if (watchedRackId && !value) return "시작 유닛을 입력하세요.";
+                return true;
+              },
+              min: { value: 1, message: "시작 유닛은 1 이상이어야 합니다." },
+              max: {
+                value: maxUnits,
+                message: `이 랙의 최대 유닛(${maxUnits}U)을 초과할 수 없습니다.`,
+              },
+            })}
+            min="1"
+            max={maxUnits}
+            className={`modal-input ${errors.startUnit ? "border-red-500" : ""}`}
+            disabled={!watchedRackId}
+          />
           <p className={helperTextStyle}>
             랙의 몇 번째 U부터? (최대: {maxUnits}U)
           </p>
@@ -275,6 +264,7 @@ const Step2Location = ({
             <p className={errorTextStyle}>{errors.startUnit.message}</p>
           )}
         </div>
+
         <div>
           <label className={labelStyle}>
             유닛 크기 <span className="text-red-500">*</span>
@@ -286,10 +276,8 @@ const Step2Location = ({
               valueAsNumber: true,
               min: { value: 1, message: "유닛 크기는 1 이상이어야 합니다." },
               validate: (value) => {
-        if (isUnallocated) return true; 
-
-        const startUnit = getValues("startUnit");
-                if (typeof startUnit === 'number' && typeof value === 'number') {
+                const startUnit = getValues("startUnit");
+                if (startUnit && typeof startUnit === 'number' && typeof value === 'number') {
                   return (
                     startUnit + value - 1 <= maxUnits ||
                     `설치 위치(U)가 랙의 최대 크기(${maxUnits}U)를 초과합니다.`
@@ -323,7 +311,7 @@ const Step2Location = ({
         </div>
       </div>
 
-      {/* 2-2. 하드웨어 및 네트워크 사양 (fieldset 제거, 여백 추가) */}
+      {/* 2-2. 하드웨어 및 네트워크 사양 */}
       <div className={`${gridContainerStyle} mt-4`}>
         <div>
           <label className={labelStyle}>운영체제 (OS)</label>
@@ -455,8 +443,6 @@ const Step3Management = ({ register, errors, watch }: Step3Props) => {
       </div>
 
       {/* 3-2. 모니터링 설정  */}
-
-
       <div className={`${gridContainerStyle} mt-4`}>
         <div className={`${gridSpanFullStyle} mb-2`}>
           <div className="flex items-center">
@@ -600,16 +586,16 @@ export default function ResourceWizardModal({
   const watchedServerRoomId = watch("serverRoomId");
 
   const {
-  data: serverRooms,
-  isLoading: isLoadingServerRooms,
-  isError: isErrorServerRooms,
- } = useGetServerRooms();
+    data: serverRooms,
+    isLoading: isLoadingServerRooms,
+    isError: isErrorServerRooms,
+  } = useGetServerRooms();
 
- const {
-  data: racks,
-  isLoading: isLoadingRacks,
-  isError: isErrorRacks,
- } = useGetRacksByServerRoom(watchedServerRoomId || null);
+  const {
+    data: racks,
+    isLoading: isLoadingRacks,
+    isError: isErrorRacks,
+  } = useGetRacksByServerRoom(watchedServerRoomId || null);
 
   useEffect(() => {
     if (dirtyFields.serverRoomId) {
@@ -617,8 +603,6 @@ export default function ResourceWizardModal({
       setValue("startUnit", null, { shouldValidate: true });
     }
   }, [watchedServerRoomId, dirtyFields.serverRoomId, setValue]);
-
-
 
   const createResourceMutation = useCreateResource();
   const updateResourceMutation = useUpdateResource();
@@ -634,52 +618,44 @@ export default function ResourceWizardModal({
   const isLoading = isLoadingDetail || isLoadingMutation;
 
   // (useEffect 로직들은 동일하게 유지)
- useEffect(() => {
-  if (isOpen) {
-   if (!resourceId) {
-    reset(getDefaultFormData());
-    setStep(1);
-   } else if (resourceId && resourceDetailData) {
+  useEffect(() => {
+    if (isOpen) {
+      if (!resourceId) {
+        reset(getDefaultFormData());
+        setStep(1);
+      } else if (resourceId && resourceDetailData) {
         // [중요] reset 시 rackId가 설정됩니다.
-    reset({
-     ...getDefaultFormData(),
-     ...resourceDetailData,
-    });
-    setStep(1);
-   }
-  }
- }, [resourceId, resourceDetailData, isOpen, reset]);
+        reset({
+          ...getDefaultFormData(),
+          ...resourceDetailData,
+        });
+        setStep(1);
+      }
+    }
+  }, [resourceId, resourceDetailData, isOpen, reset]);
 
-useEffect(() => {
-    // 1. 랙 목록 로딩이 끝났고 (false)
-    // 2. 랙 목록 데이터가 존재하며 (undefined 아님)
-    // 3. 수정 모드 데이터(resourceDetailData)가 있고
-    // 4. 해당 데이터에 rackId가 설정되어 있을 때
-  if (
-   !isLoadingRacks && 
-   racks &&
-   resourceDetailData && 
-   resourceDetailData.rackId
-  ) {
-      // 5. 폼의 현재 rackId 값과 상세 데이터의 rackId 값이 일치하는지 확인
-      // (이미 올바르게 설정되었다면 다시 설정할 필요 없음)
+  useEffect(() => {
+    if (
+      !isLoadingRacks &&
+      racks &&
+      resourceDetailData &&
+      resourceDetailData.rackId
+    ) {
       const currentFormRackId = getValues("rackId");
 
       if (currentFormRackId !== resourceDetailData.rackId) {
-        // 6. 폼의 rackId 값을 강제로 다시 설정하여 <select>가 값을 표시하도록 함
         setValue("rackId", resourceDetailData.rackId, { shouldDirty: false });
       }
-  }
- }, [
-    isLoadingRacks, // isLoadingRacks가 true -> false로 바뀔 때 실행됨
-    racks, 
-    resourceDetailData, 
-    getValues, 
+    }
+  }, [
+    isLoadingRacks,
+    racks,
+    resourceDetailData,
+    getValues,
     setValue
   ]);
 
   if (!isOpen) return null;
-
 
   const nextStep = async () => {
     let fieldsToValidate: (keyof FormValues)[] = [];
@@ -688,15 +664,15 @@ useEffect(() => {
     } else if (step === 2) {
       fieldsToValidate.push(
         'unitSize',
-   );
+      );
 
-   if (!isUnallocated) {
-    fieldsToValidate.push(
-     'serverRoomId',
-     'rackId',
-     'startUnit'
-    );
-   }
+      if (!isUnallocated) {
+        fieldsToValidate.push(
+          'serverRoomId',
+          'rackId',
+          'startUnit'
+        );
+      }
       if (getValues('ipAddress')) {
         fieldsToValidate.push('ipAddress');
       }
@@ -718,16 +694,15 @@ useEffect(() => {
   };
 
   const onSubmit: SubmitHandler<FormValues> = (data) => {
-
-if (resourceId) {
-  updateResourceMutation.mutate(
-   { id: resourceId, data: data as Resource }, 
-   { onSuccess: handleClose }
-  );
- } else {
-  createResourceMutation.mutate(data as Resource, { onSuccess: handleClose }); 
- }
- };
+    if (resourceId) {
+      updateResourceMutation.mutate(
+        { id: resourceId, data: data as Resource },
+        { onSuccess: handleClose }
+      );
+    } else {
+      createResourceMutation.mutate(data as Resource, { onSuccess: handleClose });
+    }
+  };
 
   const renderStepContent = () => {
     switch (step) {
@@ -736,7 +711,6 @@ if (resourceId) {
           <Step1Identity
             register={register}
             errors={errors}
-
           />
         );
       case 2:
@@ -770,9 +744,7 @@ if (resourceId) {
   };
 
   return (
-    //  모달 배경 스타일 
     <div className="fixed inset-0 z-50 flex justify-center items-center p-4 backdrop-blur-sm bg-black/20">
-      {/* 모달창 스타일 */}
       <div className="modal max-w-xl">
         <div className="p-6 md:p-8">
           {/* 헤더 */}
@@ -789,20 +761,18 @@ if (resourceId) {
             </button>
           </div>
 
-          {/* 스텝퍼 UI (디자인 수정 - '새 장비 등록' 모달의 기존 스타일) */}
+          {/* 스텝퍼 UI */}
           <div className="flex justify-between items-center mb-6 px-4">
             {/* 스텝 1 */}
             <div
-              className={`flex flex-col items-center ${
-                step >= 1 ? "text-green-400" : "text-gray-400" // 녹색 계열로 변경
-              }`}
+              className={`flex flex-col items-center ${step >= 1 ? "text-green-400" : "text-gray-400"
+                }`}
             >
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${
-                  step >= 1
-                    ? "bg-green-500 border-green-500 text-white" // 첫번째 이미지의 녹색 원
+                className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${step >= 1
+                    ? "bg-green-500 border-green-500 text-white"
                     : "border-gray-400 text-gray-400"
-                }`}
+                  }`}
               >
                 1
               </div>
@@ -812,23 +782,20 @@ if (resourceId) {
             </div>
 
             <div
-              className={`flex-1 h-0.5 mx-4 ${
-                step > 1 ? "bg-green-400" : "bg-white bg-opacity-30" // 녹색 계열로 변경
-              }`}
+              className={`flex-1 h-0.5 mx-4 ${step > 1 ? "bg-green-400" : "bg-white bg-opacity-30"
+                }`}
             ></div>
 
             {/* 스텝 2 */}
             <div
-              className={`flex flex-col items-center ${
-                step >= 2 ? "text-green-400" : "text-gray-400"
-              }`}
+              className={`flex flex-col items-center ${step >= 2 ? "text-green-400" : "text-gray-400"
+                }`}
             >
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${
-                  step >= 2
+                className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${step >= 2
                     ? "bg-green-500 border-green-500 text-white"
                     : "border-gray-400 text-gray-400"
-                }`}
+                  }`}
               >
                 2
               </div>
@@ -838,23 +805,20 @@ if (resourceId) {
             </div>
 
             <div
-              className={`flex-1 h-0.5 mx-4 ${
-                step > 2 ? "bg-green-400" : "bg-white bg-opacity-30"
-              }`}
+              className={`flex-1 h-0.5 mx-4 ${step > 2 ? "bg-green-400" : "bg-white bg-opacity-30"
+                }`}
             ></div>
 
             {/* 스텝 3 */}
             <div
-              className={`flex flex-col items-center ${
-                step >= 3 ? "text-green-400" : "text-gray-400"
-              }`}
+              className={`flex flex-col items-center ${step >= 3 ? "text-green-400" : "text-gray-400"
+                }`}
             >
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${
-                  step >= 3
+                className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${step >= 3
                     ? "bg-green-500 border-green-500 text-white"
                     : "border-gray-400 text-gray-400"
-                }`}
+                  }`}
               >
                 3
               </div>
@@ -876,7 +840,6 @@ if (resourceId) {
                 오류: 상세 정보를 불러오지 못했습니다.
               </div>
             ) : (
-              // 5. 스크롤 높이 max-h-[60vh]로 변경
               <div className="mb-6 max-h-[60vh] overflow-y-auto pr-2">
                 {renderStepContent()}
               </div>
@@ -890,7 +853,7 @@ if (resourceId) {
                     type="button"
                     onClick={prevStep}
                     disabled={isLoading}
-                    className="flex items-center px-4 py-2 btn-cancel" 
+                    className="flex items-center px-4 py-2 btn-cancel"
                   >
                     <ArrowLeft size={16} className="mr-1" />
                     이전
@@ -913,7 +876,7 @@ if (resourceId) {
                     type="button"
                     onClick={nextStep}
                     disabled={isLoading}
-                    className="px-4 py-2 btn-create" 
+                    className="px-4 py-2 btn-create"
                   >
                     다음
                   </button>
@@ -923,7 +886,7 @@ if (resourceId) {
                   <button
                     type="submit"
                     disabled={isLoading || isErrorDetail}
-                    className="px-4 py-2 btn-create" 
+                    className="px-4 py-2 btn-create"
                   >
                     {isLoadingMutation
                       ? "저장 중..."

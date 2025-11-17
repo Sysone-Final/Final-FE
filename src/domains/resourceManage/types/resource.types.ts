@@ -15,6 +15,14 @@ export type EquipmentType = "SERVER" | "SWITCH" | "ROUTER" | "PDU" | "UPS" | "ST
 // NOTE(user): 3단계 폼 기준 설치 방향 타입
 export type PositionType = "FRONT" | "REAR" | "NORMAL";
 
+export interface ServerRoomGroup {
+  dataCenterId: number;
+  dataCenterName: string;
+  dataCenterCode: string;
+  dataCenterAddress: string;
+  serverRooms: ServerRoom[];
+}
+
 // NOTE(user): 자원(Equipment) 핵심 인터페이스 (3단계 폼 기준)
 export interface Resource {
   // 1단계: 기본 식별 정보
@@ -108,6 +116,7 @@ export interface ServerRoom {
   status: string; // "ACTIVE" etc.
   rackCount: number;
   managerName: string;
+  floor?: number;
 }
 
 //  5.1 전산실별 랙 목록 조회 (GET /racks/datacenter/{dataCenterId}) - 전체 필드

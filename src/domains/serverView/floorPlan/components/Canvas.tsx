@@ -11,6 +11,9 @@ import AssetRenderer from './AssetRenderer';
 import CanvasGrid from './CanvasGrid';
 import HeatmapLayer from './HeatmapLayer';
 import type { AssetLayer, DisplayMode } from '../types';
+import AssetActionToolbar from './AssetActionToolbar';
+import CanvasContextMenu from './CanvasContextMenu';
+import { deleteAsset } from '../store/floorPlanStore';
 
 interface CanvasProps {
  containerRef: React.RefObject<HTMLDivElement>;
@@ -45,7 +48,32 @@ const synthesizedDisplayMode: DisplayMode =
  const [stageSize, setStageSize] = useState({ width: 0, height: 0 });
  const { setNodeRef } = useDroppable({ id: 'canvas-drop-area' });
  const [isInitialZoomSet, setIsInitialZoomSet] = useState(false);
+const mode = useFloorPlanStore((state) => state.mode); // mode 가져오기
 
+  // 2. 컨텍스트 메뉴 상태 추가
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; assetId: string } | null>(null);
+
+  // 3. 우클릭 핸들러 (자산에서 호출됨)
+  const handleAssetContextMenu = (e: KonvaEventObject<PointerEvent>, assetId: string) => {
+    e.evt.preventDefault(); // 브라우저 메뉴 방지
+    if (mode !== 'edit') return; // 편집 모드일 때만
+
+    // 마우스의 현재 화면 좌표 (Stage 기준 아님)
+    const pointer = e.evt;
+    setContextMenu({
+      x: pointer.clientX,
+      y: pointer.clientY,
+      assetId,
+    });
+  };
+
+  // 4. 빈 공간 우클릭 시 메뉴 닫기
+  const handleStageContextMenu = (e: KonvaEventObject<PointerEvent>) => {
+    e.evt.preventDefault();
+    if (e.target === e.target.getStage()) {
+      setContextMenu(null);
+    }
+  };
  // Effect 1: Resize listener
  useEffect(() => {
   const checkSize = () => {
@@ -185,6 +213,7 @@ const synthesizedDisplayMode: DisplayMode =
       scaleY={stage.scale}
       x={stage.x}
       y={stage.y}
+      onContextMenu={handleStageContextMenu}
      >
       <Layer>
        <CanvasGrid
@@ -207,6 +236,7 @@ const synthesizedDisplayMode: DisplayMode =
           }
           displayOptions={displayOptions}
           currentScale={stage.scale}
+          onContextMenu={(e) => handleAssetContextMenu(e, asset.id)}
          />
         ))}
        </Group>
@@ -221,6 +251,16 @@ const synthesizedDisplayMode: DisplayMode =
      </Stage>
     )}
    </div>
+   <AssetActionToolbar />
+      
+      {contextMenu && (
+        <CanvasContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          onClose={() => setContextMenu(null)}
+          onDelete={() => deleteAsset(contextMenu.assetId)}
+        />
+      )}
   </main>
  );
 };
