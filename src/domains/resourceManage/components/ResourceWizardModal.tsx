@@ -10,7 +10,7 @@ import type {
   UseFormWatch,
   UseFormGetValues,
 } from "react-hook-form";
-import type { Resource, Rack , ServerRoom} from "../types/resource.types";
+import type { ServerRoomGroup, Rack } from "../types/resource.types"; // ServerRoomGroup import
 import {
   useCreateResource,
   useUpdateResource,
@@ -45,7 +45,7 @@ interface Step2Props {
   getValues: UseFormGetValues<FormValues>;
   isUnallocated?: boolean;
 
-  serverRooms: ServerRoom[] | undefined;
+serverRooms: ServerRoomGroup[] | undefined;
  isLoadingServerRooms: boolean;
  isErrorServerRooms: boolean;
  racks: Rack[] | undefined;
@@ -143,7 +143,6 @@ const Step2Location = ({
   watch, 
   getValues,
   isUnallocated = false,
-  // --- props로 데이터 받기 ---
   serverRooms,
   isLoadingServerRooms,
   isErrorServerRooms,
@@ -151,6 +150,7 @@ const Step2Location = ({
   isLoadingRacks,
   isErrorRacks,
   watchedServerRoomId
+  
 }: Step2Props) => {
  // const watchedServerRoomId = watch("serverRoomId"); // 모달에서 이미 watch함
   const watchedRackId = watch("rackId");
@@ -202,11 +202,25 @@ const currentServerRoomId = watch("serverRoomId");
             disabled={isLoadingServerRooms || isErrorServerRooms}
           >
             <option value="">-- 위치 미지정 (창고/대기) --</option>
+            
+            {/* [수정] 이중 map을 사용하여 optgroup 렌더링 */}
             {Array.isArray(serverRooms) &&
-              serverRooms.map((dc) => (
-                <option key={dc.id} value={dc.id}>
-                  {dc.name}
-                </option>
+              serverRooms.map((group) => (
+                <optgroup 
+                  key={group.dataCenterId} 
+                  label={group.dataCenterName} // 그룹 이름 (예: 판교 IDC)
+                  className="text-gray-300 font-bold bg-gray-800"
+                >
+                  {group.serverRooms.map((room) => (
+                    <option 
+                      key={room.id} 
+                      value={room.id} 
+                      className="text-white bg-gray-700 font-normal"
+                    >
+                      {room.name} {room.floor ? `(${room.floor}층)` : ''}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
           </select>
          
