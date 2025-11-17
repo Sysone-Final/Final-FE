@@ -6,7 +6,7 @@ import { useFloorPlanDragDrop } from '../hooks/useFloorPlanDragDrop';
 import { useFloorPlanNavigationGuard } from '../hooks/useFloorPlanNavigationGuard';
 import { useFloorPlanStore, initialState } from '../store/floorPlanStore';
 import { useSidebarStore } from '../store/useSidebarStore';
-
+import RackModal from '@/domains/serverView/components/RackModal';
 import { useServerRoomEquipment } from '@/domains/serverView/view3d/hooks/useServerRoomEquipment';
 import { transform3DTo2DAssets } from '../utils/dataTransformer';
 
@@ -155,7 +155,9 @@ const FloorPlanPage: React.FC<FloorPlanPageProps> = ({ containerRef, serverRoomI
           >
             <RightSidebar />
           </FloatingSidebarPanel>
+          
         )}
+        <RackModal />
       </div>
     </DndContext>
   );
