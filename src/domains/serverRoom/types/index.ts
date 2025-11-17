@@ -4,6 +4,7 @@ export interface ServerRoom {
   code: string; // 서버실 코드
   location: string | null; // 위치 정보
   floor: number; // 층수
+  description?: string;
   status: "ACTIVE" | "INACTIVE" | "MAINTENANCE"; // 상태
 }
 

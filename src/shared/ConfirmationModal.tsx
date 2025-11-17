@@ -23,13 +23,14 @@ export function ConfirmationModal({
 }: ConfirmationModalProps) {
   if (!isOpen) return null;
 
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      className="modal-bg animate-fadeIn"
       onClick={onClose} 
     >
       <div
-        className="w-full max-w-md p-6 modal"
+        className="w-full max-w-md p-6 modal animate-modalFadeIn"
         onClick={(e) => e.stopPropagation()} 
       >
         {/* Header */}

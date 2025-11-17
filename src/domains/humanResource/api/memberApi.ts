@@ -1,5 +1,5 @@
 import client from '@/api/client';
-import type { MemberListResponse, Member } from '../types/memberTypes';
+import type { MemberListResponse, Member, CreateMemberRequest } from '../types/memberTypes';
 
 /**
  * 회원 목록 조회
@@ -20,8 +20,8 @@ export const getMemberById = async (id: number): Promise<Member> => {
 /**
  * 회원 생성
  */
-export const createMember = async (data: Omit<Member, 'id' | 'lastLoginAt'>): Promise<Member> => {
-  const response = await client.post<{ result: Member }>('/members', data);
+export const createMember = async (data: CreateMemberRequest): Promise<Member> => {
+  const response = await client.post<{ result: Member }>('/auth/signup', data);
   return response.data.result;
 };
 

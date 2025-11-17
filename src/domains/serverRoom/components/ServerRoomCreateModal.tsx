@@ -80,8 +80,8 @@ function ServerRoomCreateModal({
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex justify-center items-center p-4 backdrop-blur-sm bg-black/20">
-      <div className="modal max-w-2xl">
+    <div className="modal-bg animate-fadeIn" onClick={handleClose}>
+      <div className="modal animate-modalFadeIn max-w-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="p-6 md:p-8">
           {/* 헤더 */}
           <div className="flex justify-between items-center mb-6">

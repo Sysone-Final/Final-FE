@@ -22,16 +22,15 @@ function ServerViewPage() {
       />
 
       {viewDimension === '3D' ? (
-        <>
-          {/* 3D View Container: flex-1 */}
-          <div className="flex-1 overflow-hidden">
-            <BabylonDatacenterView mode="view" serverRoomId={id} />
-          </div>
-          <RackModal />
-        </>
+        <div className="flex-1 overflow-hidden">
+          <BabylonDatacenterView mode="view" serverRoomId={id} />
+        </div>
       ) : (
         <FloorPlanPage containerRef={canvasContainerRef} serverRoomId={id} />
       )}
+
+      {/* RackModal은 2D/3D 모두에서 사용 */}
+      <RackModal />
     </div>
   );
 }

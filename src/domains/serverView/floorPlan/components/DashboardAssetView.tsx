@@ -1,42 +1,47 @@
-import React from 'react';
-import { Group, Rect, Text } from 'react-konva';
-import type { KonvaEventObject } from 'konva/lib/Node';
-import { selectAsset, useFloorPlanStore } from '../store/floorPlanStore';
-import type { AssetRendererProps } from './AssetRenderer';
-import { useBabylonDatacenterStore } from '@/domains/serverView/view3d/stores/useBabylonDatacenterStore';
+import React from "react";
+import { Group, Rect, Text } from "react-konva";
+import type { KonvaEventObject } from "konva/lib/Node";
+import { selectAsset, useFloorPlanStore } from "../store/floorPlanStore";
+import type { AssetRendererProps } from "./AssetRenderer";
+import { useBabylonDatacenterStore } from "@/domains/serverView/view3d/stores/useBabylonDatacenterStore";
 
 // 사용량(CPU, Memory) 상태 (90% 'danger', 75% 'warning')
 const getUsageStatus = (
-  usage: number | undefined,
-): 'normal' | 'warning' | 'danger' => {
+  usage: number | undefined
+): "normal" | "warning" | "danger" => {
   const u = usage ?? 0;
-  if (u > 90) return 'danger';
-  if (u > 75) return 'warning';
-  return 'normal';
+  if (u > 90) return "danger";
+  if (u > 75) return "warning";
+  return "normal";
 };
 
 // 온도 상태 (35°C 'danger', 30°C 'warning')
 const getTempStatus = (
-  temp: number | undefined,
-): 'normal' | 'warning' | 'danger' => {
+  temp: number | undefined
+): "normal" | "warning" | "danger" => {
   const t = temp ?? 0;
-  if (t > 35) return 'danger';
-  if (t > 30) return 'warning';
-  return 'normal';
+  if (t > 35) return "danger";
+  if (t > 30) return "warning";
+  return "normal";
 };
 
 // 온도 아이콘 (35°C 초과 '🔥', 30°C 초과 '⚠️')
-const getTempIcon = (tempStatus: 'normal' | 'warning' | 'danger') => {
-  if (tempStatus === 'danger') return '🔥';
-  if (tempStatus === 'warning') return '⚠️';
-  return '';
+const getTempIcon = (tempStatus: "normal" | "warning" | "danger") => {
+  if (tempStatus === "danger") return "🔥";
+  if (tempStatus === "warning") return "⚠️";
+  return "";
 };
 
 // 상태별 색상 (대시보드 뷰 전용)
 const STATUS_COLORS = {
-  normal: { fill: '#2e4c40', stroke: '#3f6d5a', text: '#2ecc71', symbol: '🟢' },
-  warning: { fill: '#5e432f', stroke: '#8a6245', text: '#f39c12', symbol: '🟡' },
-  danger: { fill: '#6b303b', stroke: '#994553', text: '#e74c3c', symbol: '🔴' },
+  normal: { fill: "#2e4c40", stroke: "#3f6d5a", text: "#2ecc71", symbol: "🟢" },
+  warning: {
+    fill: "#5e432f",
+    stroke: "#8a6245",
+    text: "#f39c12",
+    symbol: "🟡",
+  },
+  danger: { fill: "#6b303b", stroke: "#994553", text: "#e74c3c", symbol: "🔴" },
 };
 
 // --- 랙 내부 지표 렌더링 컴포넌트 ---
@@ -58,8 +63,8 @@ const MetricText: React.FC<MetricProps> = ({
   y,
   padding,
   width,
-  valueColor = '#ecf0f1',
-  fontStyle = 'normal',
+  valueColor = "#ecf0f1",
+  fontStyle = "normal",
 }) => (
   <Group y={y}>
     <Text // 레이블 (예: "메모리")
@@ -92,7 +97,7 @@ const DashboardAssetView: React.FC<AssetRendererProps> = ({
   const metricView = useFloorPlanStore((state) => state.dashboardMetricView);
 
   const openRackModal = useBabylonDatacenterStore(
-    (state) => state.openRackModal,
+    (state) => state.openRackModal
   );
 
   const pixelX = (asset.gridX ?? 0) * gridSize + headerPadding;
@@ -116,18 +121,28 @@ const DashboardAssetView: React.FC<AssetRendererProps> = ({
   const memStatus = getUsageStatus(memoryUsage);
   const tempStatus = getTempStatus(temperature);
 
+  const handleClick = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
+    e.cancelBubble = true;
+    selectAsset(asset.id, e.evt.shiftKey);
+
+    // rackServerId가 있을 때만 랙 모달 열기
+    if (asset.data?.rackServerId) {
+      openRackModal(asset.data.rackServerId.toString());
+    }
+  };
+
   const statusPriority = { danger: 3, warning: 2, normal: 1 };
 
   // 🌟 전체 랙 상태 (배경색) = 가장 심각한 지표 기준
   const overallPriority = Math.max(
     statusPriority[cpuStatus],
     statusPriority[memStatus],
-    statusPriority[tempStatus],
+    statusPriority[tempStatus]
   );
 
-  let rackStatusKey: 'normal' | 'warning' | 'danger' = 'normal';
-  if (overallPriority === 3) rackStatusKey = 'danger';
-  else if (overallPriority === 2) rackStatusKey = 'warning';
+  let rackStatusKey: "normal" | "warning" | "danger" = "normal";
+  if (overallPriority === 3) rackStatusKey = "danger";
+  else if (overallPriority === 2) rackStatusKey = "warning";
 
   // 🌟 이제 statusColors는 랙의 '진짜' 전체 상태를 반영
   const statusColors = STATUS_COLORS[rackStatusKey];
@@ -138,11 +153,11 @@ const DashboardAssetView: React.FC<AssetRendererProps> = ({
   const tempColor = STATUS_COLORS[tempStatus].text;
   const tempIcon = getTempIcon(tempStatus);
 
-  const handleClick = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
-    e.cancelBubble = true;
-    selectAsset(asset.id, e.evt.shiftKey);
-    openRackModal(asset.id);
-  };
+  // const handleClick = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
+  //   e.cancelBubble = true;
+  //   selectAsset(asset.id, e.evt.shiftKey);
+  //   openRackModal(asset.id);
+  // };
 
   // --- 4. 렌더링 레이아웃 상수 ---
   const innerPadding = 15;
@@ -177,7 +192,7 @@ const DashboardAssetView: React.FC<AssetRendererProps> = ({
         width={pixelWidth}
         height={pixelHeight}
         fill={statusColors.fill}
-        stroke={isSelected ? '#3498db' : statusColors.stroke}
+        stroke={isSelected ? "#3498db" : statusColors.stroke}
         strokeWidth={isSelected ? 3 : 2}
         cornerRadius={8}
       />
@@ -208,7 +223,7 @@ const DashboardAssetView: React.FC<AssetRendererProps> = ({
         <Group>
           {/* 🌟 뷰 모드에 따라 렌더링 분기 */}
 
-          {metricView === 'cpuDetail' ? (
+          {metricView === "cpuDetail" ? (
             <>
               {/* 🌟 "CPU 상세" 뷰: 게이지 바 표시 */}
               <Text
@@ -250,7 +265,7 @@ const DashboardAssetView: React.FC<AssetRendererProps> = ({
               {/* 🌟 "기본/네트워크/U-Usage" 뷰: 텍스트 기반 뷰 */}
               {pixelHeight > 130 && (
                 <Group y={metricGroupY}>
-                  {metricView === 'default' && (
+                  {metricView === "default" && (
                     <>
                       {/* 🌟 "기본" 뷰: 'Worst Offender' 로직 */}
                       {(() => {
@@ -262,7 +277,7 @@ const DashboardAssetView: React.FC<AssetRendererProps> = ({
                           value: string,
                           unit: string,
                           color: string,
-                          style: string,
+                          style: string
                         ) => {
                           metrics.push(
                             <MetricText
@@ -275,42 +290,54 @@ const DashboardAssetView: React.FC<AssetRendererProps> = ({
                               width={pixelWidth}
                               valueColor={color}
                               fontStyle={style}
-                            />,
+                            />
                           );
                           line++;
                         };
 
-                        if (rackStatusKey === 'normal') {
+                        if (rackStatusKey === "normal") {
                           // 1. 모두 정상: CPU, 메모리 표시
-                          addMetric('CPU', cpuUsage.toString(), '%', cpuColor, 'normal');
                           addMetric(
-                            '메모리',
+                            "CPU",
+                            cpuUsage.toString(),
+                            "%",
+                            cpuColor,
+                            "normal"
+                          );
+                          addMetric(
+                            "메모리",
                             memoryUsage.toString(),
-                            '%',
+                            "%",
                             memColor,
-                            'normal',
+                            "normal"
                           );
                         } else {
                           // 2. 문제 발생: 비정상 지표만 표시
-                          if (cpuStatus !== 'normal') {
-                            addMetric('CPU', cpuUsage.toString(), '%', cpuColor, 'bold');
-                          }
-                          if (memStatus !== 'normal') {
+                          if (cpuStatus !== "normal") {
                             addMetric(
-                              '메모리',
-                              memoryUsage.toString(),
-                              '%',
-                              memColor,
-                              'bold',
+                              "CPU",
+                              cpuUsage.toString(),
+                              "%",
+                              cpuColor,
+                              "bold"
                             );
                           }
-                          if (tempStatus !== 'normal') {
+                          if (memStatus !== "normal") {
                             addMetric(
-                              '온도',
+                              "메모리",
+                              memoryUsage.toString(),
+                              "%",
+                              memColor,
+                              "bold"
+                            );
+                          }
+                          if (tempStatus !== "normal") {
+                            addMetric(
+                              "온도",
                               `${temperature}°C ${tempIcon}`,
-                              '',
+                              "",
                               tempColor,
-                              'bold',
+                              "bold"
                             );
                           }
                         }
@@ -319,7 +346,7 @@ const DashboardAssetView: React.FC<AssetRendererProps> = ({
                     </>
                   )}
 
-                  {metricView === 'network' && (
+                  {metricView === "network" && (
                     <>
                       {/* 🌟 "네트워크" 뷰 로직 복원 */}
                       <MetricText
@@ -341,7 +368,7 @@ const DashboardAssetView: React.FC<AssetRendererProps> = ({
                     </>
                   )}
 
-                  {metricView === 'usage' && (
+                  {metricView === "usage" && (
                     <>
                       {/* 🌟 "U-Usage" 뷰 로직 복원 */}
                       <MetricText

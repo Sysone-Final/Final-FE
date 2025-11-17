@@ -98,7 +98,6 @@ export const useGetResourceList = (
       return getResourceList(page, size, filters);
     },
     placeholderData: (previousData) => previousData,
-    staleTime: 1000 * 60 * 5,
   });
 };
 
@@ -110,7 +109,6 @@ export const useGetServerRooms = () => {
       
       return getServerRooms();
     },
-    staleTime: 1000 * 60 * 5,
   });
 };
 
@@ -133,7 +131,6 @@ export const useGetRacksByServerRoom = (serverRoomId: number | null) => {
       return getRacksByServerRoom(serverRoomId);
     },
     enabled: !!serverRoomId,
-    staleTime: 1000 * 60 * 5,
   });
 };
 

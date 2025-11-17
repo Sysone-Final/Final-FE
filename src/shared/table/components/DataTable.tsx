@@ -32,7 +32,7 @@ export default function DataTable<TData>({
   const columnCount = columns.length;
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-slate-300/40">
+    <div className="overflow-x-auto bg-gray-700/50 rounded-lg shadow-md border border-slate-300/40">
       <table className="min-w-full">
         {/* 테이블 헤더 */}
         <thead className="bg-gray-600">
@@ -41,7 +41,7 @@ export default function DataTable<TData>({
               {headerGroup.headers.map((header) => (
                 <th
                   key={header.id}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider border-b border-slate-300/40"
                 >
                   {header.isPlaceholder
                     ? null
@@ -56,7 +56,7 @@ export default function DataTable<TData>({
         </thead>
 
         {/* 테이블 바디 */}
-        <tbody className="backdrop-blur-2xl bg-gray-600/50 divide-y divide-gray-700">
+        <tbody className="divide-y divide-slate-300/40">
           {isLoading ? (
             // 로딩 상태: 스켈레톤 UI
             <TableSkeleton rows={skeletonRows} columns={columnCount} />
@@ -77,7 +77,7 @@ export default function DataTable<TData>({
                 {row.getVisibleCells().map((cell: Cell<TData, unknown>) => (
                   <td
                     key={cell.id}
-                    className="px-6 py-4 whitespace-nowrap text-sm text-gray-300"
+                    className="px-6 py-4 whitespace-nowrap text-sm text-gray-50"
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
