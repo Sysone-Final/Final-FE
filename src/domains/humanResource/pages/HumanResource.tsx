@@ -14,6 +14,7 @@ import { Plus, Trash2 } from 'lucide-react';
 
 import { DataTable, DataTablePagination } from '@/shared/table';
 import { memberColumns } from '../components/memberTable.config';
+import AddMemberModal from '../components/AddMemberModal';
 import {
   useGetMemberList,
   useDeleteMember,
@@ -29,6 +30,7 @@ export default function HumanResource() {
   });
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   // --- 데이터 페칭 ---
   const { data: memberData = [], isLoading, isError } = useGetMemberList();
@@ -37,8 +39,7 @@ export default function HumanResource() {
 
   // --- 이벤트 핸들러 ---
   const handleAddMember = () => {
-    // TODO: 회원 추가 모달 열기
-    alert('회원 추가 기능은 추후 구현 예정입니다.');
+    setIsAddModalOpen(true);
   };
 
   const handleEditMember = (member: Member) => {
@@ -153,6 +154,12 @@ export default function HumanResource() {
           disabled={isLoading || isMutating}
         />
       </main>
+
+      {/* 회원 추가 모달 */}
+      <AddMemberModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+      />
     </div>
   );
 }

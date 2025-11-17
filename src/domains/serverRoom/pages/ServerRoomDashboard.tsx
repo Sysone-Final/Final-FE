@@ -7,6 +7,7 @@ import '../css/serverRoomDashboard.css';
 
 const ServerRoomDashboard: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [selectedDataCenterId, setSelectedDataCenterId] = useState<number | null>(null);
   
   // 로그인한 사용자의 회사 ID 가져오기
   const { user } = useAuthStore();
@@ -14,20 +15,34 @@ const ServerRoomDashboard: React.FC = () => {
   
   const { data: dataCenters = [], isLoading, isError, error } = useServerRooms(companyId!);
 
+  // 첫 번째 데이터센터를 기본으로 선택
+  React.useEffect(() => {
+    if (dataCenters.length > 0 && selectedDataCenterId === null) {
+      setSelectedDataCenterId(dataCenters[0].dataCenterId);
+    }
+  }, [dataCenters, selectedDataCenterId]);
+
+  // 선택된 데이터센터 필터링
+  const filteredDataCenters = useMemo(() => {
+    if (selectedDataCenterId === null) return dataCenters;
+    return dataCenters.filter(dc => dc.dataCenterId === selectedDataCenterId);
+  }, [dataCenters, selectedDataCenterId]);
+
   const stats = useMemo(() => {
-    const totalRooms = dataCenters.reduce((sum, dc) => sum + dc.serverRooms.length, 0);
-    const totalDataCenters = dataCenters.length;
-    const activeRooms = dataCenters.reduce(
+    const dataToCalculate = filteredDataCenters;
+    const totalRooms = dataToCalculate.reduce((sum, dc) => sum + dc.serverRooms.length, 0);
+    const totalDataCenters = dataToCalculate.length;
+    const activeRooms = dataToCalculate.reduce(
       (sum, dc) => sum + dc.serverRooms.filter(room => room.status === 'ACTIVE').length, 
       0
     );
-    const maintenanceRooms = dataCenters.reduce(
+    const maintenanceRooms = dataToCalculate.reduce(
       (sum, dc) => sum + dc.serverRooms.filter(room => room.status === 'MAINTENANCE').length, 
       0
     );
     
     return { totalRooms, totalDataCenters, activeRooms, maintenanceRooms };
-  }, [dataCenters]);
+  }, [filteredDataCenters]);
 
   // companyId 체크
   if (!companyId) {
@@ -81,20 +96,33 @@ const ServerRoomDashboard: React.FC = () => {
           + 새 서버실 추가
         </button>
       </header>
+
+      {/* Data Center Tabs */}
+      <div className="datacenter-tabs">
+        {dataCenters.map((dataCenter) => (
+          <button
+            key={dataCenter.dataCenterId}
+            className={`datacenter-tab ${selectedDataCenterId === dataCenter.dataCenterId ? 'active' : ''}`}
+            onClick={() => setSelectedDataCenterId(dataCenter.dataCenterId)}
+          >
+            <span >{dataCenter.dataCenterName} ({dataCenter.dataCenterCode})</span>
+          </button>
+        ))}
+      </div>
       
       {/* Main Content */}
       <main className="dashboard-main">
-        <ServerRoomList dataCenters={dataCenters} />
+        <ServerRoomList dataCenters={filteredDataCenters} />
 
         {/* Statistics Section */}
         <section className="statistics-section">
           <h2 className="statistics-title text-subtitle">전체 통계</h2>
           <div className="stats-grid">
             {/* Stat Item 1 */}
-            <div className="stat-item">
+            {/* <div className="stat-item">
               <span className="stat-value text-gray-50">{stats.totalDataCenters}</span>
               <span className="stat-label text-body-primary text-gray-400">총 데이터센터</span>
-            </div>
+            </div> */}
             
             {/* Stat Item 2 */}
             <div className="stat-item">

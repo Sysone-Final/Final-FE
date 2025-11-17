@@ -1,12 +1,26 @@
 @import "tailwindcss";
 
+/* Data Center Tabs */
+.datacenter-tabs {
+  @apply flex gap-2 px-8 overflow-x-auto;
+}
+
+.datacenter-tab {
+  @apply px-6 py-3
+        transition-all text-gray-500 duration-200 whitespace-nowrap hover:text-gray-200 flex items-center gap-2;
+}
+
+.datacenter-tab.active {
+  @apply text-gray-50 border-b border-gray-100;
+}
+
 
 .dashboard-main {
-  @apply flex-1 overflow-y-auto p-8;
+  @apply flex-1 overflow-y-auto px-8 py-2;
 }
 
 .statistics-section {
-  @apply mt-12;
+  @apply mt-8;
 }
 
 .statistics-title {
@@ -28,8 +42,12 @@
 }
 
 /* 상태별 색상은 컴포넌트에서 직접 적용 */
-.stat-value-success { @apply text-green-400; }
-.stat-value-warning { @apply text-yellow-400; }
+.stat-value-success {
+  @apply text-green-400;
+}
+.stat-value-warning {
+  @apply text-yellow-400;
+}
 
 .stat-label {
   @apply mt-2; /* 텍스트 스타일은 컴포넌트에서 text-body-primary + 색상 조정 */
