@@ -38,6 +38,7 @@ const LayoutAssetView: React.FC<AssetRendererProps> = ({
  isSelected,
  displayMode,
  displayOptions,
+ onContextMenu,
 }) => {
  const mode = useFloorPlanStore((state) => state.mode);
  const assets = useFloorPlanStore((state) => state.assets);
@@ -135,14 +136,9 @@ const handleClick = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
     //  2D 스토어의 자산 선택 
     selectAsset(asset.id, e.evt.shiftKey);
 
-
-
-  if (mode === 'view' && asset.assetType === 'rack') {
-      
-
-   openRackModal(asset.id); 
-
-
+    // view 모드에서 rack 클릭 시 rackServerId가 있을 때만 랙 모달 열기
+    if (mode === 'view' && asset.assetType === 'rack' && asset.data?.rackServerId) {
+      openRackModal(asset.data.rackServerId.toString());
     }
   };
 
@@ -186,6 +182,7 @@ const handleClick = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
    onTap={handleClick}
    draggable={mode === 'edit' && !asset.isLocked}
    onDragEnd={handleDragEnd}
+   onContextMenu={onContextMenu}
   >
    <Rect
     width={pixelWidth}

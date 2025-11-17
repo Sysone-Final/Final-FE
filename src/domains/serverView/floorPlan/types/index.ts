@@ -13,8 +13,9 @@ export type DashboardMetricView =
  | 'network'
  | 'usage'
  | 'heatmapTemp' // 온도 히트맵
- | 'heatmapPower'; // 전력 히트맵
-// 새로운 레이어 기반 분류에 맞춰 자산 타입을 재정의
+ | 'heatmapPower' // 전력 히트맵
+ | 'layout'
+ | 'cpuDetail';
 export type AssetType =
   // Floor Layer
   | 'wall'
@@ -90,9 +91,9 @@ export interface Asset {
 // --- FloorPlanState에서 모든 함수 정의를 제거합니다 ---
 export interface FloorPlanState {
   mode: Mode;
-  displayMode: DisplayMode;
+  // displayMode: DisplayMode;
   displayOptions: DisplayOptionsType;
-  dashboardMetricView: DashboardMetricView;
+ dashboardMetricView: DashboardMetricView;
   assets: Asset[];
   selectedAssetIds: string[];
   gridCols: number;

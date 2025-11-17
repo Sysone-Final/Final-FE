@@ -27,6 +27,19 @@ export interface MemberListResponse {
 }
 
 /**
+ * 회원 생성 요청 타입
+ */
+export interface CreateMemberRequest {
+  userName: string;
+  password: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: MemberRole;
+  companyId: number;
+}
+
+/**
  * 테이블 메타 타입
  */
 export interface MemberTableMeta extends TableMeta<Member> {

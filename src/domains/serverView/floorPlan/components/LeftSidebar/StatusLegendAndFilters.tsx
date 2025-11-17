@@ -1,27 +1,78 @@
 
 import React from 'react';
-import { useFloorPlanStore, setDashboardMetricView, toggleLayerVisibility, toggleSeverityVisibility } from '../../store/floorPlanStore';
+import { useFloorPlanStore,
+   setDashboardMetricView, 
+   toggleLayerVisibility, 
+   toggleSeverityVisibility ,
+   setDisplayOptions
+  } from '../../store/floorPlanStore';
 import type { DashboardMetricView, 
-    // AssetLayer, AssetStatus
+    DisplayOptionsType,
+    AssetLayer,
  } from '../../types';
 
-// 범례 항목
-// const LegendItem: React.FC<{ color: string; label: string }> = ({ color, label }) => (
-//  <div className="flex items-center gap-2">
-//   <span
-//    className="w-3 h-3 rounded-full border border-gray-500"
-//    style={{ backgroundColor: color }}
-//   />
-//   <span className="text-sm text-gray-200">{label}</span>
-//  </div>
-// );
+
+
+const OptionCheckbox = ({
+ label,
+ optionKey,
+}: {
+ label: string;
+ optionKey: keyof DisplayOptionsType;
+}) => {
+ const { displayOptions } = useFloorPlanStore(); 
+ const isChecked = displayOptions[optionKey];
+ 
+ const handleChange = () => {
+  setDisplayOptions({ [optionKey]: !isChecked });
+ };
+ 
+ return (
+  <label className="option-checkbox-label">
+   <input
+    type="checkbox"
+    checked={isChecked}
+    onChange={handleChange}
+    className="option-checkbox-input"
+   />
+   <span className="option-checkbox-text text-body-primary">{label}</span>
+  </label>
+ );
+};
+
+const LayerCheckbox = ({
+label,
+layerKey,
+}: {
+label: string;
+layerKey: AssetLayer;
+}) => {
+const { visibleLayers } = useFloorPlanStore();
+const isChecked = visibleLayers[layerKey];
+
+const handleChange = () => {
+ toggleLayerVisibility(layerKey);
+};
+ 
+ return (
+  <label className="option-checkbox-label">
+   <input
+    type="checkbox"
+    checked={isChecked}
+    onChange={handleChange}
+    className="option-checkbox-input"
+   />
+   <span className="option-checkbox-text text-body-primary">{label}</span>
+  </label>
+ );
+};
 
 // 라디오 버튼 항목 
 const MetricViewRadio: React.FC<{
  label: string;
  value: DashboardMetricView;
  isChecked: boolean;
- onChange: () => void; // 부모로부터 핸들러를 받음
+ onChange: () => void; 
 }> = ({ label, value, isChecked, onChange }) => (
  <label className="option-radio-label">
   <input
@@ -29,7 +80,7 @@ const MetricViewRadio: React.FC<{
    name="metric-view"
    value={value}
    checked={isChecked}
-   onChange={onChange} // 부모가 전달한 핸들러 사용
+   onChange={onChange} 
    className="option-radio-input"
   />
   <span className="option-radio-text text-body-primary">{label}</span>
@@ -55,7 +106,9 @@ const FilterCheckbox: React.FC<{
 
 const StatusLegendAndFilters: React.FC = () => {
  // 스토어에서 현재 상태 가져오기
- const { dashboardMetricView, visibleLayers, visibleSeverities } = useFloorPlanStore();
+ const { dashboardMetricView,
+  //  visibleLayers, 
+   visibleSeverities } = useFloorPlanStore();
 const handleMetricViewChange = (newView: DashboardMetricView) => {
   // 이미 선택된 뷰를 다시 클릭했는지 확인
   const isSameView = dashboardMetricView === newView;
@@ -74,15 +127,30 @@ return (
    {/* ... (상태 범례 섹션) ... */}
 
    <div className="option-section">
-    <h4 className="option-section-title text-heading">랙 표시 정보 (View Mode)</h4>
+    <h4 className="option-section-title text-heading">표시 모드 (View Mode)</h4>
     <div className="option-group flex flex-col gap-2">
      {/*  isChecked와 onChange 핸들러 전달 */}
      <MetricViewRadio
-      label="메모리 / 온도"
+      label="🖥️ 상면도 (Layout)"
+      value="layout"
+      isChecked={dashboardMetricView === 'layout'}
+      onChange={() => handleMetricViewChange('layout')}
+     />
+     <MetricViewRadio
+      label="📊 임계값 (기본)"
       value="default"
       isChecked={dashboardMetricView === 'default'}
       onChange={() => handleMetricViewChange('default')}
      />
+     
+     {/* 🌟 추가: CPU 상세 뷰 라디오 버튼 */}
+     <MetricViewRadio
+      label="📊 CPU 상세"
+      value="cpuDetail"
+      isChecked={dashboardMetricView === 'cpuDetail'}
+      onChange={() => handleMetricViewChange('cpuDetail')}
+     />
+
      <MetricViewRadio
       label="전력 / 네트워크"
       value="network"
@@ -114,45 +182,64 @@ return (
    </div>
 
    {/* --- 심각도 필터 --- */}
-   <div className="option-section">
-    <h4 className="option-section-title text-heading">심각도 필터 (Severity)</h4>
-    <div className="option-group">
-     <FilterCheckbox
-      label="위험 (Critical)"
-      isChecked={visibleSeverities.danger}
-      onChange={() => toggleSeverityVisibility('danger')}
-     />
-     <FilterCheckbox
-      label="주의 (Warning)"
-      isChecked={visibleSeverities.warning}
-      onChange={() => toggleSeverityVisibility('warning')}
-     />
-     <FilterCheckbox
-      label="정상 (Normal)"
-      isChecked={visibleSeverities.normal}
-      onChange={() => toggleSeverityVisibility('normal')}
-     />
-    </div>
-   </div>
+   {dashboardMetricView === 'layout' ? (
+     <>
 
-   {/* ---  자산 레이어 필터 --- */}
+
+     <div className="option-section">
+      <h4 className="option-section-title text-heading">상태 & 성능</h4>
+      <div className="option-group">
+       <OptionCheckbox label="상태 표시등" optionKey="showStatusIndicator" />
+       <OptionCheckbox label="온도" optionKey="showTemperature" />
+       <OptionCheckbox label="U-사용량" optionKey="showUUsage" />
+       <OptionCheckbox label="전력 상태" optionKey="showPowerStatus" />
+      </div>
+     </div>
+     
+
+     </>
+   ) : (
+     <>
+     {/* 'layout' 뷰가 아닐 때: 기존 '심각도 필터' 표시 */}
+     {/* (히트맵 뷰에서도 보이게 되지만, 필요시 dashboardMetricView.startsWith('heatmap') 조건 추가 가능) */}
+     <div className="option-section">
+      <h4 className="option-section-title text-heading">심각도 필터 (Severity)</h4>
+      <div className="option-group">
+       <FilterCheckbox
+        label="위험 (Critical)"
+        isChecked={visibleSeverities.danger}
+        onChange={() => toggleSeverityVisibility('danger')}
+       />
+       <FilterCheckbox
+        label="주의 (Warning)"
+        isChecked={visibleSeverities.warning}
+        onChange={() => toggleSeverityVisibility('warning')}
+       />
+       <FilterCheckbox
+        label="정상 (Normal)"
+        isChecked={visibleSeverities.normal}
+        onChange={() => toggleSeverityVisibility('normal')}
+       />
+      </div>
+     </div>
+     </>
+   )}
+
+   {/* 🌟 4. '자산 레이어 필터'는 항상 보이도록 조건부 블록 밖으로 이동 */}
    <div className="option-section">
     <h4 className="option-section-title text-heading">자산 레이어 (Asset Layer)</h4>
     <div className="option-group">
-     <FilterCheckbox
+     <LayerCheckbox
       label="하부 설비 (랙 등)"
-      isChecked={visibleLayers.floor}
-      onChange={() => toggleLayerVisibility('floor')}
+      layerKey="floor"
      />
-     <FilterCheckbox
+     <LayerCheckbox
       label="벽면 설비 (문 등)"
-      isChecked={visibleLayers.wall}
-      onChange={() => toggleLayerVisibility('wall')}
+      layerKey="wall"
      />
-     <FilterCheckbox
+     <LayerCheckbox
       label="상부 설비 (CCTV 등)"
-      isChecked={visibleLayers.overhead}
-      onChange={() => toggleLayerVisibility('overhead')}
+      layerKey="overhead"
      />
     </div>
    </div>

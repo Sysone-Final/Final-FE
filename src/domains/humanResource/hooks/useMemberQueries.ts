@@ -8,7 +8,7 @@ import {
   deleteMember,
   deleteMultipleMembers,
 } from '../api/memberApi';
-import type { Member } from '../types/memberTypes';
+import type { Member, CreateMemberRequest } from '../types/memberTypes';
 
 export const MEMBER_QUERY_KEY = 'members';
 
@@ -47,7 +47,7 @@ export const useGetMemberById = (id: number | null) => {
 export const useCreateMember = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: Omit<Member, 'id' | 'lastLoginAt'>) => createMember(data),
+    mutationFn: (data: CreateMemberRequest) => createMember(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [MEMBER_QUERY_KEY] });
       toast.success('새로운 회원이 등록되었습니다.');

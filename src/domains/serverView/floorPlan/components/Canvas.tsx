@@ -10,7 +10,10 @@ import {
 import AssetRenderer from './AssetRenderer';
 import CanvasGrid from './CanvasGrid';
 import HeatmapLayer from './HeatmapLayer';
-import type { AssetLayer } from '../types';
+import type { AssetLayer, DisplayMode } from '../types';
+import AssetActionToolbar from './AssetActionToolbar';
+import CanvasContextMenu from './CanvasContextMenu';
+import { deleteAsset } from '../store/floorPlanStore';
 
 interface CanvasProps {
  containerRef: React.RefObject<HTMLDivElement>;
@@ -27,7 +30,7 @@ const Canvas: React.FC<CanvasProps> = ({ containerRef }) => {
  const gridCols = useFloorPlanStore((state) => state.gridCols);
  const gridRows = useFloorPlanStore((state) => state.gridRows);
  const stage = useFloorPlanStore((state) => state.stage);
- const displayMode = useFloorPlanStore((state) => state.displayMode);
+//  const displayMode = useFloorPlanStore((state) => state.displayMode);
  const displayOptions = useFloorPlanStore((state) => state.displayOptions);
 
  const visibleLayers = useFloorPlanStore((state) => state.visibleLayers);
@@ -35,14 +38,42 @@ const Canvas: React.FC<CanvasProps> = ({ containerRef }) => {
  const dashboardMetricView = useFloorPlanStore(
   (state) => state.dashboardMetricView,
  );
- const isDashboardView = displayMode === 'status';
+const synthesizedDisplayMode: DisplayMode =
+  dashboardMetricView === 'layout' ? 'customColor' : 'status';
+
+ const isDashboardView = synthesizedDisplayMode === 'status';
  const isHeatmapView =
   isDashboardView && dashboardMetricView.startsWith('heatmap');
 
  const [stageSize, setStageSize] = useState({ width: 0, height: 0 });
  const { setNodeRef } = useDroppable({ id: 'canvas-drop-area' });
  const [isInitialZoomSet, setIsInitialZoomSet] = useState(false);
+const mode = useFloorPlanStore((state) => state.mode); // mode 가져오기
 
+  // 2. 컨텍스트 메뉴 상태 추가
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; assetId: string } | null>(null);
+
+  // 3. 우클릭 핸들러 (자산에서 호출됨)
+  const handleAssetContextMenu = (e: KonvaEventObject<PointerEvent>, assetId: string) => {
+    e.evt.preventDefault(); // 브라우저 메뉴 방지
+    if (mode !== 'edit') return; // 편집 모드일 때만
+
+    // 마우스의 현재 화면 좌표 (Stage 기준 아님)
+    const pointer = e.evt;
+    setContextMenu({
+      x: pointer.clientX,
+      y: pointer.clientY,
+      assetId,
+    });
+  };
+
+  // 4. 빈 공간 우클릭 시 메뉴 닫기
+  const handleStageContextMenu = (e: KonvaEventObject<PointerEvent>) => {
+    e.evt.preventDefault();
+    if (e.target === e.target.getStage()) {
+      setContextMenu(null);
+    }
+  };
  // Effect 1: Resize listener
  useEffect(() => {
   const checkSize = () => {
@@ -182,13 +213,14 @@ const Canvas: React.FC<CanvasProps> = ({ containerRef }) => {
       scaleY={stage.scale}
       x={stage.x}
       y={stage.y}
+      onContextMenu={handleStageContextMenu}
      >
       <Layer>
        <CanvasGrid
         cols={gridCols}
         rows={gridRows}
         gridSize={CANVAS_VIEW_CONFIG.CELL_SIZE}
-        displayMode={displayMode}
+        displayMode={synthesizedDisplayMode}
        />
        {/* 2. 자산 (히트맵 뷰일 때 30% 투명도) */}
        <Group opacity={isHeatmapView ? 0.3 : 1}>
@@ -200,9 +232,11 @@ const Canvas: React.FC<CanvasProps> = ({ containerRef }) => {
           headerPadding={CANVAS_VIEW_CONFIG.HEADER_PADDING}
           isSelected={selectedAssetIds.includes(asset.id)}
           displayMode={
-           isHeatmapView ? 'customColor' : displayMode
+           isHeatmapView ? 'customColor' : synthesizedDisplayMode
           }
           displayOptions={displayOptions}
+          currentScale={stage.scale}
+          onContextMenu={(e) => handleAssetContextMenu(e, asset.id)}
          />
         ))}
        </Group>
@@ -217,6 +251,16 @@ const Canvas: React.FC<CanvasProps> = ({ containerRef }) => {
      </Stage>
     )}
    </div>
+   <AssetActionToolbar />
+      
+      {contextMenu && (
+        <CanvasContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          onClose={() => setContextMenu(null)}
+          onDelete={() => deleteAsset(contextMenu.assetId)}
+        />
+      )}
   </main>
  );
 };

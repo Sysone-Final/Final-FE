@@ -4,45 +4,54 @@ import { useFloorPlanStore, useHasUnsavedChanges } from '../store/floorPlanStore
 import { useConfirmationModal } from './useConfirmationModal';
 
 /**
- * FloorPlan 편집 시 페이지 이탈을 방지하는 훅
- * - 라우터 네비게이션 차단 (useBlocker)
- * - 브라우저 새로고침/탭 닫기 차단 (beforeunload)
+ * FloorPlan 편집 시 페이지 이탈 방지
+ * 커스텀 모달(useConfirmationModal)을 사용하여 사용자에게 확인을 받습니다.
  */
 export const useFloorPlanNavigationGuard = () => {
   const location = useLocation();
   const mode = useFloorPlanStore((state) => state.mode);
   const hasUnsavedChanges = useHasUnsavedChanges();
   const clearTemporalHistory = useFloorPlanStore.temporal.getState().clear;
+  
+  // 커스텀 모달 훅 사용
   const { confirm } = useConfirmationModal();
 
-  // 편집 모드이고, 저장 안한게 있으면 true
+  // 편집 모드이고, 저장 안 한 변경사항이 있으면 차단 대상
   const shouldBlock = mode === 'edit' && hasUnsavedChanges;
 
-  // 1. 라우터 네비게이션 차단
+  // 1. React Router 네비게이션 차단 (뒤로가기, 링크 클릭 등)
   const blocker = useBlocker(
     ({ nextLocation }) =>
       shouldBlock && nextLocation.pathname !== location.pathname,
   );
 
   useEffect(() => {
+    // 블로커 상태가 'blocked'가 되면 모달을 띄웁니다.
     if (blocker.state === 'blocked') {
       confirm({
-        title: '페이지 이탈 확인',
-        message:
-          '저장하지 않은 변경 사항이 있습니다. 정말로 이 페이지를 벗어나시겠습니까?',
-        confirmText: '나가기',
+        title: '저장되지 않은 변경사항',
+        message: (
+          <p>
+            현재 편집 중인 내용이 저장되지 않았습니다.<br />
+            페이지를 벗어나면 변경 사항이 <strong>삭제</strong>됩니다.<br />
+            정말 나가시겠습니까?
+          </p>
+        ),
+        confirmText: '나가기', // 파괴적 동작
         confirmAction: () => {
+          // 확인 시: 히스토리 초기화 후 이동 진행
           clearTemporalHistory();
           blocker.proceed();
         },
         cancelAction: () => {
+          // 취소 시: 블로커 리셋 (페이지 유지)
           blocker.reset();
         },
       });
     }
   }, [blocker, confirm, clearTemporalHistory]);
 
-  // 2. 브라우저 이탈 방지 (새로고침, 탭 닫기)
+  // 2. 브라우저 네이티브 이탈 방지 (새로고침, 탭 닫기)
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       if (shouldBlock) {

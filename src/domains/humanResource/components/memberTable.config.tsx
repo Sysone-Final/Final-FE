@@ -39,23 +39,23 @@ export const memberColumns: ColumnDef<Member>[] = [
   },
   
   // ID
-  {
-    accessorKey: 'id',
-    header: ({ column }) => {
-      return (
-        <button
-          className="flex items-center hover:text-gray-300 text-gray-400"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          ID
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </button>
-      );
-    },
-    cell: ({ getValue }) => {
-      return <span className="font-medium">{getValue<number>()}</span>;
-    },
-  },
+  // {
+  //   accessorKey: 'id',
+  //   header: ({ column }) => {
+  //     return (
+  //       <button
+  //         className="flex items-center hover:text-gray-300 text-gray-400"
+  //         onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+  //       >
+  //         ID
+  //         <ArrowUpDown className="ml-2 h-4 w-4" />
+  //       </button>
+  //     );
+  //   },
+  //   cell: ({ getValue }) => {
+  //     return <span className="font-medium">{getValue<number>()}</span>;
+  //   },
+  // },
   
   // 사용자명
   {
@@ -94,7 +94,7 @@ export const memberColumns: ColumnDef<Member>[] = [
     accessorKey: 'email',
     header: 'email',
     cell: ({ getValue }) => {
-      return <span className="text-gray-400">{getValue<string>()}</span>;
+      return <span>{getValue<string>()}</span>;
     },
   },
   
@@ -146,7 +146,7 @@ export const memberColumns: ColumnDef<Member>[] = [
         return <span className="text-gray-500">-</span>;
       }
       return (
-        <span className="text-gray-400">
+        <span>
           {new Date(date).toLocaleString('ko-KR', {
             year: 'numeric',
             month: '2-digit',

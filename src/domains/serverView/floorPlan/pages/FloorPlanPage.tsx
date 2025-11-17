@@ -1,26 +1,22 @@
 import React, { useEffect } from 'react';
 import { DndContext } from '@dnd-kit/core';
-// 🚨 경로 수정: './Canvas' -> '../components/Canvas'
 import Canvas from '../components/Canvas'; 
-// 🚨 경로 수정: './FloatingSidebarPanel' -> '../components/FloatingSidebarPanel'
 import FloatingSidebarPanel from '../components/FloatingSidebarPanel'; 
 import { useFloorPlanDragDrop } from '../hooks/useFloorPlanDragDrop';
 import { useFloorPlanNavigationGuard } from '../hooks/useFloorPlanNavigationGuard';
 import { useFloorPlanStore, initialState } from '../store/floorPlanStore';
 import { useSidebarStore } from '../store/useSidebarStore';
-
+import RackModal from '@/domains/serverView/components/RackModal';
 import { useServerRoomEquipment } from '@/domains/serverView/view3d/hooks/useServerRoomEquipment';
 import { transform3DTo2DAssets } from '../utils/dataTransformer';
 
-// Sidebar components
-// 🚨 경로 수정: './LeftSidebar' -> '../components/LeftSidebar'
-import LeftSidebar from '../components/LeftSidebar'; 
-// 🚨 경로 수정: './RightSidebar' -> '../components/RightSidebar'
+
+// import LeftSidebar from '../components/LeftSidebar'; 
 import RightSidebar from '../components/RightSidebar'; 
-// 🚨 경로 수정: './LeftSidebar/StatusLegendAndFilters' -> '../components/LeftSidebar/StatusLegendAndFilters'
 import StatusLegendAndFilters from '../components/LeftSidebar/StatusLegendAndFilters'; 
-// 🚨 경로 수정: './TopNWidget' -> '../components/TopNWidget'
 import TopNWidget from '../components/TopNWidget'; 
+import AssetLibrary from '../components/LeftSidebar/AssetLibrary';
+import { FloorPlanConfirmationModal } from '../components/FloorPlanConfirmationModal';
 
 interface FloorPlanPageProps {
   containerRef: React.RefObject<HTMLDivElement>;
@@ -59,28 +55,23 @@ const FloorPlanPage: React.FC<FloorPlanPageProps> = ({ containerRef, serverRoomI
       return;
     }
     
-    //  'if (apiData)' 대신 'equipment3D'가 있는지 확인합니다.
-    // 'equipment3D'는 훅에서 '?? []'로 처리되므로 null/undefined 체크가 필요 없을 수 있지만,
-    // 'gridConfig'는 null일 수 있으므로 로딩이 끝난 시점(loading: false)을 기준으로 합니다.
+  
   if (!loading && !error) {
     
-    // 🚨 Goal 2: 3D 원본 그리드 설정 (예: 15x8)
     const sourceGridConfig = gridConfig ?? { columns: 15, rows: 8, cellSize: 2 };
 
     try {
-      // 🚨 Goal 2: 변환 함수에는 원본 3D 그리드 설정을 전달
       const assets2D = transform3DTo2DAssets(
         equipment3D,
         sourceGridConfig,
       );
       console.log('Transformed 2D Assets:', assets2D);
 
-      // 🚨 Goal 2: 2D 스토어의 그리드 크기는 +2 (패딩)하여 설정
       useFloorPlanStore.setState({
         assets: assets2D,
-        gridCols: sourceGridConfig.columns + 2, // 👈 +2
-        gridRows: sourceGridConfig.rows + 2,    // 👈 +2
-        isLoading: false, // (중요) 로딩 상태 false로 변경
+        gridCols: sourceGridConfig.columns + 2, 
+        gridRows: sourceGridConfig.rows + 2,    
+        isLoading: false, 
         error: null,
       });
       } catch (transformError) {
@@ -92,7 +83,6 @@ const FloorPlanPage: React.FC<FloorPlanPageProps> = ({ containerRef, serverRoomI
         });
       }
     }
-  //  useEffect 의존성 배열에 'apiData' 대신 'equipment3D'와 'gridConfig'를 추가합니다.
   }, [equipment3D, gridConfig, loading, error]);
 
 
@@ -101,7 +91,9 @@ const FloorPlanPage: React.FC<FloorPlanPageProps> = ({ containerRef, serverRoomI
   
   const { handleDragEnd } = useFloorPlanDragDrop(containerRef);
   const mode = useFloorPlanStore((state) => state.mode);
-  const displayMode = useFloorPlanStore((state) => state.displayMode);
+  // const displayMode = useFloorPlanStore((state) => state.displayMode);
+  const dashboardMetricView = useFloorPlanStore((state) => state.dashboardMetricView);
+  const isLayoutView = dashboardMetricView === 'layout';
   
   const {
     isLeftSidebarOpen,
@@ -110,7 +102,7 @@ const FloorPlanPage: React.FC<FloorPlanPageProps> = ({ containerRef, serverRoomI
     toggleRightSidebar,
   } = useSidebarStore();
 
-  const isDashboardView = mode === 'view' && displayMode === 'status';
+  // const isDashboardView = mode === 'view' && displayMode === 'status';
 
   // 훅에서 가져온 로딩/에러 상태를 렌더링에 반영
   const isLoadingFromStore = useFloorPlanStore((state) => state.isLoading);
@@ -137,28 +129,37 @@ const FloorPlanPage: React.FC<FloorPlanPageProps> = ({ containerRef, serverRoomI
     <DndContext onDragEnd={handleDragEnd}>
       <div className="flex-1 relative overflow-hidden">
         <Canvas containerRef={containerRef} />
-        
-        {isDashboardView && <TopNWidget />}
+        {mode === 'view' && !isLayoutView && <TopNWidget />}
 
         <FloatingSidebarPanel 
           isOpen={isLeftSidebarOpen} 
           onToggle={toggleLeftSidebar} 
           position="left" 
-          title={isDashboardView ? '상태 범례 및 필터' : mode === 'edit' ? '자산 라이브러리' : '표시 옵션'}
+          // 🌟 '보기' 모드의 타이틀을 하나로 통일
+          title={mode === 'edit' ? '자산 라이브러리' : '보기 옵션 및 필터'}
         >
-          {isDashboardView ? <StatusLegendAndFilters /> : <LeftSidebar />}
+          {
+            // 🌟 '보기' 모드에서는 항상 StatusLegendAndFilters
+            // '편집' 모드에서는 항상 AssetLibrary
+            mode === 'view' ? <StatusLegendAndFilters /> : <AssetLibrary />
+          }
         </FloatingSidebarPanel>
         
-        {!isDashboardView && (
+        {
+          // 🌟 오른쪽 사이드바는 '편집' 모드일 때만 렌더링
+          mode === 'edit' && (
           <FloatingSidebarPanel 
             isOpen={isRightSidebarOpen} 
             onToggle={toggleRightSidebar} 
             position="right" 
-            title={mode === 'edit' ? '속성 편집' : '속성 정보'}
+            title={'속성 편집'}
           >
             <RightSidebar />
           </FloatingSidebarPanel>
+          
         )}
+        <RackModal />
+        <FloorPlanConfirmationModal />
       </div>
     </DndContext>
   );

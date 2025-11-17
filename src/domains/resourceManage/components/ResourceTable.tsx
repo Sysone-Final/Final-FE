@@ -33,7 +33,7 @@ export default function ResourceTable({ table, isLoading }: ResourceTableProps) 
 
     <div className="overflow-x-auto bg-gray-700/50 rounded-lg shadow-md border border-slate-300/40"> 
       <table className="min-w-full"> 
-        <thead className=""> 
+        <thead className="bg-gray-600"> 
           {table.getHeaderGroups().map((headerGroup: HeaderGroup<Resource>) => (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
