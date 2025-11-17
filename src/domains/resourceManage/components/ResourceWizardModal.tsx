@@ -155,16 +155,7 @@ const Step2Location = ({
  // const watchedServerRoomId = watch("serverRoomId"); // 모달에서 이미 watch함
   const watchedRackId = watch("rackId");
 
-  // const {
-  //   data: serverRooms,
-  //   isLoading: isLoadingServerRooms,
-  //   isError: isErrorServerRooms,
-  // } = useGetServerRooms();
-  // const {
-  //   data: racks,
-  //   isLoading: isLoadingRacks,
-  //   isError: isErrorRacks,
-  // } = useGetRacksByServerRoom(watchedServerRoomId || null);
+const currentServerRoomId = watch("serverRoomId"); 
 
   const selectedRack = useMemo(() => {
     if (!watchedRackId || !racks || !Array.isArray(racks)) return null;
@@ -184,20 +175,33 @@ const Step2Location = ({
           </label>
           <select
             {...register("serverRoomId", {
-       validate: (value) =>
-        isUnallocated || !!value || "서버실을 선택해야 합니다.",
-       valueAsNumber: true,
+      //  validate: (value) =>
+      //   isUnallocated || !!value || "서버실을 선택해야 합니다.",
+      //  valueAsNumber: true,
+      required: false, 
+              valueAsNumber: true,
       })}
-      className={`modal-input ${errors.serverRoomId ? "border-red-500" : ""}`}
-      disabled={isLoadingServerRooms || isErrorServerRooms || isUnallocated}
-     >
-            <option value="">
-              {isLoadingServerRooms
-                ? "불러오는 중..."
-                : isErrorServerRooms
-                  ? "오류 발생"
-                  : "-- 서버실 선택 --"}
-            </option>
+    //   className={`modal-input ${errors.serverRoomId ? "border-red-500" : ""}`}
+    //   disabled={isLoadingServerRooms || isErrorServerRooms || isUnallocated}
+    //  >
+    //         <option value="">
+    //           {isLoadingServerRooms
+    //             ? "불러오는 중..."
+    //             : isErrorServerRooms
+    //               ? "오류 발생"
+    //               : "-- 서버실 선택 --"}
+    //         </option>
+    
+            // {Array.isArray(serverRooms) &&
+            //   serverRooms.map((dc) => (
+            //     <option key={dc.id} value={dc.id}>
+            //       {dc.name}
+            //     </option>
+            //   ))}
+            className={`modal-input ${errors.serverRoomId ? "border-red-500" : ""}`}
+            disabled={isLoadingServerRooms || isErrorServerRooms}
+          >
+            <option value="">-- 위치 미지정 (창고/대기) --</option>
             {Array.isArray(serverRooms) &&
               serverRooms.map((dc) => (
                 <option key={dc.id} value={dc.id}>
@@ -205,6 +209,7 @@ const Step2Location = ({
                 </option>
               ))}
           </select>
+         
           {errors.serverRoomId && (
             <p className={errorTextStyle}>{errors.serverRoomId.message}</p>
           )}
@@ -215,27 +220,28 @@ const Step2Location = ({
      </label>
      <select
       {...register("rackId", {
-       validate: (value) =>
-        isUnallocated || !!value || "랙을 선택해야 합니다.",
        valueAsNumber: true,
-      })}
-      className={`modal-input ${errors.rackId ? "border-red-500" : ""}`}
-      disabled={!watchedServerRoomId || isLoadingRacks || isErrorRacks || isUnallocated}
-     >
+              validate: (value) => {
+                if (currentServerRoomId && !value) {
+                    return "서버실을 선택했다면 랙도 선택해야 합니다.";
+                }
+                return true;
+              }
+            })}
+            className={`modal-input ${errors.rackId ? "border-red-500" : ""}`}
+            disabled={!watchedServerRoomId || isLoadingRacks || isErrorRacks}
+          >
             <option value="">
               {isLoadingRacks
                 ? "불러오는 중..."
                 : !watchedServerRoomId
                   ? "-- 서버실 먼저 선택 --"
-                  : isErrorRacks
-                    ? "오류 발생"
-                    : "-- 랙 선택 --"}
+                  : "-- 랙 선택 --"}
             </option>
             {Array.isArray(racks) &&
               racks.map((rack) => (
-               <option key={rack.id} value={rack.id}>
-                  {rack.rackName} ({rack.availableUnits}U / {rack.totalUnits}
-                  U)
+                <option key={rack.id} value={rack.id}>
+                  {rack.rackName} ({rack.availableUnits}U / {rack.totalUnits}U)
                 </option>
               ))}
           </select>
@@ -246,28 +252,27 @@ const Step2Location = ({
 
         <div>
           <label className={labelStyle}>
-            시작 유닛 {isUnallocated ? "" : <span className="text-red-500">*</span>}
-     </label>
-     <input
-      type="number"
-      {...register("startUnit", {
-       required: isUnallocated ? false : "시작 유닛을 입력하세요.",
-       valueAsNumber: true,
-       min: isUnallocated
-        ? undefined
-        : { value: 1, message: "시작 유닛은 1 이상이어야 합니다." },
-       max: isUnallocated
-        ? undefined
-        : {
-          value: maxUnits,
-          message: `이 랙의 최대 유닛(${maxUnits}U)을 초과할 수 없습니다.`,
-         },
-      })}
-      min="1"
-      max={maxUnits}
-      className={`modal-input ${errors.startUnit ? "border-red-500" : ""}`}
-      disabled={!watchedRackId || isUnallocated}
-     />
+            시작 유닛 {watchedRackId && <span className="text-red-500">*</span>}
+          </label>
+          <input
+            type="number"
+            {...register("startUnit", {
+              valueAsNumber: true,
+              validate: (value) => {
+                 if (watchedRackId && !value) return "시작 유닛을 입력하세요.";
+                 return true;
+              },
+              min: { value: 1, message: "시작 유닛은 1 이상이어야 합니다." },
+              max: {
+                value: maxUnits,
+                message: `이 랙의 최대 유닛(${maxUnits}U)을 초과할 수 없습니다.`,
+              },
+            })}
+            min="1"
+            max={maxUnits}
+            className={`modal-input ${errors.startUnit ? "border-red-500" : ""}`}
+            disabled={!watchedRackId}
+          />
           <p className={helperTextStyle}>
             랙의 몇 번째 U부터? (최대: {maxUnits}U)
           </p>
@@ -275,6 +280,7 @@ const Step2Location = ({
             <p className={errorTextStyle}>{errors.startUnit.message}</p>
           )}
         </div>
+
         <div>
           <label className={labelStyle}>
             유닛 크기 <span className="text-red-500">*</span>
@@ -286,10 +292,8 @@ const Step2Location = ({
               valueAsNumber: true,
               min: { value: 1, message: "유닛 크기는 1 이상이어야 합니다." },
               validate: (value) => {
-        if (isUnallocated) return true; 
-
-        const startUnit = getValues("startUnit");
-                if (typeof startUnit === 'number' && typeof value === 'number') {
+                const startUnit = getValues("startUnit");
+                if (startUnit && typeof startUnit === 'number' && typeof value === 'number') {
                   return (
                     startUnit + value - 1 <= maxUnits ||
                     `설치 위치(U)가 랙의 최대 크기(${maxUnits}U)를 초과합니다.`

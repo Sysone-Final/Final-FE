@@ -12,7 +12,7 @@ import type {
   AssetStatus,
 } from '../types';
 import { updateEquipment, deleteEquipment } from '@/domains/serverView/view3d/api/serverRoomEquipmentApi';
-import { getDeviceTypeId } from '@/domains/serverView/view3d/constants/deviceTypes';
+// import { getDeviceTypeId } from '@/domains/serverView/view3d/constants/deviceTypes';
 import type { Equipment3D } from '@/domains/serverView/view3d/types';
 import toast from 'react-hot-toast';
 
@@ -208,9 +208,16 @@ export const duplicateAsset = async (id: string) => {
 
 
 export const toggleMode = () =>
-  useFloorPlanStore.setState((state) => ({
-    mode: state.mode === 'view' ? 'edit' : 'view',
-  }));
+  useFloorPlanStore.setState((state) => {
+    const nextMode = state.mode === 'view' ? 'edit' : 'view';
+    
+    return {
+      mode: nextMode,
+      dashboardMetricView: nextMode === 'edit' ? 'layout' : state.dashboardMetricView,
+      selectedAssetIds: [],
+      isRackModalOpen: false,
+    };
+  });
 
 export const setDashboardMetricView = (view: DashboardMetricView) =>
   useFloorPlanStore.setState({ dashboardMetricView: view });
