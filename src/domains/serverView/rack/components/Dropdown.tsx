@@ -1,5 +1,4 @@
 import { useEffect, useRef } from "react";
-import { createPortal } from "react-dom";
 import type { DeviceCard } from "../types";
 
 interface DropdownProps {
@@ -43,13 +42,15 @@ function Dropdown({ open, position, items, onSelect, onClose }: DropdownProps) {
 
   if (!open) return null;
 
-  return createPortal(
+  // createPortal이 없어야 합니다!
+  return (
     <div
       ref={dropdownRef}
-      className="fixed z-[9999] min-w-[160px] bg-[#2a2e3a] border border-slate-300/40 rounded-lg shadow-lg overflow-hidden"
+      className="absolute z-[9999] w-[160px] bg-[#2a2e3a] border border-slate-300/40 rounded-lg shadow-lg overflow-hidden"
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
+        transform: "translateX(calc(-100% - 12px))",
       }}
     >
       <div className="py-1 max-h-[300px] overflow-y-auto [scrollbar-width:thin]">
@@ -57,18 +58,16 @@ function Dropdown({ open, position, items, onSelect, onClose }: DropdownProps) {
           <button
             key={`${item.type}-${item.height}-${index}`}
             onClick={() => {
-              console.log("드롭다운 아이템 선택:", item.label);
               onSelect(item);
               onClose();
             }}
-            className="w-full px-4 py-2 text-left text-sm text-white hover:bg-slate-600/50 transition-colors duration-150 flex items-center justify-between"
+            className="w-full px-4 py-2 text-left text-sm text-white hover:bg-slate-600/50 transition-colors duration-150"
           >
             <span>{item.label}</span>
           </button>
         ))}
       </div>
-    </div>,
-    document.body
+    </div>
   );
 }
 
