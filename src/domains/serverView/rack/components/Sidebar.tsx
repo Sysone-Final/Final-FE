@@ -1,7 +1,9 @@
 import { useState } from "react";
 import Tools from "./Tools";
 import Dropdown from "./Dropdown";
-import type { DeviceCard } from "../types";
+import type { DeviceCard, UnassignedEquipment } from "../types";
+import { useUnassignedEquipments } from "../hooks/useGetUnassignedEquipments";
+import { deviceImageMap } from "../utils/deviceImageMap";
 
 interface SidebarProps {
   onCardClick: (card: DeviceCard) => void;
@@ -12,6 +14,17 @@ function Sidebar({ onCardClick, isOpen }: SidebarProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({ x: 0, y: 0 });
   const [selectedCard, setSelectedCard] = useState<DeviceCard | null>(null);
+
+  const { data: unassignedEquipments, isLoading } = useUnassignedEquipments({
+    enabled: dropdownOpen,
+  });
+
+  console.log("Sidebar render:", {
+    dropdownOpen,
+    selectedCard,
+    unassignedEquipments,
+    isLoading,
+  });
 
   const handleContextMenu = (e: React.MouseEvent, card: DeviceCard) => {
     e.preventDefault();
@@ -42,6 +55,46 @@ function Sidebar({ onCardClick, isOpen }: SidebarProps) {
     setDropdownOpen(false);
   };
 
+  const getFilteredEquipments = (): DeviceCard[] => {
+    console.log("getFilteredEquipments 호출됨"); // 1. 함수 호출 확인
+
+    console.log("체크:", {
+      selectedCard,
+      unassignedEquipments,
+      isLoading,
+    }); // 2. 값들 확인
+    if (!selectedCard || !unassignedEquipments) {
+      return [];
+    }
+
+    const filtered = unassignedEquipments.filter(
+      (equipment: UnassignedEquipment) => {
+        console.log("equipment.equipmentType:", equipment.equipmentType);
+        return equipment.equipmentType === selectedCard.type;
+      }
+    );
+
+    console.log("filtered:", filtered);
+
+    return unassignedEquipments
+      .filter(
+        (equipment: UnassignedEquipment) =>
+          equipment.equipmentType?.toUpperCase() ===
+          selectedCard.type?.toUpperCase()
+      )
+      .map((equipment: UnassignedEquipment) => ({
+        key: equipment.id.toString(),
+        label: equipment.equipmentName,
+        size: `${equipment.unitSize}U`,
+        img:
+          deviceImageMap[equipment.equipmentType]?.front ||
+          deviceImageMap.SERVER.front,
+        height: equipment.unitSize,
+        type: equipment.equipmentType,
+        equipmentId: equipment.id,
+      }));
+  };
+
   return (
     <div
       className={`
@@ -60,9 +113,10 @@ function Sidebar({ onCardClick, isOpen }: SidebarProps) {
       <Dropdown
         open={dropdownOpen}
         position={dropdownPosition}
-        items={selectedCard ? [selectedCard] : []}
+        items={getFilteredEquipments()}
         onSelect={handleDropdownSelect}
         onClose={handleDropdownClose}
+        isLoading={isLoading}
       />
     </div>
   );

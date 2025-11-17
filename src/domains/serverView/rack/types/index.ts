@@ -7,7 +7,12 @@ export type EquipmentType =
   | "LOAD_BALANCER"
   | "KVM";
 
-export type EquipmentStatus = "NORMAL" | "WARNING" | "ERROR" | "MAINTENANCE";
+export type EquipmentStatus =
+  | "NORMAL"
+  | "WARNING"
+  | "ERROR"
+  | "MAINTENANCE"
+  | "POWERED_OFF";
 
 export type EquipmentPosition = "FRONT" | "BACK";
 
@@ -15,8 +20,8 @@ export interface Equipments {
   id: number;
   equipmentName: string;
   equipmentCode: string | null;
-  equipmentType: string;
-  status: string;
+  equipmentType: EquipmentType;
+  status: EquipmentStatus;
   startUnit: number;
   unitSize: number;
   modelName: string | null;
@@ -45,9 +50,15 @@ export interface DeviceCard {
   img: string;
   height: number;
   type: EquipmentType;
+  id?: number;
 }
 
 export interface FloatingDevice {
   card: DeviceCard;
   mouseY: number;
+}
+
+export interface UnassignedEquipment extends Equipments {
+  rackId: number | null;
+  rackName: string | null;
 }
