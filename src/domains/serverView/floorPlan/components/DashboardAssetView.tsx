@@ -99,7 +99,11 @@ const DashboardAssetView: React.FC<AssetRendererProps> = ({
  const handleClick = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
   e.cancelBubble = true;
   selectAsset(asset.id, e.evt.shiftKey);
-  openRackModal(asset.id);
+  
+  // rackServerId가 있을 때만 랙 모달 열기
+  if (asset.data?.rackServerId) {
+    openRackModal(asset.data.rackServerId.toString());
+  }
  };
 
  const innerPadding = 15;

@@ -93,7 +93,7 @@ export function transform3DTo2DAssets(
       layer: layer,
       rotation: rotationInDegrees,
       data: {
-        rackServerId: eq3D.id,
+        rackServerId: eq3D.rackId || undefined, // rackId를 저장 (server 타입인 경우)
       },
     });
   }
