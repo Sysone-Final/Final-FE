@@ -9,14 +9,20 @@ import "../css/serverRoomCard.css";
 interface Props {
   room: ServerRoom;
   dataCenterAddress: string;
+  onDeleteClick: (serverRoom: ServerRoom) => void;
 }
 
-function ServerRoomCard({ room, dataCenterAddress }: Props) {
+function ServerRoomCard({ room, dataCenterAddress, onDeleteClick }: Props) {
   const navigate = useNavigate();
 
   const handleViewLayout = (e: React.MouseEvent) => {
     e.preventDefault();
     navigate(`/server-room/${room.id}/view`);
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    onDeleteClick(room);
   };
 
   return (
@@ -27,7 +33,7 @@ function ServerRoomCard({ room, dataCenterAddress }: Props) {
           <button className="icon-button">
             <FaPencilAlt />
           </button>
-          <button className="icon-button">
+          <button className="icon-button" onClick={handleDeleteClick}>
             <FaTrash />
           </button>
         </div>
@@ -58,7 +64,7 @@ function ServerRoomCard({ room, dataCenterAddress }: Props) {
           className="manage-layout-link text-button"
           onClick={handleViewLayout}
         >
-          레이아웃 관리 →
+          서버실 관리 →
         </a>
       </div>
     </div>

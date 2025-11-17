@@ -1,19 +1,48 @@
 import React, { useState, useMemo } from 'react';
 import ServerRoomList from '../components/ServerRoomList';
 import ServerRoomCreateModal from '../components/ServerRoomCreateModal';
-import { useServerRooms } from '../hooks/useServerRoomQueries';
+import { useServerRooms, useDeleteServerRoom } from '../hooks/useServerRoomQueries';
 import { useAuthStore } from '@domains/login/store/useAuthStore';
+import { ConfirmationModal } from '@/shared/ConfirmationModal';
+import type { ServerRoom } from '../types';
 import '../css/serverRoomDashboard.css'; 
 
 const ServerRoomDashboard: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedDataCenterId, setSelectedDataCenterId] = useState<number | null>(null);
+  const [deleteModalState, setDeleteModalState] = useState<{
+    isOpen: boolean;
+    serverRoom?: ServerRoom;
+  }>({ isOpen: false });
   
   // 로그인한 사용자의 회사 ID 가져오기
   const { user } = useAuthStore();
   const companyId = user?.companyId;
   
   const { data: dataCenters = [], isLoading, isError, error } = useServerRooms(companyId!);
+  const deleteMutation = useDeleteServerRoom();
+
+  // 삭제 모달 열기
+  const handleOpenDeleteModal = (serverRoom: ServerRoom) => {
+    setDeleteModalState({ isOpen: true, serverRoom });
+  };
+
+  // 삭제 모달 닫기
+  const handleCloseDeleteModal = () => {
+    setDeleteModalState({ isOpen: false });
+  };
+
+  // 삭제 확인
+  const handleConfirmDelete = async () => {
+    if (deleteModalState.serverRoom) {
+      try {
+        await deleteMutation.mutateAsync(deleteModalState.serverRoom.id);
+        handleCloseDeleteModal();
+      } catch (error) {
+        console.error("서버실 삭제 실패:", error);
+      }
+    }
+  };
 
   // 첫 번째 데이터센터를 기본으로 선택
   React.useEffect(() => {
@@ -89,12 +118,12 @@ const ServerRoomDashboard: React.FC = () => {
           <h1 className="tab-title text-main-title">서버실 관리</h1>
           <p className="tab-subtitle text-body-primary text-gray-400">데이터 센터 인프라를 모니터링하고 관리하세요</p>
         </div>
-        <button 
-          className="btn-create px-4 py-3"
-          onClick={() => setIsCreateModalOpen(true)}
-        >
-          + 새 서버실 추가
-        </button>
+          <button 
+            className="btn-create px-4 py-3"
+            onClick={() => setIsCreateModalOpen(true)}
+          >
+            + 새 서버실 추가
+          </button>
       </header>
 
       {/* Data Center Tabs */}
@@ -112,7 +141,10 @@ const ServerRoomDashboard: React.FC = () => {
       
       {/* Main Content */}
       <main className="dashboard-main">
-        <ServerRoomList dataCenters={filteredDataCenters} />
+        <ServerRoomList 
+          dataCenters={filteredDataCenters} 
+          onDeleteClick={handleOpenDeleteModal}
+        />
 
         {/* Statistics Section */}
         <section className="statistics-section">
@@ -150,6 +182,20 @@ const ServerRoomDashboard: React.FC = () => {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
       />
+
+      {/* 서버실 삭제 확인 모달 */}
+      <ConfirmationModal
+        isOpen={deleteModalState.isOpen}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        title="서버실 삭제"
+        confirmText="삭제"
+        isDestructive={true}
+      >
+        <p>
+          {deleteModalState.serverRoom?.name}서버실을 삭제하시겠습니까?
+        </p>
+      </ConfirmationModal>
     </div>
   );
 };
