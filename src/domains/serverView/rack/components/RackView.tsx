@@ -3,7 +3,7 @@ import { useRackManager } from "../hooks/useRackManager";
 import Sidebar from "./Sidebar";
 import RackHeader from "./RackHeader";
 import Button from "./Button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ServerDashboard from "@domains/serverView/serverDashboard/components/ServerDashboard";
 
 interface RackViewProps {
@@ -31,6 +31,12 @@ function RackView({ rackName, serverRoomId, onClose }: RackViewProps) {
     serverRoomId: serverRoomId,
     frontView,
   });
+
+  useEffect(() => {
+    if (editMode) {
+      setDashboardOpen(false);
+    }
+  }, [editMode]);
 
   const displayRackName = rackManager.rack?.rackName || rackName || "N/A";
 
@@ -67,25 +73,19 @@ function RackView({ rackName, serverRoomId, onClose }: RackViewProps) {
     <div className="h-full flex text-white gap-2 p-2">
       {/* 왼쪽: 대시보드 영역 - 항상 2 비율 유지 */}
       <div
-        className="flex-[2] overflow-auto"
+        className="flex-[2] overflow-hidden relative"
         onClick={() => {
           if (!dashboardOpen && onClose) {
             onClose();
           }
         }}
       >
-        {dashboardOpen && selectedDevice && (
-          <div
-            className="h-full bg-[#404452]/70 backdrop-blur-md rounded-xl p-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <ServerDashboard
-              deviceId={selectedDevice.id}
-              deviceName={selectedDevice.name}
-              onClose={handleDashboardClose}
-            />
-          </div>
-        )}
+        <ServerDashboard
+          deviceId={selectedDevice?.id || 0}
+          deviceName={selectedDevice?.name || ""}
+          onClose={handleDashboardClose}
+          isOpen={dashboardOpen}
+        />
       </div>
 
       <div className="flex-1 overflow-auto">

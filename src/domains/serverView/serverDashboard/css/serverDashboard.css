@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+@layer utilities {
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+}
+
+/* 의사 요소는 밖에서 */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* 대시보드 컨테이너 */
+.dashboard-container {
+  @apply absolute top-0 right-0 h-full w-full rounded-xl flex flex-col overflow-hidden;
+  @apply bg-[#404452]/70 backdrop-blur-md border border-slate-300/40;
+  @apply transition-transform duration-300 ease-out px-4 py-3;
+}
+
+.dashboard-container.open {
+  @apply translate-x-0;
+}
+
+.dashboard-container.closed {
+  @apply translate-x-full;
+}
+
+/* 컨텐츠 영역 */
+.dashboard-content {
+  @apply flex-1 overflow-y-auto mt-3;
+  /* scrollbar-none 제거됨 */
+}
+
+/* 차트 그리드 컨테이너 */
+.chart-grid {
+  @apply flex flex-col gap-3;
+}
+
+/* 차트 행 (3개 열 - small) */
+.chart-row-small {
+  @apply flex gap-3 h-70;
+}
+
+/* 차트 행 (2개 열 - medium) */
+.chart-row-medium {
+  @apply flex gap-3 h-80;
+}
+
+/* 차트 행 (1개 열 - large) */
+.chart-row-large {
+  @apply flex gap-3 h-80;
+}
+
+/* 게이지 차트 컨테이너 */
+.gauge-container {
+  @apply flex items-center justify-center w-full h-full;
+}
