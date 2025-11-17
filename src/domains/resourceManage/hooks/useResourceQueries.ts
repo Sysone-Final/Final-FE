@@ -13,7 +13,8 @@ import {
 } from "../api/resourceManageApi";
 import type {
   ResourceListFilters,
-  ServerRoom,
+  // ServerRoom,
+  ServerRoomGroup,
   Rack,
   Resource,
   ResourceStatus,
@@ -25,7 +26,7 @@ const USE_MOCK_DATA = false;
 
 import {
  MOCK_DATA, 
- MOCK_DATACENTERS,
+//  MOCK_DATACENTERS,
  MOCK_RACKS,
  mockDeleteResource,
  mockDeleteMultipleResources,
@@ -103,13 +104,10 @@ export const useGetResourceList = (
 
 //  전산실 목록 조회 훅
 export const useGetServerRooms = () => {
-  return useQuery<ServerRoom[], Error>({
+  return useQuery<ServerRoomGroup[], Error>({ 
     queryKey: [SERVERROOM_QUERY_KEY],
     queryFn: () => {
-      if (USE_MOCK_DATA) {
-        console.warn("Using MOCK data for useGetDatacenters");
-        return Promise.resolve(MOCK_DATACENTERS as ServerRoom[]);
-      }
+      
       return getServerRooms();
     },
     staleTime: 1000 * 60 * 5,

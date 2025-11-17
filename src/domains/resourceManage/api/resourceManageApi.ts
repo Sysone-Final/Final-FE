@@ -4,7 +4,7 @@ import type {
  PaginatedResourceResponse,
  Resource,
  ResourceListFilters,
- ServerRoom,
+ ServerRoomGroup,
  Rack,
  ResourceStatus,
 } from "../types/resource.types";
@@ -124,10 +124,9 @@ interface ApiResponseWrapper<T> {
 /**
 * 3.1 접근 가능한 전산실 목록 조회 (GET /datacenters)
 */
-export const getServerRooms = async (): Promise<ServerRoom[]> => {
- const response =
-  await client.get<ApiResponseWrapper<ServerRoom[]>>("/serverrooms");
- return response.data.result;
+export const getServerRooms = async (): Promise<ServerRoomGroup[]> => {
+  const response = await client.get<ApiResponseWrapper<ServerRoomGroup[]>>("/serverrooms");
+  return response.data.result;
 };
 
 /**
