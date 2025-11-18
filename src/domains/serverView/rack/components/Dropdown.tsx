@@ -30,19 +30,13 @@ function Dropdown({
   useEffect(() => {
     const scrollContainer = scrollContainerRef.current;
     if (!scrollContainer) {
-      console.log("❌ scrollContainer가 없음!");
       return;
     }
-
-    console.log("✅ scrollContainer 찾음:", scrollContainer);
-    console.log("콘텐츠 실제 높이:", scrollContainer.scrollHeight);
-    console.log("보이는 높이:", scrollContainer.clientHeight);
 
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
 
       if (scrollHeight - scrollTop - clientHeight < 20) {
-        console.log("🎯 끝에 도달! fetchNextPage 호출");
         if (hasNextPage && !isFetchingNextPage && fetchNextPage) {
           fetchNextPage();
         }
@@ -50,10 +44,8 @@ function Dropdown({
     };
 
     scrollContainer.addEventListener("scroll", handleScroll);
-    console.log("스크롤 이벤트 리스너 등록 완료");
     return () => {
       scrollContainer.removeEventListener("scroll", handleScroll);
-      console.log("스크롤 이벤트 리스너 제거");
     };
   }, [open, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
