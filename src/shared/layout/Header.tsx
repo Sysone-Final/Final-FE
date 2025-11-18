@@ -35,7 +35,7 @@ function Header() {
     },
     {
       id: "humanResource",
-      label: "인사관리",
+      label: "회원관리",
       path: "/hr",
       icon: <MdOutlinePeopleAlt  className="text-2xl text-emerald-600" />,
     },

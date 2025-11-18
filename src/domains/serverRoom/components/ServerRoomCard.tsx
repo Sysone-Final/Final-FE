@@ -9,15 +9,21 @@ import "../css/serverRoomCard.css";
 interface Props {
   room: ServerRoom;
   dataCenterAddress: string;
+  onEditClick: (serverRoom: ServerRoom) => void;
   onDeleteClick: (serverRoom: ServerRoom) => void;
 }
 
-function ServerRoomCard({ room, dataCenterAddress, onDeleteClick }: Props) {
+function ServerRoomCard({ room, dataCenterAddress, onEditClick, onDeleteClick }: Props) {
   const navigate = useNavigate();
 
   const handleViewLayout = (e: React.MouseEvent) => {
     e.preventDefault();
     navigate(`/server-room/${room.id}/view`);
+  };
+
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    onEditClick(room);
   };
 
   const handleDeleteClick = (e: React.MouseEvent) => {
@@ -30,7 +36,7 @@ function ServerRoomCard({ room, dataCenterAddress, onDeleteClick }: Props) {
       <div className="card-header">
         <h3 className="card-title text-title">{room.name}</h3>
         <div className="card-actions">
-          <button className="icon-button">
+          <button className="icon-button" onClick={handleEditClick}>
             <FaPencilAlt />
           </button>
           <button className="icon-button" onClick={handleDeleteClick}>

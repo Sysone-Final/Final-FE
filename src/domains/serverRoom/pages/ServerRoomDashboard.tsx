@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import ServerRoomList from '../components/ServerRoomList';
 import ServerRoomCreateModal from '../components/ServerRoomCreateModal';
+import ServerRoomEditModal from '../components/ServerRoomEditModal';
 import { useServerRooms, useDeleteServerRoom } from '../hooks/useServerRoomQueries';
 import { useAuthStore } from '@domains/login/store/useAuthStore';
 import { ConfirmationModal } from '@/shared/ConfirmationModal';
@@ -9,6 +10,8 @@ import '../css/serverRoomDashboard.css';
 
 const ServerRoomDashboard: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedServerRoom, setSelectedServerRoom] = useState<ServerRoom | null>(null);
   const [selectedDataCenterId, setSelectedDataCenterId] = useState<number | null>(null);
   const [deleteModalState, setDeleteModalState] = useState<{
     isOpen: boolean;
@@ -21,6 +24,18 @@ const ServerRoomDashboard: React.FC = () => {
   
   const { data: dataCenters = [], isLoading, isError, error } = useServerRooms(companyId!);
   const deleteMutation = useDeleteServerRoom();
+
+  // 편집 모달 열기
+  const handleOpenEditModal = (serverRoom: ServerRoom) => {
+    setSelectedServerRoom(serverRoom);
+    setIsEditModalOpen(true);
+  };
+
+  // 편집 모달 닫기
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+    setSelectedServerRoom(null);
+  };
 
   // 삭제 모달 열기
   const handleOpenDeleteModal = (serverRoom: ServerRoom) => {
@@ -142,7 +157,8 @@ const ServerRoomDashboard: React.FC = () => {
       {/* Main Content */}
       <main className="dashboard-main">
         <ServerRoomList 
-          dataCenters={filteredDataCenters} 
+          dataCenters={filteredDataCenters}
+          onEditClick={handleOpenEditModal}
           onDeleteClick={handleOpenDeleteModal}
         />
 
@@ -181,6 +197,13 @@ const ServerRoomDashboard: React.FC = () => {
       <ServerRoomCreateModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
+      />
+
+      {/* 서버실 수정 모달 */}
+      <ServerRoomEditModal
+        isOpen={isEditModalOpen}
+        onClose={handleCloseEditModal}
+        serverRoom={selectedServerRoom}
       />
 
       {/* 서버실 삭제 확인 모달 */}

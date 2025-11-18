@@ -63,6 +63,8 @@ function hasEquipmentChanges(
 interface BabylonDatacenterStore {
   // 격자 설정
   gridConfig: GridConfig;
+  gridVersion: number;
+  lastAppliedGridVersion: number;
   setGridConfig: (config: Partial<GridConfig>) => void;
 
   // 장비 목록
@@ -141,11 +143,26 @@ export const useBabylonDatacenterStore = create<BabylonDatacenterStore>(
   (set, get) => ({
     // 초기 격자 설정
     gridConfig: DEFAULT_GRID_CONFIG,
+    gridVersion: 0,
+    lastAppliedGridVersion: 0,
 
     setGridConfig: (config) => {
-      set((state) => ({
-        gridConfig: { ...state.gridConfig, ...config },
-      }));
+      set((state) => {
+        const nextConfig = { ...state.gridConfig, ...config };
+        const rowsChanged =
+          config.rows !== undefined && config.rows !== state.gridConfig.rows;
+        const columnsChanged =
+          config.columns !== undefined &&
+          config.columns !== state.gridConfig.columns;
+
+        return {
+          gridConfig: nextConfig,
+          gridVersion:
+            rowsChanged || columnsChanged
+              ? state.gridVersion + 1
+              : state.gridVersion,
+        };
+      });
     },
 
     // 초기 장비 목록
@@ -185,11 +202,13 @@ export const useBabylonDatacenterStore = create<BabylonDatacenterStore>(
 
     initializeServerRoom: (serverRoomId, equipmentList) => {
       const currentState = get();
+      const gridChanged =
+        currentState.lastAppliedGridVersion !== currentState.gridVersion;
       
       // 같은 서버실이고 장비 데이터가 동일하면 업데이트하지 않음 (성능 최적화)
       if (currentState.currentServerRoomId === serverRoomId) {
         const hasChanges = hasEquipmentChanges(currentState.equipment, equipmentList);
-        if (!hasChanges) {
+        if (!hasChanges && !gridChanged) {
           console.log('📦 장비 데이터 변경 없음 - 업데이트 스킵');
           return;
         }
@@ -203,6 +222,7 @@ export const useBabylonDatacenterStore = create<BabylonDatacenterStore>(
         isRackModalOpen: false,
         selectedServerId: null,
         mode: "view",
+        lastAppliedGridVersion: currentState.gridVersion,
       });
     },
 

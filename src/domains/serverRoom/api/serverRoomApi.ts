@@ -50,6 +50,22 @@ export const createServerRoom = async (
 };
 
 /**
+ * 서버실 수정 (PUT)
+ * @param serverRoomId 서버실 ID
+ * @param serverRoomData 서버실 수정 정보
+ */
+export const updateServerRoom = async (
+  serverRoomId: number,
+  serverRoomData: UpdateServerRoomRequest,
+): Promise<ServerRoom> => {
+  const response = await client.put<ServerRoom>(
+    `/serverrooms/${serverRoomId}`,
+    serverRoomData,
+  );
+  return response.data;
+};
+
+/**
  * 서버실 삭제 (DELETE)
  * @param serverRoomId 서버실 ID
  */
@@ -68,4 +84,13 @@ export interface CreateServerRoomRequest {
   columns: number;
   description?: string;
   managerId?: number;
+}
+
+// 서버실 수정 요청 타입
+export interface UpdateServerRoomRequest {
+  name: string;
+  code: string;
+  description?: string;
+  rows: number;
+  columns: number;
 }
