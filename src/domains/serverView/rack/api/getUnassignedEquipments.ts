@@ -12,6 +12,7 @@ interface PaginatedResponse {
   totalPages: number;
   size: number;
   number: number;
+  last: boolean;
 }
 
 interface GetUnassignedEquipmentsResponse {

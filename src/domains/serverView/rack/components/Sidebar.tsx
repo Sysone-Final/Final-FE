@@ -15,16 +15,10 @@ function Sidebar({ onCardClick, isOpen }: SidebarProps) {
   const [dropdownPosition, setDropdownPosition] = useState({ x: 0, y: 0 });
   const [selectedCard, setSelectedCard] = useState<DeviceCard | null>(null);
 
-  const { data: unassignedEquipments, isLoading } = useUnassignedEquipments({
-    enabled: dropdownOpen,
-  });
-
-  console.log("Sidebar render:", {
-    dropdownOpen,
-    selectedCard,
-    unassignedEquipments,
-    isLoading,
-  });
+  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useUnassignedEquipments({
+      enabled: dropdownOpen,
+    });
 
   const handleContextMenu = (e: React.MouseEvent, card: DeviceCard) => {
     e.preventDefault();
@@ -56,27 +50,11 @@ function Sidebar({ onCardClick, isOpen }: SidebarProps) {
   };
 
   const getFilteredEquipments = (): DeviceCard[] => {
-    console.log("getFilteredEquipments 호출됨");
-
-    console.log("체크:", {
-      selectedCard,
-      unassignedEquipments,
-      isLoading,
-    }); // 2. 값들 확인
-    if (!selectedCard || !unassignedEquipments) {
+    if (!selectedCard || !data?.allEquipments) {
       return [];
     }
 
-    const filtered = unassignedEquipments.filter(
-      (equipment: UnassignedEquipment) => {
-        console.log("equipment.equipmentType:", equipment.equipmentType);
-        return equipment.equipmentType === selectedCard.type;
-      }
-    );
-
-    console.log("filtered:", filtered);
-
-    return unassignedEquipments
+    return data.allEquipments
       .filter(
         (equipment: UnassignedEquipment) =>
           equipment.equipmentType?.toUpperCase() ===
@@ -117,6 +95,9 @@ function Sidebar({ onCardClick, isOpen }: SidebarProps) {
         onSelect={handleDropdownSelect}
         onClose={handleDropdownClose}
         isLoading={isLoading}
+        hasNextPage={hasNextPage}
+        fetchNextPage={fetchNextPage}
+        isFetchingNextPage={isFetchingNextPage}
       />
     </div>
   );

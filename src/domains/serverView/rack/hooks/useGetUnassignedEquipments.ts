@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import {
   getUnassignedEquipments,
   type GetUnassignedEquipmentsParams,
@@ -14,10 +14,19 @@ export const useUnassignedEquipments = (
 ) => {
   const { params = {}, enabled = true } = options;
 
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: ["equipments", "unassigned", params],
-    queryFn: () => getUnassignedEquipments(params),
+    queryFn: ({ pageParam = 0 }) =>
+      getUnassignedEquipments({ ...params, page: pageParam }),
     enabled,
-    select: (data) => data.result.content,
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => {
+      return lastPage.result.last ? undefined : lastPage.result.number + 1;
+    },
+    select: (data) => ({
+      pages: data.pages,
+      pageParams: data.pageParams,
+      allEquipments: data.pages.flatMap((page) => page.result.content),
+    }),
   });
 };
