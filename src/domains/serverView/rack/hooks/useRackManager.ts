@@ -3,6 +3,7 @@ import type { Equipments, FloatingDevice, DeviceCard } from "../types";
 import { checkCollision } from "../utils/rackCollisionDetection";
 import { useGetRackEquipments } from "./useGetRackEquipments";
 import { usePostEquipment } from "./usePostRackEquipments";
+import { usePostPlaceEquipments } from "./usePostPlaceEquipments";
 import { useDeleteEquipments } from "./useDeleteRackEquipments";
 import { useUpdateRackEquipments } from "./useUpdateRackEquipments";
 import type { GetRackEquipmentsParams } from "../api/getRackEquipments";
@@ -37,6 +38,7 @@ export function useRackManager({
 
   //POST
   const { mutate: postEquipment } = usePostEquipment();
+  const { mutate: postPlaceEquipments } = usePostPlaceEquipments();
 
   //DELETE
   const { mutate: deleteEquipment } = useDeleteEquipments();
@@ -117,6 +119,19 @@ export function useRackManager({
           return prevFloating;
         }
 
+        //드롭다운에서 선택한 기존 장비인 경우
+        if (prevFloating.card.id) {
+          postPlaceEquipments({
+            rackId,
+            id: prevFloating.card.id,
+            data: {
+              startUnit: position,
+              unitSize: prevFloating.card.height,
+            },
+          });
+          return null;
+        }
+
         const tempId = Date.now();
         const newDevice: Equipments = {
           id: tempId,
@@ -154,7 +169,7 @@ export function useRackManager({
         return null;
       });
     },
-    [frontView, editingDeviceId, installedDevices]
+    [frontView, editingDeviceId, installedDevices, postPlaceEquipments]
   );
 
   const handleDeviceNameChange = useCallback(

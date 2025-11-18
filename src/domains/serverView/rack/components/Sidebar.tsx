@@ -30,8 +30,8 @@ function Sidebar({ onCardClick, isOpen }: SidebarProps) {
     e.preventDefault();
     e.stopPropagation();
 
-    const iconRect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const sidebarRect = (e.currentTarget as HTMLElement)
+    const iconRect = e.currentTarget.getBoundingClientRect();
+    const sidebarRect = e.currentTarget
       .closest(".relative.flex-col")
       ?.getBoundingClientRect();
 
@@ -56,7 +56,7 @@ function Sidebar({ onCardClick, isOpen }: SidebarProps) {
   };
 
   const getFilteredEquipments = (): DeviceCard[] => {
-    console.log("getFilteredEquipments 호출됨"); // 1. 함수 호출 확인
+    console.log("getFilteredEquipments 호출됨");
 
     console.log("체크:", {
       selectedCard,
@@ -91,7 +91,7 @@ function Sidebar({ onCardClick, isOpen }: SidebarProps) {
           deviceImageMap.SERVER.front,
         height: equipment.unitSize,
         type: equipment.equipmentType,
-        equipmentId: equipment.id,
+        id: equipment.id,
       }));
   };
 
