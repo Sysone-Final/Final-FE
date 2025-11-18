@@ -5,8 +5,12 @@ import "./index.css";
 import router from "./router";
 import { Toaster } from "react-hot-toast";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useAuthStore } from "@/domains/login/store/useAuthStore";
 
 const queryClient = new QueryClient();
+
+// 앱 초기화 시 인증 상태 복원
+useAuthStore.getState().restoreAuth();
 
 // async function enableMocking() {
 //   if (import.meta.env.MODE !== 'development') {
