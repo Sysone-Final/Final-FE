@@ -1,7 +1,9 @@
 import React, { useState, useMemo } from 'react';
+import { Plus } from 'lucide-react';
 import ServerRoomList from '../components/ServerRoomList';
 import ServerRoomCreateModal from '../components/ServerRoomCreateModal';
 import ServerRoomEditModal from '../components/ServerRoomEditModal';
+import DataCenterCreateModal from '../components/DataCenterCreateModal';
 import { useServerRooms, useDeleteServerRoom } from '../hooks/useServerRoomQueries';
 import { useAuthStore } from '@domains/login/store/useAuthStore';
 import { ConfirmationModal } from '@/shared/ConfirmationModal';
@@ -11,6 +13,7 @@ import '../css/serverRoomDashboard.css';
 const ServerRoomDashboard: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDataCenterCreateModalOpen, setIsDataCenterCreateModalOpen] = useState(false);
   const [selectedServerRoom, setSelectedServerRoom] = useState<ServerRoom | null>(null);
   const [selectedDataCenterId, setSelectedDataCenterId] = useState<number | null>(null);
   const [deleteModalState, setDeleteModalState] = useState<{
@@ -149,9 +152,17 @@ const ServerRoomDashboard: React.FC = () => {
             className={`datacenter-tab ${selectedDataCenterId === dataCenter.dataCenterId ? 'active' : ''}`}
             onClick={() => setSelectedDataCenterId(dataCenter.dataCenterId)}
           >
-            <span >{dataCenter.dataCenterName} ({dataCenter.dataCenterCode})</span>
+            <span>{dataCenter.dataCenterName} ({dataCenter.dataCenterCode})</span>
           </button>
         ))}
+        {/* 데이터센터 추가 버튼 */}
+        <button
+          className="datacenter-tab"
+          onClick={() => setIsDataCenterCreateModalOpen(true)}
+          title="새 데이터센터 추가"
+        >
+          <Plus size={20} />
+        </button>
       </div>
       
       {/* Main Content */}
@@ -197,6 +208,12 @@ const ServerRoomDashboard: React.FC = () => {
       <ServerRoomCreateModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
+      />
+
+      {/* 데이터센터 생성 모달 */}
+      <DataCenterCreateModal
+        isOpen={isDataCenterCreateModalOpen}
+        onClose={() => setIsDataCenterCreateModalOpen(false)}
       />
 
       {/* 서버실 수정 모달 */}

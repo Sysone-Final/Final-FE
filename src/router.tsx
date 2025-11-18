@@ -6,6 +6,7 @@ import ResourceManagePage from "@domains/resourceManage/pages/ResourceManagePage
 import LoginPage from "@domains/login/LoginPage";
 import HumanResource from "@domains/humanResource/pages/HumanResource";
 import ProtectedRoute from "@shared/ProtectedRoute";
+import RoleProtectedRoute from "@shared/RoleProtectedRoute";
 import MainDashboard from "@domains/mainDashboard/pages/MainDashboard";
 
 const router = createBrowserRouter([
@@ -38,8 +39,12 @@ const router = createBrowserRouter([
           },
           {
             path: "hr",
-            element: <HumanResource />,
-          }
+            element: (
+              <RoleProtectedRoute requiredRole={["ADMIN", "OPERATOR"]}>
+                <HumanResource />
+              </RoleProtectedRoute>
+            ),
+          },
         ],
       },
     ],

@@ -23,6 +23,25 @@ export const getDataCenters = async (): Promise<DataCenter[]> => {
 };
 
 /**
+ * 데이터센터 생성 (POST)
+ * @param dataCenterData 데이터센터 생성 정보
+ */
+export const createDataCenter = async (
+  dataCenterData: CreateDataCenterRequest
+): Promise<DataCenter> => {
+  const response = await client.post<DataCenter>("/datacenters", dataCenterData);
+  return response.data;
+};
+
+// 데이터센터 생성 요청 타입
+export interface CreateDataCenterRequest {
+  code: string;
+  name: string;
+  address: string;
+  description?: string;
+}
+
+/**
  * 회사의 서버실 매핑 조회 (GET) - 데이터센터별 그룹화
  * @param companyId 회사 ID
  */

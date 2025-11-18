@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getCompanyServerRooms, createServerRoom, updateServerRoom, getDataCenters, deleteServerRoom } from "../api/serverRoomApi";
-import type { CreateServerRoomRequest, UpdateServerRoomRequest } from "../api/serverRoomApi";
+import { getCompanyServerRooms, createServerRoom, updateServerRoom, getDataCenters, deleteServerRoom, createDataCenter } from "../api/serverRoomApi";
+import type { CreateServerRoomRequest, UpdateServerRoomRequest, CreateDataCenterRequest } from "../api/serverRoomApi";
 import toast from "react-hot-toast";
 
 /**
@@ -21,6 +21,27 @@ export const useServerRooms = (companyId: number) => {
   return useQuery({
     queryKey: ["serverRooms", companyId],
     queryFn: () => getCompanyServerRooms(companyId),
+  });
+};
+
+/**
+ * 데이터센터 생성 mutation
+ */
+export const useCreateDataCenter = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: CreateDataCenterRequest) => createDataCenter(data),
+    onSuccess: () => {
+      // 데이터센터 목록 쿼리 무효화하여 재조회
+      queryClient.invalidateQueries({ queryKey: ["dataCenters"] });
+      // 서버실 목록도 무효화 (데이터센터 정보 포함)
+      queryClient.invalidateQueries({ queryKey: ["serverRooms"] });
+      toast.success("데이터센터가 생성되었습니다.");
+    },
+    onError: () => {
+      toast.error("데이터센터 생성에 실패했습니다.");
+    },
   });
 };
 
