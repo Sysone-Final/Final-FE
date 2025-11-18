@@ -1,7 +1,6 @@
 import { useForm } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
 import { X } from "lucide-react";
-import { createPortal } from "react-dom";
 import { useCreateServerRoom, useDataCenters } from "../hooks/useServerRoomQueries";
 import type { CreateServerRoomRequest } from "../api/serverRoomApi";
 
@@ -79,7 +78,7 @@ function ServerRoomCreateModal({
 
   if (!isOpen) return null;
 
-  return createPortal(
+  return (
     <div className="modal-bg animate-fadeIn" onClick={handleClose}>
       <div className="modal animate-modalFadeIn max-w-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="p-6 md:p-8">
@@ -282,8 +281,7 @@ function ServerRoomCreateModal({
           </form>
         </div>
       </div>
-    </div>,
-    document.body
+    </div>
   );
 }
 

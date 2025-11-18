@@ -49,6 +49,14 @@ export const createServerRoom = async (
   return response.data;
 };
 
+/**
+ * 서버실 삭제 (DELETE)
+ * @param serverRoomId 서버실 ID
+ */
+export const deleteServerRoom = async (serverRoomId: number): Promise<void> => {
+  await client.delete(`/serverrooms/${serverRoomId}`);
+};
+
 // 서버실 생성 요청 타입
 export interface CreateServerRoomRequest {
   name: string;

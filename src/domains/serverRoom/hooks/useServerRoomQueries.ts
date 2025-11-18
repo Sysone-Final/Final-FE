@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getCompanyServerRooms, createServerRoom, getDataCenters } from "../api/serverRoomApi";
+import { getCompanyServerRooms, createServerRoom, getDataCenters, deleteServerRoom } from "../api/serverRoomApi";
 import type { CreateServerRoomRequest } from "../api/serverRoomApi";
 
 /**
@@ -31,6 +31,21 @@ export const useCreateServerRoom = () => {
 
   return useMutation({
     mutationFn: (data: CreateServerRoomRequest) => createServerRoom(data),
+    onSuccess: () => {
+      // 서버실 목록 쿼리 무효화하여 재조회
+      queryClient.invalidateQueries({ queryKey: ["serverRooms"] });
+    },
+  });
+};
+
+/**
+ * 서버실 삭제 mutation
+ */
+export const useDeleteServerRoom = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (serverRoomId: number) => deleteServerRoom(serverRoomId),
     onSuccess: () => {
       // 서버실 목록 쿼리 무효화하여 재조회
       queryClient.invalidateQueries({ queryKey: ["serverRooms"] });

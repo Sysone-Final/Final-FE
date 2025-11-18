@@ -1,12 +1,13 @@
-import type { DataCenterGroup } from '../types';
+import type { DataCenterGroup, ServerRoom } from '../types';
 import ServerRoomCard from './ServerRoomCard';
 import '../css/serverRoomList.css';
 
 interface Props {
   dataCenters: DataCenterGroup[];
+  onDeleteClick: (serverRoom: ServerRoom) => void;
 }
 
-function ServerRoomList({ dataCenters }: Props) {
+function ServerRoomList({ dataCenters, onDeleteClick }: Props) {
   return (
     <div className="server-room-list-container">
       {dataCenters.map((dataCenter) => (
@@ -18,6 +19,7 @@ function ServerRoomList({ dataCenters }: Props) {
                 key={room.id} 
                 room={room} 
                 dataCenterAddress={dataCenter.dataCenterAddress}
+                onDeleteClick={onDeleteClick}
               />
             ))}
           </div>

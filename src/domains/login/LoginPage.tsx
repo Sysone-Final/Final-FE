@@ -14,6 +14,7 @@ import {
   removeKorean,
 } from "./utils/loginValidation";
 import { useLogin } from "./hooks/useLogin";
+import LoadingSpinner from "@/shared/loading/LoadingSpinner";
 
 function LoginPage() {
   const [email, setEmail] = useState("");
@@ -60,6 +61,7 @@ function LoginPage() {
 
   return (
     <div className="login-page">
+      {mutation.isPending && <LoadingSpinner message="로그인 중..." />}
       <AnimationBackground />
       <div className="login-container">
         <div className="login-form-container">
