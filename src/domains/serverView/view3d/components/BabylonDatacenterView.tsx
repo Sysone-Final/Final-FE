@@ -134,8 +134,7 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
     currentServerRoomId, 
     initializeServerRoom, 
     fetchedEquipment, 
-    fetchedGridConfig?.rows,  // 깊은 비교를 위해 개별 속성 사용
-    fetchedGridConfig?.columns,  // 깊은 비교를 위해 개별 속성 사용
+    fetchedGridConfig,
     isEquipmentReady,
     setGridConfig
   ]);
