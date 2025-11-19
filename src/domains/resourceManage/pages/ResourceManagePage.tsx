@@ -22,9 +22,10 @@ import {
   useDeleteResource,
   useDeleteMultipleResources,
   useUpdateMultipleResourceStatus,
-  useGetServerRooms,
+  useGetServerRoomsByCompany,
   RESOURCE_QUERY_KEY // import 추가 확인
 } from '../hooks/useResourceQueries';
+import { useAuthStore } from '@domains/login/store/useAuthStore';
 import type { ResourceListFilters, Resource, ResourceTableMeta, PaginatedResourceResponse, ResourceStatus } from '../types/resource.types';
 import { useDebounce } from '../hooks/useDebounce';
 import { ConfirmationModal } from '@shared/ConfirmationModal';
@@ -34,6 +35,10 @@ import Snackbar from '@shared/Snackbar';
 
 export default function ResourceManagePage() {
   const queryClient = useQueryClient();
+  
+  // 로그인한 사용자의 회사 ID 가져오기
+  const { user } = useAuthStore();
+  const companyId = user?.companyId ?? null;
   
   // --- 상태 관리 ---
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
@@ -49,16 +54,16 @@ export default function ResourceManagePage() {
   const [serverRoomFilter, setServerRoomFilter] = useState("");
   const [errorToastId, setErrorToastId] = useState<string | null>(null);
 
-  // --- [중요 수정] 서버실 데이터 로딩 (한 번만 호출해야 함) ---
+  // --- [중요 수정] 로그인한 사용자의 회사에 해당하는 서버실 데이터 로딩 ---
   const { 
     data: serverRoomGroups, 
     isLoading: isLoadingServerRooms 
-  } = useGetServerRooms();
+  } = useGetServerRoomsByCompany(companyId);
 
   // 필터바용 평평한 리스트 생성
   const flattenedServerRooms = useMemo(() => {
     if (!serverRoomGroups) return [];
-    return serverRoomGroups.flatMap(group => group.serverRooms);
+    return serverRoomGroups.flatMap((group) => group.serverRooms);
   }, [serverRoomGroups]);
 
   // API 호출 지연을 위한 Debounce
