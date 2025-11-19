@@ -29,7 +29,7 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
     <Divider />
     <StatItem value={stats.activeRooms} label="활성 상태" colorClass="text-green-400" />
     <Divider />
-    <StatItem value={stats.maintenanceRooms} label="유지보수" colorClass="text-yellow-400" />
+    <StatItem value={stats.maintenanceRooms} label="점검중" colorClass="text-yellow-400" />
   </div>
   );
 }
