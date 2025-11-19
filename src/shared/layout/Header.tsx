@@ -33,12 +33,15 @@ function Header() {
       path: "/assets",
       icon: <GrResources className="text-2xl text-green-500" />,
     },
-    {
-      id: "humanResource",
-      label: "인사관리",
-      path: "/hr",
-      icon: <MdOutlinePeopleAlt  className="text-2xl text-emerald-600" />,
-    },
+    // ADMIN 또는 OPERATOR만 회원관리 메뉴 표시
+    ...(user?.role === "ADMIN" || user?.role === "OPERATOR"
+      ? [{
+          id: "humanResource",
+          label: "회원관리",
+          path: "/hr",
+          icon: <MdOutlinePeopleAlt className="text-2xl text-emerald-600" />,
+        }]
+      : []),
   ];
 
   return (
@@ -67,7 +70,7 @@ function Header() {
               >
                 <span className="text-lg font-semibold flex items-center gap-2">
                   {item.icon}
-                  <span className="hidden sm:inline">{item.label}</span>
+                  <span className="hidden lg:inline">{item.label}</span>
                 </span>
               </NavLink>
             ))}

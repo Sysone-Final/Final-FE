@@ -2,7 +2,7 @@
 
 .server-room-card {
   /*  배경 투명도, 블러, 테두리 */
-  @apply bg-white/10 backdrop-blur-md rounded-2xl border border-slate-300/40 p-6 flex flex-col justify-between transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(0,0,0,0.2)];
+  @apply bg-white/10 backdrop-blur-md grid-cols-1 rounded-2xl border border-slate-300/40 p-6 flex flex-col justify-between transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(0,0,0,0.2)];
 }
 
 .card-header {
@@ -49,9 +49,9 @@
 .status-dot.maintenance { @apply bg-cyan-500; }
 
 .card-footer {
-  @apply mt-6;
+  @apply mt-4;
 }
 
 .manage-layout-link {
-  @apply text-green-500 font-semibold transition-colors hover:text-green-400;
+  @apply text-green-500 text-base transition-colors hover:text-green-400;
 }

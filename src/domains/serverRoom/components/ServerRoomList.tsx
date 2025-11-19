@@ -4,10 +4,11 @@ import '../css/serverRoomList.css';
 
 interface Props {
   dataCenters: DataCenterGroup[];
+  onEditClick: (serverRoom: ServerRoom) => void;
   onDeleteClick: (serverRoom: ServerRoom) => void;
 }
 
-function ServerRoomList({ dataCenters, onDeleteClick }: Props) {
+function ServerRoomList({ dataCenters, onEditClick, onDeleteClick }: Props) {
   return (
     <div className="server-room-list-container">
       {dataCenters.map((dataCenter) => (
@@ -19,6 +20,7 @@ function ServerRoomList({ dataCenters, onDeleteClick }: Props) {
                 key={room.id} 
                 room={room} 
                 dataCenterAddress={dataCenter.dataCenterAddress}
+                onEditClick={onEditClick}
                 onDeleteClick={onDeleteClick}
               />
             ))}
