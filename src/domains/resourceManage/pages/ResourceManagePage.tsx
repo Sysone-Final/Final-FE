@@ -60,12 +60,6 @@ export default function ResourceManagePage() {
     isLoading: isLoadingServerRooms 
   } = useGetServerRoomsByCompany(companyId);
 
-  // 필터바용 평평한 리스트 생성
-  const flattenedServerRooms = useMemo(() => {
-    if (!serverRoomGroups) return [];
-    return serverRoomGroups.flatMap((group) => group.serverRooms);
-  }, [serverRoomGroups]);
-
   // API 호출 지연을 위한 Debounce
   const debouncedkeyword = useDebounce(keyword, 300);
 
@@ -354,7 +348,7 @@ export default function ResourceManagePage() {
           onTypeChange={setTypeFilter}
           serverRoomFilter={serverRoomFilter}
           onServerRoomChange={setServerRoomFilter}
-          serverRooms={flattenedServerRooms}
+          serverRoomGroups={serverRoomGroups}
           isLoadingServerRooms={isLoadingServerRooms}
         />
 
