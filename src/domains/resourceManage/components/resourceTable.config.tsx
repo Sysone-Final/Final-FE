@@ -6,6 +6,7 @@ import type {
 } from "../types/resource.types";
 import HeaderCheckbox from "./HeaderCheckbox";
 import { Pencil, Trash2, ArrowUpDown, AlertTriangle } from "lucide-react";
+import { RESOURCE_STATUS_LABELS } from "../constants/resource.constants";
 
 // 상태 Badge 다크 모드 색상 맵
 const statusColorMap: Record<ResourceStatus, string> = {
@@ -32,6 +33,7 @@ export const columns: ColumnDef<Resource>[] = [
     ),
     enableSorting: false,
     enableHiding: false,
+    size: 50,
   },
   {
     accessorKey: "equipmentName",
@@ -46,6 +48,7 @@ export const columns: ColumnDef<Resource>[] = [
         </button>
       );
     },
+    size: 180,
   },
   {
     accessorKey: "status",
@@ -62,7 +65,7 @@ export const columns: ColumnDef<Resource>[] = [
       if (needsDetails) {
         return (
           <span
-            className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
               statusColorMap["WARNING"] // '경고' 색상(노란색) 사용
             }`}
             title="상세 정보가 필요합니다."
@@ -76,30 +79,35 @@ export const columns: ColumnDef<Resource>[] = [
       // 일반적인 상태 배지
       return (
         <span
-          className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
+          className={`inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap min-w-20 text-center ${
             statusColorMap[status] ?? statusColorMap["POWERED_OFF"]
           }`}
         >
-          {status}
+          {RESOURCE_STATUS_LABELS[status] || status}
         </span>
       );
     },
+    size: 130,
   },
   {
     accessorKey: "ipAddress",
     header: "IP 주소",
+    size: 140,
   },
   {
     accessorKey: "modelName",
     header: "모델명",
+    size: 160,
   },
   {
     accessorKey: "manufacturer", //  제조사
     header: "제조사",
+    size: 140,
   },
   {
     accessorKey: "location",
     header: "위치", // TODO(user): rackId, startUnit 등으로 조합해서 표시
+    size: 120,
   },
   {
     id: "manage",
@@ -131,5 +139,6 @@ export const columns: ColumnDef<Resource>[] = [
       </div>
     ),
     enableSorting: false,
+    size: 80,
   },
 ];

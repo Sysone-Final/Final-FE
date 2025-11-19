@@ -15,10 +15,11 @@ import type { ServerRoomGroup, Rack, Resource } from "../types/resource.types";
 import {
   useCreateResource,
   useUpdateResource,
-  useGetServerRooms,
+  useGetServerRoomsByCompany,
   useGetRacksByServerRoom,
   useGetResourceById,
 } from "../hooks/useResourceQueries";
+import { useAuthStore } from "@domains/login/store/useAuthStore";
 import { X, ArrowLeft, Loader2 } from "lucide-react";
 import { EQUIPMENT_TYPE_OPTIONS } from "../constants/resource.constants";
 
@@ -568,6 +569,10 @@ export default function ResourceWizardModal({
 }: ResourceWizardModalProps) {
   const [step, setStep] = useState(1);
 
+  // 로그인한 사용자의 회사 ID 가져오기
+  const { user } = useAuthStore();
+  const companyId = user?.companyId ?? null;
+
   const {
     register,
     handleSubmit,
@@ -589,7 +594,7 @@ export default function ResourceWizardModal({
     data: serverRooms,
     isLoading: isLoadingServerRooms,
     isError: isErrorServerRooms,
-  } = useGetServerRooms();
+  } = useGetServerRoomsByCompany(companyId);
 
   const {
     data: racks,
