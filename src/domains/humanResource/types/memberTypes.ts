@@ -13,6 +13,10 @@ export interface Member {
   userName: string;
   name: string;
   email: string;
+  phone?: string;
+  city?: string;
+  street?: string;
+  zipcode?: string;
   role: MemberRole;
   lastLoginAt: string | null;
 }

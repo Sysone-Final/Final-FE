@@ -1,4 +1,4 @@
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { TriangleAlert, RefreshCw } from 'lucide-react';
 
 interface ErrorFallbackProps {
   error?: Error;
@@ -27,7 +27,7 @@ function ErrorFallback({
 
   return (
     <div className="flex flex-col items-center justify-center p-8 bg-neutral-800 border border-neutral-700 rounded-lg">
-      <AlertTriangle className="w-12 h-12 text-red-500 mb-4" />
+      <TriangleAlert className="w-12 h-12 text-red-500 mb-4" />
       
       <h2 className="text-xl font-semibold text-white mb-2">
         {title}

@@ -1,11 +1,18 @@
 import client from '@/api/client';
 import type { MemberListResponse, Member, CreateMemberRequest } from '../types/memberTypes';
+import { useAuthStore } from '@/domains/login/store/useAuthStore';
 
 /**
  * 회원 목록 조회
  */
 export const getMemberList = async (): Promise<Member[]> => {
-  const response = await client.get<MemberListResponse>('/members');
+  const companyId = useAuthStore.getState().user?.companyId;
+  
+  if (!companyId) {
+    throw new Error('Company ID is required');
+  }
+  
+  const response = await client.get<MemberListResponse>(`/members/company/${companyId}`);
   return response.data.result;
 };
 
