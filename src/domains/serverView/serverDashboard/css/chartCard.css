@@ -10,6 +10,11 @@
   @apply flex-1;
 }
 
+/* small 사이즈의 컨텐츠 margin 제거 */
+.chart-card-small .chart-content {
+  @apply mx-0 mb-0;
+}
+
 .chart-card-medium {
   @apply flex-1;
 }
@@ -40,5 +45,5 @@
 
 /* 차트 컨텐츠 영역 */
 .chart-content {
-  @apply flex-1 m-1;
+  @apply flex-1 mx-3;
 }
