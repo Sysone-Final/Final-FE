@@ -33,6 +33,7 @@ export const columns: ColumnDef<Resource>[] = [
     ),
     enableSorting: false,
     enableHiding: false,
+    size: 50,
   },
   {
     accessorKey: "equipmentName",
@@ -47,6 +48,7 @@ export const columns: ColumnDef<Resource>[] = [
         </button>
       );
     },
+    size: 180,
   },
   {
     accessorKey: "status",
@@ -85,22 +87,27 @@ export const columns: ColumnDef<Resource>[] = [
         </span>
       );
     },
+    size: 130,
   },
   {
     accessorKey: "ipAddress",
     header: "IP 주소",
+    size: 140,
   },
   {
     accessorKey: "modelName",
     header: "모델명",
+    size: 160,
   },
   {
     accessorKey: "manufacturer", //  제조사
     header: "제조사",
+    size: 140,
   },
   {
     accessorKey: "location",
     header: "위치", // TODO(user): rackId, startUnit 등으로 조합해서 표시
+    size: 120,
   },
   {
     id: "manage",
@@ -132,5 +139,6 @@ export const columns: ColumnDef<Resource>[] = [
       </div>
     ),
     enableSorting: false,
+    size: 80,
   },
 ];
