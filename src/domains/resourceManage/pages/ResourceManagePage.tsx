@@ -28,6 +28,7 @@ import {
 import { useAuthStore } from '@domains/login/store/useAuthStore';
 import type { ResourceListFilters, Resource, ResourceTableMeta, PaginatedResourceResponse, ResourceStatus } from '../types/resource.types';
 import { useDebounce } from '../hooks/useDebounce';
+import { RESOURCE_STATUS_LABELS } from '../constants/resource.constants';
 import { ConfirmationModal } from '@shared/ConfirmationModal';
 import { useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -271,11 +272,12 @@ export default function ResourceManagePage() {
       },
     );
 
+    const statusLabel = RESOURCE_STATUS_LABELS[newStatus] || newStatus;
     toast.custom(
       (t) => (
         <Snackbar
           t={t}
-          message={`${selectedCount}개 자산 상태가 변경되었습니다.`}
+          message={`${selectedCount}개 자산의 상태가 [${statusLabel}]로 변경되었습니다.`}
           actionText="실행 취소"
           onAction={() => {
             clearTimeout(statusUpdateTimer);
