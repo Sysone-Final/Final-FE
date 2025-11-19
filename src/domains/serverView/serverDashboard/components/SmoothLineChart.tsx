@@ -81,7 +81,7 @@ function SmoothLineChart({
       },
       axisLine: {
         lineStyle: {
-          color: "#fff",
+          color: "rgba(255, 255, 255, 0.05)",
         },
       },
     },
@@ -106,7 +106,7 @@ function SmoothLineChart({
       },
       splitLine: {
         lineStyle: {
-          color: "#333",
+          color: "rgba(255, 255, 255, 0.05)",
         },
       },
     },

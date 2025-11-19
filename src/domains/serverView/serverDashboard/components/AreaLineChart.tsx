@@ -129,6 +129,7 @@ function AreaLineChart({
       },
       axisLine: {
         show: false,
+        color: "rgba(255, 255, 255, 0.05)",
       },
       axisLabel: {
         color: "#fff",
@@ -137,7 +138,7 @@ function AreaLineChart({
       },
       splitLine: {
         lineStyle: {
-          color: "#333",
+          color: "rgba(255, 255, 255, 0.05)",
           type: "dashed",
         },
       },

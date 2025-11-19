@@ -2,7 +2,7 @@
 
 /* 기본 차트 카드 */
 .chart-card {
-  @apply bg-[#2A2D34] rounded-lg flex flex-col;
+  @apply bg-white/5 border border-slate-300/40 rounded-lg flex flex-col;
 }
 
 /* 크기별 스타일 */

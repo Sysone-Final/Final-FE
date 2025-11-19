@@ -111,7 +111,7 @@ function BarChart({
       },
       splitLine: {
         lineStyle: {
-          color: "#333",
+          color: "rgba(255, 255, 255, 0.05)",
         },
       },
     },
