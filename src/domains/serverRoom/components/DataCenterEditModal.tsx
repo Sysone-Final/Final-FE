@@ -114,7 +114,7 @@ function DataCenterEditModal({
               </div>
 
               {/* 코드 (읽기 전용) */}
-              <div>
+              {/* <div>
                 <label className={labelStyle}>코드</label>
                 <input
                   type="text"
@@ -124,7 +124,7 @@ function DataCenterEditModal({
                   readOnly
                 />
                 <p className="text-xs text-gray-400 mt-1">코드는 수정할 수 없습니다.</p>
-              </div>
+              </div> */}
 
               {/* 주소 */}
               <div>
