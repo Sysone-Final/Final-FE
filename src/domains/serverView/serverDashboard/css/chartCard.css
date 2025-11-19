@@ -11,6 +11,10 @@
 }
 
 /* small 사이즈의 컨텐츠 margin 제거 */
+.chart-header-with-icon {
+  @apply m-3;
+}
+
 .chart-card-small .chart-content {
   @apply mx-0 mb-0;
 }
@@ -20,7 +24,7 @@
 }
 
 .chart-card-large {
-  @apply w-full;
+  @apply flex-1;
 }
 
 /* 차트 헤더 */
@@ -30,7 +34,7 @@
 
 /* 아이콘 포함 헤더 */
 .chart-header-with-icon {
-  @apply flex items-center m-3 gap-2;
+  @apply flex items-center gap-2;
 }
 
 /* 차트 제목 */

@@ -92,7 +92,7 @@ function ServerDashboard({
         {
           name: "Softirq",
           data: generateRandomData(2, 1, 12),
-          color: "#7E84E8",
+          color: "#f472b6",
         },
       ],
 
@@ -100,17 +100,17 @@ function ServerDashboard({
         {
           name: "1분 평균",
           data: generateRandomData(2.0, 1.0, 31),
-          color: "#EF4444",
+          color: "#5B8FF9",
         },
         {
           name: "5분 평균",
           data: generateRandomData(1.7, 0.8, 31),
-          color: "#F59E0B",
+          color: "#9270CA",
         },
         {
           name: "15분 평균",
           data: generateRandomData(1.2, 0.5, 31),
-          color: "#10B981",
+          color: "#F6BD16",
         },
       ],
 
@@ -118,13 +118,13 @@ function ServerDashboard({
         {
           name: "메모리",
           data: generateRandomData(60, 20),
-          color: "#58D9F9",
+          color: "#5B8FF9",
           showAverage: true,
         },
         {
           name: "스왑",
           data: generateRandomData(30, 15),
-          color: "#4ADE80",
+          color: "#9270CA",
           showAverage: true,
           lineType: "dashed" as const,
         },
@@ -134,12 +134,12 @@ function ServerDashboard({
         {
           name: "수신 (RX)",
           data: generateRandomData(50, 30),
-          color: "#3B82F6",
+          color: "#5B8FF9",
         },
         {
           name: "송신 (TX)",
           data: generateRandomData(30, 20),
-          color: "#EF4444",
+          color: "#9270CA",
         },
       ],
 
@@ -147,25 +147,25 @@ function ServerDashboard({
         {
           name: "수신 에러",
           data: generateRandomData(0.3, 0.3),
-          color: "#EF4444",
+          color: "#5B8FF9",
           lineType: "solid" as const,
         },
         {
           name: "송신 에러",
           data: generateRandomData(0.2, 0.2),
-          color: "#F59E0B",
+          color: "#9270CA",
           lineType: "solid" as const,
         },
         {
           name: "수신 드롭",
           data: generateRandomData(0.6, 0.4),
-          color: "#A78BFA",
+          color: "#F6BD16",
           lineType: "dashed" as const,
         },
         {
           name: "송신 드롭",
           data: generateRandomData(0.5, 0.3),
-          color: "#EC4899",
+          color: "#5AD8A6",
           lineType: "dashed" as const,
         },
       ],
@@ -174,12 +174,12 @@ function ServerDashboard({
         {
           name: "읽기",
           data: generateRandomData(50, 30),
-          color: "#3B82F6",
+          color: "#5B8FF9",
         },
         {
           name: "쓰기",
           data: generateRandomData(70, 40),
-          color: "#EF4444",
+          color: "#9270CA",
         },
       ],
 
@@ -187,12 +187,12 @@ function ServerDashboard({
         {
           name: "읽기 IOPS",
           data: generateRandomData(1000, 400),
-          color: "#10B981",
+          color: "#5B8FF9",
         },
         {
           name: "쓰기 IOPS",
           data: generateRandomData(700, 300),
-          color: "#F59E0B",
+          color: "#9270CA",
         },
       ],
     };
@@ -210,34 +210,34 @@ function ServerDashboard({
           {/* 첫 번째 행 - 3개 열 (small) */}
           <div className="chart-row-small">
             <ChartCard title="CPU 사용률" icon={CpuIcon} size="small">
-              <div className="gauge-container">
+              <div className="flex-1 w-full h-full">
                 <GaugeChart
                   value={chartData.cpuUsage}
                   max={100}
                   min={0}
-                  color="#58D9F9"
+                  color="#5B8FF9"
                 />
               </div>
             </ChartCard>
 
             <ChartCard title="MEMORY 사용률" icon={MemoryIcon} size="small">
-              <div className="gauge-container">
+              <div className="flex-1 w-full h-full">
                 <GaugeChart
                   value={chartData.memoryUsage}
                   max={100}
                   min={0}
-                  color="#4ADE80"
+                  color="#9270CA"
                 />
               </div>
             </ChartCard>
 
             <ChartCard title="DISK 사용률" icon={DiskIcon} size="small">
-              <div className="gauge-container">
+              <div className="flex-1 w-full h-full">
                 <GaugeChart
                   value={chartData.diskUsage}
                   max={100}
                   min={0}
-                  color="#A78BFA"
+                  color="#F6BD16"
                 />
               </div>
             </ChartCard>
@@ -246,68 +246,82 @@ function ServerDashboard({
           {/* 두 번째 행 - 2개 열 (medium) */}
           <div className="chart-row-medium">
             <ChartCard title="CPU 사용 모드별 분포" size="medium">
-              <BarChart
-                xAxisData={chartData.barTimeLabels}
-                series={chartData.cpuModes}
-                yAxisUnit="%"
-              />
+              <div className="flex-1 w-full h-full">
+                <BarChart
+                  xAxisData={chartData.barTimeLabels}
+                  series={chartData.cpuModes}
+                  yAxisUnit="%"
+                />
+              </div>
             </ChartCard>
 
             <ChartCard title="시스템 부하 (Load Average)" size="medium">
-              <SmoothLineChart
-                xAxisData={chartData.timeLabels}
-                series={chartData.loadAverage}
-                yAxisUnit="%"
-              />
+              <div className="flex-1 w-full h-full">
+                <SmoothLineChart
+                  xAxisData={chartData.timeLabels}
+                  series={chartData.loadAverage}
+                  yAxisUnit="%"
+                />
+              </div>
             </ChartCard>
           </div>
 
           {/* 세 번째 행 - 1개 열 (large) */}
           <div className="chart-row-large">
             <ChartCard title="메모리 & 스왑 사용률" size="large">
-              <SmoothLineChart
-                xAxisData={chartData.timeLabels}
-                series={chartData.memorySwap}
-                yAxisUnit="%"
-              />
+              <div className="flex-1 w-full h-full">
+                <SmoothLineChart
+                  xAxisData={chartData.timeLabels}
+                  series={chartData.memorySwap}
+                  yAxisUnit="%"
+                />
+              </div>
             </ChartCard>
           </div>
 
           {/* 네 번째 행 - 2개 열 (medium) */}
           <div className="chart-row-medium">
             <ChartCard title="네트워크 대역폭" size="medium">
-              <AreaLineChart
-                xAxisData={chartData.timeLabels}
-                series={chartData.networkBandwidth}
-                yAxisUnit="Mbps"
-              />
+              <div className="flex-1 w-full h-full">
+                <AreaLineChart
+                  xAxisData={chartData.timeLabels}
+                  series={chartData.networkBandwidth}
+                  yAxisUnit="Mbps"
+                />
+              </div>
             </ChartCard>
 
             <ChartCard title="네트워크 에러 & 드롭 패킷" size="medium">
-              <SmoothLineChart
-                xAxisData={chartData.timeLabels}
-                series={chartData.networkErrors}
-                yAxisUnit="count/s"
-              />
+              <div className="flex-1 w-full h-full">
+                <SmoothLineChart
+                  xAxisData={chartData.timeLabels}
+                  series={chartData.networkErrors}
+                  yAxisUnit="count/s"
+                />
+              </div>
             </ChartCard>
           </div>
 
           {/* 다섯 번째 행 - 2개 열 (medium) */}
           <div className="chart-row-medium">
             <ChartCard title="디스크 읽기/쓰기 속도" size="medium">
-              <AreaLineChart
-                xAxisData={chartData.timeLabels}
-                series={chartData.diskIO}
-                yAxisUnit="MB/s"
-              />
+              <div className="flex-1 w-full h-full">
+                <AreaLineChart
+                  xAxisData={chartData.timeLabels}
+                  series={chartData.diskIO}
+                  yAxisUnit="MB/s"
+                />
+              </div>
             </ChartCard>
 
             <ChartCard title="디스크 IOPS" size="medium">
-              <SmoothLineChart
-                xAxisData={chartData.timeLabels}
-                series={chartData.diskIOPS}
-                yAxisUnit="IOPS"
-              />
+              <div className="flex-1 w-full h-full">
+                <SmoothLineChart
+                  xAxisData={chartData.timeLabels}
+                  series={chartData.diskIOPS}
+                  yAxisUnit="IOPS"
+                />
+              </div>
             </ChartCard>
           </div>
         </div>

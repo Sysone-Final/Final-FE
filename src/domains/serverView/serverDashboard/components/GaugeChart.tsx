@@ -25,7 +25,7 @@ function GaugeChart({
     series: [
       {
         type: "gauge",
-        center: ["50%", "65%"],
+        center: ["50%", "60%"],
         radius: "110%",
         startAngle: 180,
         endAngle: 0,

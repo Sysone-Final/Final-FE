@@ -66,9 +66,9 @@ function SmoothLineChart({
       bottom: "3%",
     },
     grid: {
-      left: "3%",
-      right: "4%",
-      bottom: "25%",
+      left: "3.6%",
+      right: "3.6%",
+      bottom: "30%",
       top: "5%",
       containLabel: false,
     },
@@ -88,7 +88,7 @@ function SmoothLineChart({
     yAxis: {
       type: "value",
       scale: true,
-      name: yAxisUnit,
+      name: "",
       nameLocation: "middle",
       nameRotate: 90,
       nameTextStyle: {
@@ -97,6 +97,7 @@ function SmoothLineChart({
       },
       axisLabel: {
         color: "#fff",
+        formatter: `{value}${yAxisUnit}`,
       },
       axisLine: {
         lineStyle: {

@@ -74,12 +74,13 @@ function AreaLineChart({
       textStyle: {
         color: "#fff",
       },
+      bottom: "3%",
     },
     grid: {
-      left: "5%",
-      right: "4%",
+      left: "1%",
+      right: "1%",
       bottom: "20%",
-      top: "10%",
+      top: "5%",
       containLabel: true,
     },
     toolbox: showToolbox
@@ -120,10 +121,8 @@ function AreaLineChart({
     yAxis: {
       type: "value",
       scale: true,
-      name: yAxisUnit,
+      name: "",
       nameLocation: "middle",
-      nameGap: 30,
-      nameRotate: 90,
       nameTextStyle: {
         color: "#fff",
         fontSize: 12,
@@ -134,6 +133,7 @@ function AreaLineChart({
       axisLabel: {
         color: "#fff",
         fontSize: 12,
+        formatter: `{value}${yAxisUnit}`,
       },
       splitLine: {
         lineStyle: {
@@ -246,8 +246,8 @@ function AreaLineChart({
       option={option}
       style={{ height: height, width: "100%" }}
       opts={{ renderer: "canvas" }}
-      notMerge={true} // ✅ 추가
-      lazyUpdate={true} // ✅ 추가
+      notMerge={true}
+      lazyUpdate={true}
     />
   );
 }
