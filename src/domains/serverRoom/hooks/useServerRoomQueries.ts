@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getCompanyServerRooms, createServerRoom, updateServerRoom, getDataCenters, deleteServerRoom, createDataCenter } from "../api/serverRoomApi";
-import type { CreateServerRoomRequest, UpdateServerRoomRequest, CreateDataCenterRequest } from "../api/serverRoomApi";
+import { getCompanyServerRooms, createServerRoom, updateServerRoom, getDataCenters, deleteServerRoom, createDataCenter, updateDataCenter, deleteDataCenter } from "../api/serverRoomApi";
+import type { CreateServerRoomRequest, UpdateServerRoomRequest, CreateDataCenterRequest, UpdateDataCenterRequest } from "../api/serverRoomApi";
 import toast from "react-hot-toast";
 
 /**
@@ -41,6 +41,49 @@ export const useCreateDataCenter = () => {
     },
     onError: () => {
       toast.error("데이터센터 생성에 실패했습니다.");
+    },
+  });
+};
+
+/**
+ * 데이터센터 수정 mutation
+ */
+export const useUpdateDataCenter = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: UpdateDataCenterRequest }) =>
+      updateDataCenter(id, data),
+    onSuccess: () => {
+      // 데이터센터 목록 쿼리 무효화하여 재조회
+      queryClient.invalidateQueries({ queryKey: ["dataCenters"] });
+      // 서버실 목록도 무효화 (데이터센터 정보 포함)
+      queryClient.invalidateQueries({ queryKey: ["serverRooms"] });
+      toast.success("데이터센터가 수정되었습니다.");
+    },
+    onError: () => {
+      toast.error("데이터센터 수정에 실패했습니다.");
+    },
+  });
+};
+
+/**
+ * 데이터센터 삭제 mutation
+ */
+export const useDeleteDataCenter = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (dataCenterId: number) => deleteDataCenter(dataCenterId),
+    onSuccess: () => {
+      // 데이터센터 목록 쿼리 무효화하여 재조회
+      queryClient.invalidateQueries({ queryKey: ["dataCenters"] });
+      // 서버실 목록도 무효화 (데이터센터 정보 포함)
+      queryClient.invalidateQueries({ queryKey: ["serverRooms"] });
+      toast.success("데이터센터가 삭제되었습니다.");
+    },
+    onError: () => {
+      toast.error("데이터센터 삭제에 실패했습니다.");
     },
   });
 };
