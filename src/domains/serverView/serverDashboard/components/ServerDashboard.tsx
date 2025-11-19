@@ -124,7 +124,7 @@ function ServerDashboard({
         {
           name: "5분 평균",
           data: generateRandomData(1.7, 0.8, 31),
-          color: "#9270CA",
+          color: "#5AD8A6",
         },
         {
           name: "15분 평균",
@@ -137,13 +137,13 @@ function ServerDashboard({
         {
           name: "메모리",
           data: generateRandomData(60, 20),
-          color: "#5B8FF9",
+          color: "#5AD8A6",
           showAverage: true,
         },
         {
           name: "스왑",
           data: generateRandomData(30, 15),
-          color: "#9270CA",
+          color: "#F6BD16",
           showAverage: true,
           lineType: "dashed" as const,
         },
@@ -153,12 +153,12 @@ function ServerDashboard({
         {
           name: "수신 (RX)",
           data: generateRandomData(50, 30),
-          color: "#5B8FF9",
+          color: "#5AD8A6",
         },
         {
           name: "송신 (TX)",
           data: generateRandomData(30, 20),
-          color: "#9270CA",
+          color: "#F6BD16",
         },
       ],
 
@@ -178,13 +178,13 @@ function ServerDashboard({
         {
           name: "수신 드롭",
           data: generateRandomData(0.6, 0.4),
-          color: "#F6BD16",
+          color: "#5AD8A6",
           lineType: "dashed" as const,
         },
         {
           name: "송신 드롭",
           data: generateRandomData(0.5, 0.3),
-          color: "#5AD8A6",
+          color: "#F6BD16",
           lineType: "dashed" as const,
         },
       ],
@@ -193,12 +193,12 @@ function ServerDashboard({
         {
           name: "읽기",
           data: generateRandomData(50, 30),
-          color: "#5B8FF9",
+          color: "#5AD8A6",
         },
         {
           name: "쓰기",
           data: generateRandomData(70, 40),
-          color: "#9270CA",
+          color: "#F6BD16",
         },
       ],
 
@@ -206,12 +206,12 @@ function ServerDashboard({
         {
           name: "읽기 IOPS",
           data: generateRandomData(1000, 400),
-          color: "#5B8FF9",
+          color: "#5AD8A6",
         },
         {
           name: "쓰기 IOPS",
           data: generateRandomData(700, 300),
-          color: "#9270CA",
+          color: "#F6BD16",
         },
       ],
     };
@@ -250,7 +250,7 @@ function ServerDashboard({
                   value={chartData.memoryUsage}
                   max={100}
                   min={0}
-                  color="#9270CA"
+                  color="#5AD8A6"
                 />
               </div>
             </ChartCard>
