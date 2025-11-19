@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import "../css/serverDashboard.css";
 import ServerDashboardHeader from "./ServerDashboardHeader";
 import GaugeChart from "./GaugeChart";
@@ -9,12 +9,19 @@ import DiskIcon from "../assets/disk.svg";
 import SmoothLineChart from "./SmoothLineChart";
 import AreaLineChart from "./AreaLineChart";
 import ChartCard from "./ChartCard";
+import ThresholdHeader from "./ThresholdHeader";
 
 interface ServerDashboardProps {
   deviceId: number;
   deviceName: string;
   onClose: () => void;
   isOpen: boolean;
+}
+
+interface ThresholdValues {
+  cpu: { warning: number; critical: number };
+  memory: { warning: number; critical: number };
+  disk: { warning: number; critical: number };
 }
 
 const generateConsistentValue = (
@@ -33,6 +40,18 @@ function ServerDashboard({
   onClose,
   deviceId,
 }: ServerDashboardProps) {
+  const [thresholds, setThresholds] = useState<ThresholdValues>({
+    cpu: { warning: 70, critical: 90 },
+    memory: { warning: 75, critical: 90 },
+    disk: { warning: 80, critical: 95 },
+  });
+
+  // 임계치 저장 핸들러
+  const handleSaveThresholds = (values: ThresholdValues) => {
+    setThresholds(values);
+    console.log("임계치 저장됨:", values);
+  };
+
   //더미 데이터 생성
   const generateTimeLabels = (count: number = 31) => {
     const labels = [];
@@ -204,6 +223,11 @@ function ServerDashboard({
       onClick={(e) => e.stopPropagation()}
     >
       <ServerDashboardHeader deviceName={deviceName} onClose={onClose} />
+      <ThresholdHeader
+        initialValues={thresholds}
+        onSave={handleSaveThresholds}
+        isOpen={isOpen}
+      />
 
       <div className="dashboard-content scrollbar-none">
         <div className="chart-grid">
