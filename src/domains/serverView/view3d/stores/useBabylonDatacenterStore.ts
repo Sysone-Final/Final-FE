@@ -1,9 +1,9 @@
 import { create } from "zustand";
-import type { Equipment3D, EquipmentType, GridConfig } from "../types";
+import type { Equipment3D, EquipmentType, GridConfig } from "../../types";
 import {
   DEFAULT_GRID_CONFIG,
   EQUIPMENT_DEFAULT_ROTATION,
-} from "../constants/config";
+} from "../../constants/config";
 
 /**
  * 장비 목록의 변경 여부를 감지

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Scene, IPointerEvent, PickingInfo } from '@babylonjs/core';
 import { useBabylonDatacenterStore } from '../stores/useBabylonDatacenterStore';
-import type { GridConfig } from '../types';
+import type { GridConfig } from '../../types';
 
 interface UseEquipmentSelectionParams {
   mode: 'edit' | 'view';

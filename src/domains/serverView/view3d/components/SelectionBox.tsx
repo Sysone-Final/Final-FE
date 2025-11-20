@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Scene, MeshBuilder, StandardMaterial, Color3, Mesh } from '@babylonjs/core';
-import { COLORS } from '../constants/config';
+import { COLORS } from '../../constants/config';
 
 interface SelectionBoxProps {
   scene: Scene;

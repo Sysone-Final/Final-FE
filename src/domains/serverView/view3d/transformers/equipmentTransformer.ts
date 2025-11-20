@@ -2,7 +2,7 @@ import type {
   Equipment3D,
   BackendDevice,
   BackendEquipment,
-} from "../types";
+} from "../../types";
 
 /** 백엔드 디바이스 배열을 Equipment3D 배열로 변환 */
 export function transformBackendDevicesToEquipment(
