@@ -10,12 +10,17 @@ import SmoothLineChart from "./SmoothLineChart";
 import AreaLineChart from "./AreaLineChart";
 import ChartCard from "./ChartCard";
 import ThresholdHeader from "./ThresholdHeader";
+import { useUpdateEquipment } from "../hooks/useUpdateEquipment";
+import type { Equipments } from "../../rack/types";
 
 interface ServerDashboardProps {
   deviceId: number;
   deviceName: string;
   onClose: () => void;
   isOpen: boolean;
+  rackId: number;
+  serverRoomId: number;
+  currentEquipment?: Equipments;
 }
 
 interface ThresholdValues {
@@ -39,7 +44,12 @@ function ServerDashboard({
   isOpen,
   onClose,
   deviceId,
+  rackId,
+  serverRoomId,
+  currentEquipment,
 }: ServerDashboardProps) {
+  const { mutate: updateEquipment, isPending } = useUpdateEquipment();
+
   const [thresholds, setThresholds] = useState<ThresholdValues>({
     cpu: { warning: 70, critical: 90 },
     memory: { warning: 75, critical: 90 },
@@ -48,8 +58,40 @@ function ServerDashboard({
 
   // 임계치 저장 핸들러
   const handleSaveThresholds = (values: ThresholdValues) => {
-    setThresholds(values);
-    console.log("임계치 저장됨:", values);
+    if (!currentEquipment) {
+      console.error("장비 정보를 찾을 수 없습니다.");
+      return;
+    }
+
+    updateEquipment(
+      {
+        id: deviceId,
+        data: {
+          equipmentName: currentEquipment.equipmentName,
+          equipmentType: currentEquipment.equipmentType,
+          startUnit: currentEquipment.startUnit,
+          unitSize: currentEquipment.unitSize,
+          status: currentEquipment.status,
+          serverRoomId: serverRoomId,
+          rackId: rackId,
+          cpuThresholdWarning: values.cpu.warning,
+          cpuThresholdCritical: values.cpu.critical,
+          memoryThresholdWarning: values.memory.warning,
+          memoryThresholdCritical: values.memory.critical,
+          diskThresholdWarning: values.disk.warning,
+          diskThresholdCritical: values.disk.critical,
+        },
+      },
+      {
+        onSuccess: (response) => {
+          console.log("임계치 저장 성공:", response);
+          setThresholds(values);
+        },
+        onError: (error) => {
+          console.error("임계치 저장 실패:", error);
+        },
+      }
+    );
   };
 
   //더미 데이터 생성
@@ -227,6 +269,7 @@ function ServerDashboard({
         initialValues={thresholds}
         onSave={handleSaveThresholds}
         isOpen={isOpen}
+        isLoading={isPending}
       />
 
       <div className="dashboard-content scrollbar-none">

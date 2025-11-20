@@ -15,6 +15,7 @@ interface ThresholdHeaderProps {
   initialValues?: ThresholdValues;
   onSave?: (values: ThresholdValues) => void;
   isOpen?: boolean;
+  isLoading?: boolean;
 }
 
 function ThresholdHeader({
@@ -25,6 +26,7 @@ function ThresholdHeader({
   },
   onSave,
   isOpen,
+  isLoading = false,
 }: ThresholdHeaderProps) {
   const [editMode, setEditMode] = useState(false);
   const [values, setValues] = useState<ThresholdValues>(initialValues);
@@ -51,7 +53,9 @@ function ThresholdHeader({
 
   const handleSave = () => {
     onSave?.(values);
-    setEditMode(false);
+    if (!isLoading) {
+      setEditMode(false);
+    }
   };
 
   const handleReset = () => {

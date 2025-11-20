@@ -270,6 +270,7 @@ export function useRackManager({
     isLoading,
     error,
     rack,
+    equipments,
     handleCardClick,
     handleMouseMove,
     handleDeviceDragEnd,

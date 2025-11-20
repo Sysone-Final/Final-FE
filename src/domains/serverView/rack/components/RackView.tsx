@@ -32,6 +32,10 @@ function RackView({ rackName, serverRoomId, onClose }: RackViewProps) {
     frontView,
   });
 
+  const selectedEquipment = rackManager.equipments?.find(
+    (eq) => eq.id === selectedDevice?.id
+  );
+
   useEffect(() => {
     if (editMode) {
       setDashboardOpen(false);
@@ -85,6 +89,9 @@ function RackView({ rackName, serverRoomId, onClose }: RackViewProps) {
           deviceName={selectedDevice?.name || ""}
           onClose={handleDashboardClose}
           isOpen={dashboardOpen}
+          rackId={rackId || 0}
+          serverRoomId={serverRoomId}
+          currentEquipment={selectedEquipment}
         />
       </div>
 
