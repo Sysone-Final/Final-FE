@@ -1,11 +1,11 @@
 import { useEffect, useRef } from "react";
-import type { DeviceCard } from "../types";
+import type { EquipmentCard } from "../types";
 
 interface DropdownProps {
   open: boolean;
   position: { x: number; y: number };
-  items: DeviceCard[];
-  onSelect: (item: DeviceCard) => void;
+  items: EquipmentCard[];
+  onSelect: (item: EquipmentCard) => void;
   onClose: () => void;
   isLoading?: boolean;
   hasNextPage?: boolean;
