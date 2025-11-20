@@ -1,6 +1,8 @@
 import axios from "axios";
 
+// const BASE_URL = "http://localhost:8080/api";
 const BASE_URL = "https://api.serverway.shop/api";
+
 
 // 메모리에 토큰 저장
 let accessTokenInMemory: string | null = null;
