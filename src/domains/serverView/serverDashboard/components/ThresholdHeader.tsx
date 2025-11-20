@@ -42,13 +42,16 @@ function ThresholdHeader({
     type: "warning" | "critical",
     value: number
   ) => {
-    setValues((prev) => ({
-      ...prev,
-      [metric]: {
-        ...prev[metric],
-        [type]: value,
-      },
-    }));
+    setValues((prev) => {
+      const newValues = {
+        ...prev,
+        [metric]: {
+          ...prev[metric],
+          [type]: value,
+        },
+      };
+      return newValues;
+    });
   };
 
   const handleSave = () => {

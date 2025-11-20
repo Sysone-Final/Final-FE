@@ -30,6 +30,12 @@ export interface Equipments {
   ipAddress: string | null;
   positionType: string;
   powerConsumption: number | null;
+  cpuThresholdWarning?: number;
+  cpuThresholdCritical?: number;
+  memoryThresholdWarning?: number;
+  memoryThresholdCritical?: number;
+  diskThresholdWarning?: number;
+  diskThresholdCritical?: number;
 }
 
 export interface Rack {
