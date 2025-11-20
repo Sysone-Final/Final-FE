@@ -31,6 +31,22 @@ const checkCollision = (targetAsset: Asset, allAssets: Asset[]): boolean => {
  return false;
 };
 
+// 평면도 경계 밖으로 나가는지 검사하는 함수
+const checkOutOfBounds = (targetAsset: Asset, gridCols: number, gridRows: number): boolean => {
+ // 왼쪽 또는 위쪽 경계를 벗어나는지 검사
+ if (targetAsset.gridX < 0 || targetAsset.gridY < 0) {
+  return true;
+ }
+ // 오른쪽 또는 아래쪽 경계를 벗어나는지 검사
+ if (
+  targetAsset.gridX + targetAsset.widthInCells > gridCols ||
+  targetAsset.gridY + targetAsset.heightInCells > gridRows
+ ) {
+  return true;
+ }
+ return false;
+};
+
 const LayoutAssetView: React.FC<AssetRendererProps> = ({
  asset,
  gridSize,
@@ -42,6 +58,8 @@ const LayoutAssetView: React.FC<AssetRendererProps> = ({
 }) => {
  const mode = useFloorPlanStore((state) => state.mode);
  const assets = useFloorPlanStore((state) => state.assets);
+ const gridCols = useFloorPlanStore((state) => state.gridCols);
+ const gridRows = useFloorPlanStore((state) => state.gridRows);
 
  const openRackModal = useBabylonDatacenterStore((state) => state.openRackModal);
 
@@ -94,6 +112,35 @@ const LayoutAssetView: React.FC<AssetRendererProps> = ({
    (a) => !assetsToMove.some((m) => m.id === a.id),
   );
 
+  // 경계 검사
+  let outOfBoundsFound = false;
+  for (const memberToMove of assetsToMove) {
+   const movedMemberPreview: Asset = {
+    ...memberToMove,
+    gridX: memberToMove.gridX + deltaGridX,
+    gridY: memberToMove.gridY + deltaGridY,
+   };
+   if (checkOutOfBounds(movedMemberPreview, gridCols, gridRows)) {
+    outOfBoundsFound = true;
+    break;
+   }
+  }
+
+  if (outOfBoundsFound) {
+   const message = asset.groupId
+    ? '그룹을 평면도 밖으로 이동할 수 없습니다.'
+    : `"${asset.name}"을(를) 평면도 밖으로 배치할 수 없습니다.`;
+
+   toast.error(message, {
+    id: 'asset-move-out-of-bounds', // 중복 알림 방지
+   });
+
+   group.x(pixelX + offsetX);
+   group.y(groupY);
+   return;
+  }
+
+  // 충돌 검사
   let collisionFound = false;
   for (const memberToMove of assetsToMove) {
    const movedMemberPreview: Asset = {
@@ -167,7 +214,52 @@ const handleClick = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
     return null;
   }
  };
+
+ // 랙의 문 표시 위치 계산 (rotation 고려)
+ const getRackDoorPosition = () => {
+  // 랙이 아니면 null
+  if (asset.assetType !== 'rack') return null;
+  
+  // doorDirection이 없으면 기본값 'FRONT' 사용 (임시로 모든 랙에 표시)
+  const doorDirection = asset.rackDoorDirection || 'FRONT';
+  
+  const barThickness = 8; // 적당한 두께
+  const rotation = asset.rotation || 0;
+  
+  // 회전 각도에 따라 FRONT가 어느 방향인지 결정
+  // 0도: 위쪽, 90도: 오른쪽, 180도: 아래쪽, 270도: 왼쪽
+  let side: 'top' | 'right' | 'bottom' | 'left' = 'top';
+  
+  if (rotation >= -45 && rotation < 45) {
+    side = 'top';
+  } else if (rotation >= 45 && rotation < 135) {
+    side = 'right';
+  } else if (rotation >= 135 || rotation < -135) {
+    side = 'bottom';
+  } else {
+    side = 'left';
+  }
+  
+  // BACK인 경우 반대편
+  if (doorDirection === 'BACK') {
+    side = side === 'top' ? 'bottom' : side === 'bottom' ? 'top' : side === 'left' ? 'right' : 'left';
+  }
+  
+  const padding = 2;
+  switch (side) {
+    case 'top':
+      return { x: padding, y: 0, width: pixelWidth - padding * 2, height: barThickness };
+    case 'bottom':
+      return { x: padding, y: pixelHeight - barThickness, width: pixelWidth - padding * 2, height: barThickness };
+    case 'left':
+      return { x: 0, y: padding, width: barThickness, height: pixelHeight - padding * 2 };
+    case 'right':
+      return { x: pixelWidth - barThickness, y: padding, width: barThickness, height: pixelHeight - padding * 2 };
+  }
+ };
+ 
  const doorPos = getDoorPosition();
+ const rackDoorPos = getRackDoorPosition();
  const baseFontSize = 16;
  const smallFontSize = 14;
 
@@ -194,8 +286,18 @@ const handleClick = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
     opacity={isDashboardView ? 0.8 : asset.opacity ?? 1} // 대시보드 뷰에서 살짝 투명하게
    />
 
-   {/* 문은 대시보드 뷰에서도 보이도록 유지 */}
-   {(asset.assetType === 'rack' || asset.assetType.startsWith('door')) &&
+   {/* 랙의 문 표시 - 모든 모드에서 표시 */}
+   {asset.assetType === 'rack' && rackDoorPos && (
+     <Rect 
+       {...rackDoorPos} 
+       fill="#06b6d4" // 청록색 (cyan-500)
+       opacity={0.75} // 살짝 투명도
+       listening={false} 
+     />
+   )}
+
+   {/* door 타입 자산의 문 표시 */}
+   {asset.assetType.startsWith('door') &&
     doorPos &&
     !isDashboardView && ( // 대시보드 뷰에서는 문 표시 X
      <Rect {...doorPos} fill={DOOR_COLOR} listening={false} />

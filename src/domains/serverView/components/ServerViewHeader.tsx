@@ -1,10 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { useStore } from "zustand";
+import { useState, useRef, useEffect } from "react";
 import {
   useFloorPlanStore,
   toggleMode,
   groupSelectedAssets,
-  // setDisplayMode,
+  setDashboardMetricView,
   zoom,
 } from "../floorPlan/store/floorPlanStore";
 
@@ -16,11 +17,11 @@ import {
   Redo2,
   ZoomIn,
   ZoomOut,
-  // Palette
+  ChevronDown,
 } from "lucide-react";
-import { useSidebarStore } from "../floorPlan/store/useSidebarStore";
 import { useConfirmationModal } from "../floorPlan/hooks/useConfirmationModal";
 import { useServerRoomEquipment } from "../view3d/hooks/useServerRoomEquipment";
+import type { DashboardMetricView } from "../floorPlan/types";
 
 interface ServerViewHeaderProps {
   serverRoomId?: string;
@@ -40,7 +41,23 @@ function ServerViewHeader({
 
   const mode = useFloorPlanStore((state) => state.mode);
   const selectedAssetIds = useFloorPlanStore((state) => state.selectedAssetIds);
-  // const displayMode = useFloorPlanStore((state) => state.displayMode);
+  const dashboardMetricView = useFloorPlanStore((state) => state.dashboardMetricView);
+
+  // 드롭다운 상태 관리
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // 드롭다운 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleBackNavigation = () => {
     navigate("/server-room-dashboard");
@@ -49,7 +66,6 @@ function ServerViewHeader({
   const undo = useStore(useFloorPlanStore.temporal, (state) => state.undo);
   const redo = useStore(useFloorPlanStore.temporal, (state) => state.redo);
 
-  const { setLeftSidebarOpen } = useSidebarStore();
   const mode3d = useBabylonDatacenterStore((state) => state.mode);
   const toggleMode3d = useBabylonDatacenterStore((state) => state.toggleMode);
 
@@ -60,12 +76,10 @@ function ServerViewHeader({
         if (shouldGroup) {
           groupSelectedAssets();
         }
-        setLeftSidebarOpen(false); // 편집 모드에서는 왼쪽 사이드바 닫기
         toggleMode(); // 2D 모드 전환 실행
       };
 
       if (selectedAssetIds.length > 1) {
-        // 5. window.confirm()을 confirm() 훅으로 대체
         confirm({
           title: "자산 그룹화",
           message: (
@@ -76,16 +90,14 @@ function ServerViewHeader({
             </p>
           ),
           confirmText: "그룹화",
-          confirmAction: () => switchToEditMode(true), // 확인 시 그룹화 후 전환
-          cancelAction: () => switchToEditMode(false), // 취소 시 그냥 전환
+          confirmAction: () => switchToEditMode(true),
+          cancelAction: () => switchToEditMode(false),
         });
       } else {
-        // 그룹화할 자산이 없으면 바로 전환
         switchToEditMode(false);
       }
     } else {
       // "편집" -> "보기" 모드로 전환 시
-      setLeftSidebarOpen(true); // 보기 모드에서는 왼쪽 사이드바 열기
       toggleMode(); // 2D 모드 전환 실행
     }
   };
@@ -98,9 +110,25 @@ function ServerViewHeader({
   const handleZoomIn = () => zoom("in");
   const handleZoomOut = () => zoom("out");
 
+  // 뷰 모드 변경 핸들러
+  const handleViewModeChange = (view: DashboardMetricView) => {
+    setDashboardMetricView(view);
+    setIsDropdownOpen(false);
+  };
+
+  // 뷰 모드 레이블 매핑
+  const viewModeLabels: Record<DashboardMetricView, string> = {
+    default: '📊 임계값',
+    cpuDetail: '💻 CPU 상세',
+    network: '⚡ 전력/네트워크',
+    usage: '📦 자산 점유율',
+    heatmapTemp: '🌡️ 온도 히트맵',
+    heatmapPower: '⚡ 전력 히트맵',
+  };
+
   return (
-    // 헤더 태그
-    <header className="bg-gray-500/30 backdrop-blur-sm border-b border-gray-700 px-6 py-2 flex items-center justify-between flex-shrink-0">
+    // 헤더 태그 - z-index 추가하여 평면도 위에 표시
+    <header className="bg-gray-500/30 backdrop-blur-sm border-b border-gray-700 px-6 py-2 flex items-center justify-between flex-shrink-0 relative z-50">
       <div className="flex items-center gap-4">
         {/* ... (뒤로가기 버튼 코드) ... */}
         <button
@@ -137,31 +165,72 @@ function ServerViewHeader({
             {/* 보기 모드 컨트롤 */}
             {mode === "view" && (
               <>
-                {/* Display Mode Select */}
-                {/* <div className="flex items-center rounded-md p-1 bg-gray-700/50 border border-gray-600">
+                {/* 뷰 필터 드롭다운 */}
+                <div className="relative" ref={dropdownRef}>
                   <button
-                    onClick={() => setDisplayMode('customColor')} // '상면도' 모드
-                    className={`px-3 py-1 rounded-md transition-colors ${
-                      displayMode === 'customColor'
-                        ? 'bg-gray-400 text-white shadow-lg'
-                        : 'text-gray-300 hover:text-white'
-                    }`}
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-600 bg-gray-700/50 text-gray-100 hover:bg-gray-600 transition-colors"
                   >
-                    🖥️ 상면도
+                    <span>{viewModeLabels[dashboardMetricView]}</span>
+                    <ChevronDown className="w-4 h-4" />
                   </button>
-                  <button
-                    onClick={() => setDisplayMode('status')} // '상태 임계값' 모드
-                    className={`px-3 py-1 rounded-md transition-colors ${
-                      displayMode === 'status'
-                        ? 'bg-gray-400 text-white shadow-lg'
-                        : 'text-gray-300 hover:text-white'
-                    }`}
-                  >
-                    📊 상태 임계값
-                  </button>
-                </div> */}
+                  
+                  {isDropdownOpen && (
+                    <div className="absolute top-full mt-2 left-0 w-56 bg-gray-800 border border-gray-600 rounded-lg shadow-lg z-[100] overflow-hidden">
+                      <button
+                        onClick={() => handleViewModeChange('default')}
+                        className={`w-full px-4 py-2 text-left hover:bg-gray-700 transition-colors ${
+                          dashboardMetricView === 'default' ? 'bg-gray-700 text-white' : 'text-gray-300'
+                        }`}
+                      >
+                        📊 임계값 (기본)
+                      </button>
+                      <button
+                        onClick={() => handleViewModeChange('cpuDetail')}
+                        className={`w-full px-4 py-2 text-left hover:bg-gray-700 transition-colors ${
+                          dashboardMetricView === 'cpuDetail' ? 'bg-gray-700 text-white' : 'text-gray-300'
+                        }`}
+                      >
+                        💻 CPU 상세
+                      </button>
+                      <button
+                        onClick={() => handleViewModeChange('network')}
+                        className={`w-full px-4 py-2 text-left hover:bg-gray-700 transition-colors ${
+                          dashboardMetricView === 'network' ? 'bg-gray-700 text-white' : 'text-gray-300'
+                        }`}
+                      >
+                        ⚡ 전력/네트워크
+                      </button>
+                      <button
+                        onClick={() => handleViewModeChange('usage')}
+                        className={`w-full px-4 py-2 text-left hover:bg-gray-700 transition-colors ${
+                          dashboardMetricView === 'usage' ? 'bg-gray-700 text-white' : 'text-gray-300'
+                        }`}
+                      >
+                        📦 자산 점유율
+                      </button>
+                      <div className="border-t border-gray-600" />
+                      <button
+                        onClick={() => handleViewModeChange('heatmapTemp')}
+                        className={`w-full px-4 py-2 text-left hover:bg-gray-700 transition-colors ${
+                          dashboardMetricView === 'heatmapTemp' ? 'bg-gray-700 text-white' : 'text-gray-300'
+                        }`}
+                      >
+                        🌡️ 온도 히트맵
+                      </button>
+                      <button
+                        onClick={() => handleViewModeChange('heatmapPower')}
+                        className={`w-full px-4 py-2 text-left hover:bg-gray-700 transition-colors ${
+                          dashboardMetricView === 'heatmapPower' ? 'bg-gray-700 text-white' : 'text-gray-300'
+                        }`}
+                      >
+                        ⚡ 전력 히트맵
+                      </button>
+                    </div>
+                  )}
+                </div>
+
                 {/* Zoom Buttons */}
-                {/* 🌟 조건부 {displayMode === 'customColor' && ( ... )} 제거 */}
                 <div className="flex items-center border border-gray-600 rounded-lg p-1 bg-gray-700/50">
                   <button
                     onClick={handleZoomOut}
@@ -174,7 +243,7 @@ function ServerViewHeader({
                     onClick={handleZoomIn}
                     className="p-1 rounded-md text-gray-100 hover:bg-gray-600 transition-colors"
                   >
-                    <ZoomIn className="w-5 h-5" />{" "}
+                    <ZoomIn className="w-5 h-5" />
                   </button>
                 </div>
               </>

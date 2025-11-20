@@ -28,6 +28,7 @@ export function transformBackendDeviceToEquipment(
     rotation: degreeToRadian(device.rotation),
     equipmentId: device.id.toString(),
     rackId: device.rackId?.toString(),
+    doorDirection: device.doorDirection, // 랙의 문 방향
     metadata: {
       name: device.deviceName,
       code: device.deviceCode,

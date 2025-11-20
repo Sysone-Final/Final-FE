@@ -83,8 +83,8 @@ export const addAsset = async (newAsset: Omit<Asset, 'id'>, serverRoomId?: strin
     
     // 2D Asset을 3D Equipment로 변환
     const gridConfig = {
-      columns: gridCols - 2, // padding 제거
-      rows: gridRows - 2,
+      columns: gridCols,
+      rows: gridRows,
       cellSize: 2,
     };
     
@@ -162,8 +162,8 @@ export const updateAsset = async (
   try {
     const { gridCols, gridRows } = useFloorPlanStore.getState();
     const gridConfig = {
-      columns: gridCols - 2,
-      rows: gridRows - 2,
+      columns: gridCols,
+      rows: gridRows,
       cellSize: 2,
     };
 
@@ -202,8 +202,8 @@ export const deleteAsset = async (id: string) => {
 
   try {
     const gridConfig = {
-      columns: gridCols - 2,
-      rows: gridRows - 2,
+      columns: gridCols,
+      rows: gridRows,
       cellSize: 2,
     };
 
@@ -265,7 +265,6 @@ export const toggleMode = () =>
     
     return {
       mode: nextMode,
-      dashboardMetricView: nextMode === 'edit' ? 'layout' : state.dashboardMetricView,
       selectedAssetIds: [],
       isRackModalOpen: false,
     };

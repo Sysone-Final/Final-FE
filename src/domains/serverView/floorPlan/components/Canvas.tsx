@@ -43,12 +43,12 @@ const Canvas: React.FC<CanvasProps> = ({ containerRef, serverRoomId }) => {
  const dashboardMetricView = useFloorPlanStore(
   (state) => state.dashboardMetricView,
  );
-const synthesizedDisplayMode: DisplayMode =
-  dashboardMetricView === 'layout' ? 'customColor' : 'status';
 
- const isDashboardView = synthesizedDisplayMode === 'status';
- const isHeatmapView =
-  isDashboardView && dashboardMetricView.startsWith('heatmap');
+ // layout 모드가 제거되었으므로 항상 'status' 모드 사용
+ const synthesizedDisplayMode: DisplayMode = 'status';
+
+ const isDashboardView = true; // 항상 대시보드 뷰
+ const isHeatmapView = dashboardMetricView.startsWith('heatmap');
 
  const [stageSize, setStageSize] = useState({ width: 0, height: 0 });
  const { setNodeRef } = useDroppable({ id: 'canvas-drop-area' });
@@ -117,6 +117,20 @@ const mode = useFloorPlanStore((state) => state.mode); // mode 가져오기
       layer: 'floor' as AssetLayer,
       rotation: 0,
     };
+
+    // 경계 검사
+    if (
+      gridX < 0 ||
+      gridY < 0 ||
+      gridX + newAsset.widthInCells > gridCols ||
+      gridY + newAsset.heightInCells > gridRows
+    ) {
+      toast.error(
+        `"${newAsset.name}"을(를) 평면도 밖으로 배치할 수 없습니다.`,
+        { id: 'asset-out-of-bounds-error' },
+      );
+      return;
+    }
 
     // 충돌 체크
     if (checkCollision(newAsset, assets)) {

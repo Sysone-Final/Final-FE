@@ -75,7 +75,7 @@ export function transform3DTo2DAssets(
 ): Asset[] {
   const assets2D: Asset[] = [];
   
-  const total2DRows = (gridConfig.rows || 8) + 2;
+  const total2DRows = gridConfig.rows || 8;
   
   const maxGridY = total2DRows - 1;
 
@@ -102,15 +102,12 @@ export function transform3DTo2DAssets(
       assetHeight = 0.25;  
     }
 
-    const paddedGridX = eq3D.gridX + 1;
-    const paddedGridY = eq3D.gridY + 1;
-
     assets2D.push({
       id: eq3D.id,
       name: eq3D.metadata?.name || eq3D.type,
 
-      gridX: paddedGridX, 
-      gridY: maxGridY - paddedGridY, 
+      gridX: eq3D.gridX, 
+      gridY: maxGridY - eq3D.gridY, 
       
 
       widthInCells: assetWidth,
@@ -118,6 +115,7 @@ export function transform3DTo2DAssets(
       assetType: assetType2D,
       layer: layer,
       rotation: rotationInDegrees,
+      rackDoorDirection: eq3D.doorDirection, // 랙의 문 방향 (server 타입인 경우)
       data: {
         rackServerId: eq3D.rackId || undefined, // rackId를 저장 (server 타입인 경우)
       },
@@ -146,12 +144,12 @@ export function transform2DToEquipment(
     return null;
   }
 
-  const total2DRows = (gridConfig.rows || 8) + 2;
+  const total2DRows = gridConfig.rows || 8;
   const maxGridY = total2DRows - 1;
 
-  // 2D padded 좌표 -> 3D raw 좌표로 변환
-  const gridX = (asset2D.gridX ?? 1) - 1;
-  const gridY = maxGridY - (asset2D.gridY ?? 1) - 1;
+  // 2D 좌표 -> 3D 좌표로 변환
+  const gridX = asset2D.gridX ?? 0;
+  const gridY = maxGridY - (asset2D.gridY ?? 0);
 
   return {
     id: asset2D.id,
@@ -162,6 +160,7 @@ export function transform2DToEquipment(
     gridZ: 0,
     rotation: ((asset2D.rotation || 0) * Math.PI) / 180, // degree -> radian
     rackId: asset2D.data?.rackServerId?.toString(),
+    doorDirection: asset2D.rackDoorDirection, // 랙의 문 방향
     metadata: {
       name: asset2D.name,
       status: asset2D.status,
