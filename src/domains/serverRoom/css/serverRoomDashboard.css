@@ -7,7 +7,7 @@
 }
 
 .datacenter-tab {
-  @apply px-4 py-3 relative
+  @apply pl-4 pr-2 py-3 relative
         transition-all text-gray-500 duration-200 whitespace-nowrap hover:text-gray-200 flex items-center gap-2;
 }
 
@@ -16,7 +16,7 @@
 }
 
 .datacenter-tab-content {
-  @apply flex items-center gap-2;
+  @apply flex items-center gap-2 font-medium;
 }
 
 .datacenter-tab-menu {
@@ -29,7 +29,7 @@
 }
 
 .datacenter-tab-dropdown {
-  @apply absolute right-0 top-full mt-1 bg-gray-400/50 border border-gray-700 rounded-lg shadow-xl py-1;
+  @apply absolute right-0 top-full mt-1 bg-gray-400/50 backdrop-blur-sm border border-slate-300/40 rounded-lg shadow-xl py-1;
   z-index: 1000;
   position: fixed;
   width: 100px;

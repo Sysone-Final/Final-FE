@@ -130,6 +130,16 @@ export const getServerRooms = async (): Promise<ServerRoomGroup[]> => {
 };
 
 /**
+* 특정 회사의 전산실 목록 조회 (GET /api/company-serverrooms/company/{companyId})
+*/
+export const getServerRoomsByCompany = async (companyId: number): Promise<ServerRoomGroup[]> => {
+  const response = await client.get<ApiResponseWrapper<ServerRoomGroup[]>>(
+    `/company-serverrooms/company/${companyId}`
+  );
+  return response.data.result;
+};
+
+/**
 * 5.1 전산실별 랙 목록 조회 (GET /racks/datacenter/{dataCenterId})
 */
 export const getRacksByServerRoom = async (

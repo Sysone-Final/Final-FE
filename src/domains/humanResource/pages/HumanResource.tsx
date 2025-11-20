@@ -124,7 +124,7 @@ export default function HumanResource() {
       {/* 헤더 */}
       <header className="tab-header">
         <div>
-          <h1 className="text-main-title tab-title">인사 관리</h1>
+          <h1 className="text-main-title tab-title">회원 관리</h1>
           <p className="tab-subtitle text-body-primary text-gray-400">
             시스템 사용자 및 권한을 관리하세요.
           </p>

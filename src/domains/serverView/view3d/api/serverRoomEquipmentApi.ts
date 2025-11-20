@@ -5,8 +5,8 @@ import type {
   CreateDeviceResponse,
   CreateRackResponse,
   UpdateDeviceResponse,
-} from "../types";
-import { DEFAULT_GRID_CONFIG } from "../constants/config";
+} from "../../types";
+import { DEFAULT_GRID_CONFIG } from "../../constants/config";
 import { getNextDeviceNumber, generateDeviceCode } from "../utils/deviceNameGenerator";
 import {
   transformBackendDevicesToEquipment,

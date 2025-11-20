@@ -1,4 +1,4 @@
-import type { Equipment3D } from "../types";
+import type { Equipment3D } from "../../types";
 
 /**
  * 서버실별 3D 장비 배치 목 데이터

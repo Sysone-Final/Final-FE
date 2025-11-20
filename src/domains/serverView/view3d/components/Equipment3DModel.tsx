@@ -15,8 +15,8 @@ import {
   EQUIPMENT_SCALE,
   EQUIPMENT_Y_OFFSET,
   EQUIPMENT_POSITION_OFFSET,
-} from "../constants/config";
-import type { Equipment3D } from "../types";
+} from "../../constants/config";
+import type { Equipment3D } from "../../types";
 
 interface Equipment3DModelProps {
   scene: Scene;

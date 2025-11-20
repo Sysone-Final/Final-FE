@@ -12,11 +12,11 @@ import { transform3DTo2DAssets } from '../utils/dataTransformer';
 
 
 // import LeftSidebar from '../components/LeftSidebar'; 
-import RightSidebar from '../components/RightSidebar'; 
 import StatusLegendAndFilters from '../components/LeftSidebar/StatusLegendAndFilters'; 
 import TopNWidget from '../components/TopNWidget'; 
-import AssetLibrary from '../components/LeftSidebar/AssetLibrary';
 import { FloorPlanConfirmationModal } from '../components/FloorPlanConfirmationModal';
+import EquipmentPalette3D from '@/domains/serverView/components/EquipmentPalette3D';
+import type { EquipmentType } from '@/domains/serverView/types';
 
 interface FloorPlanPageProps {
   containerRef: React.RefObject<HTMLDivElement>;
@@ -90,6 +90,12 @@ const FloorPlanPage: React.FC<FloorPlanPageProps> = ({ containerRef, serverRoomI
   useFloorPlanNavigationGuard();
   
   const { handleDragEnd } = useFloorPlanDragDrop(containerRef);
+
+  // 장비 추가 핸들러
+  const handleAddEquipment = (type: EquipmentType) => {
+    console.log('Adding equipment:', type);
+    // TODO: 2D 평면도에 장비 추가 로직 구현
+  };
   const mode = useFloorPlanStore((state) => state.mode);
   // const displayMode = useFloorPlanStore((state) => state.displayMode);
   const dashboardMetricView = useFloorPlanStore((state) => state.dashboardMetricView);
@@ -98,8 +104,6 @@ const FloorPlanPage: React.FC<FloorPlanPageProps> = ({ containerRef, serverRoomI
   const {
     isLeftSidebarOpen,
     toggleLeftSidebar,
-    isRightSidebarOpen,
-    toggleRightSidebar,
   } = useSidebarStore();
 
   // const isDashboardView = mode === 'view' && displayMode === 'status';
@@ -131,33 +135,19 @@ const FloorPlanPage: React.FC<FloorPlanPageProps> = ({ containerRef, serverRoomI
         <Canvas containerRef={containerRef} />
         {mode === 'view' && !isLayoutView && <TopNWidget />}
 
-        <FloatingSidebarPanel 
-          isOpen={isLeftSidebarOpen} 
-          onToggle={toggleLeftSidebar} 
-          position="left" 
-          // 🌟 '보기' 모드의 타이틀을 하나로 통일
-          title={mode === 'edit' ? '자산 라이브러리' : '보기 옵션 및 필터'}
-        >
-          {
-            // 🌟 '보기' 모드에서는 항상 StatusLegendAndFilters
-            // '편집' 모드에서는 항상 AssetLibrary
-            mode === 'view' ? <StatusLegendAndFilters /> : <AssetLibrary />
-          }
-        </FloatingSidebarPanel>
-        
-        {
-          // 🌟 오른쪽 사이드바는 '편집' 모드일 때만 렌더링
-          mode === 'edit' && (
+        {mode === 'view' && (
           <FloatingSidebarPanel 
-            isOpen={isRightSidebarOpen} 
-            onToggle={toggleRightSidebar} 
-            position="right" 
-            title={'속성 편집'}
+            isOpen={isLeftSidebarOpen} 
+            onToggle={toggleLeftSidebar} 
+            position="left" 
+            title={'보기 옵션 및 필터'}
           >
-            <RightSidebar />
+            <StatusLegendAndFilters />
           </FloatingSidebarPanel>
-          
         )}
+        
+        {mode === 'edit' && <EquipmentPalette3D onAddEquipment={handleAddEquipment} />}
+        
         <RackModal />
         <FloorPlanConfirmationModal />
       </div>

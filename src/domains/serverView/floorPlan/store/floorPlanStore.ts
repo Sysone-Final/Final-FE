@@ -13,7 +13,7 @@ import type {
 } from '../types';
 import { updateEquipment, deleteEquipment } from '@/domains/serverView/view3d/api/serverRoomEquipmentApi';
 // import { getDeviceTypeId } from '@/domains/serverView/view3d/constants/deviceTypes';
-import type { Equipment3D } from '@/domains/serverView/view3d/types';
+import type { Equipment3D } from '@/domains/serverView/types';
 import toast from 'react-hot-toast';
 
 export const initialState: FloorPlanState = {
