@@ -4,17 +4,17 @@ import Canvas from '../components/Canvas';
 import FloatingSidebarPanel from '../components/FloatingSidebarPanel'; 
 import { useFloorPlanDragDrop } from '../hooks/useFloorPlanDragDrop';
 import { useFloorPlanNavigationGuard } from '../hooks/useFloorPlanNavigationGuard';
-import { useFloorPlanStore, initialState } from '../store/floorPlanStore';
+import { useFloorPlanStore, initialState, addAsset } from '../store/floorPlanStore';
 import { useSidebarStore } from '../store/useSidebarStore';
 import RackModal from '@/domains/serverView/components/RackModal';
 import { useServerRoomEquipment } from '@/domains/serverView/view3d/hooks/useServerRoomEquipment';
 import { transform3DTo2DAssets } from '../utils/dataTransformer';
+import EquipmentPalette3D from '@/domains/serverView/view3d/components/EquipmentPalette3D';
+import type { EquipmentType } from '@/domains/serverView/view3d/types';
+import type { AssetType, AssetLayer } from '../types';
 
-
-import LeftSidebar from '../components/LeftSidebar'; 
 import StatusLegendAndFilters from '../components/LeftSidebar/StatusLegendAndFilters'; 
 import TopNWidget from '../components/TopNWidget'; 
-import AssetLibrary from '../components/LeftSidebar/AssetLibrary';
 import { FloorPlanConfirmationModal } from '../components/FloorPlanConfirmationModal';
 
 interface FloorPlanPageProps {
@@ -28,7 +28,7 @@ const FloorPlanPage: React.FC<FloorPlanPageProps> = ({ containerRef, serverRoomI
   const { equipment: equipment3D, gridConfig, loading, error } = useServerRoomEquipment(serverRoomId);
 
   // 스토어 상태 및 사이드바 초기화 (최초 마운트 시 1회)
-  const { setLeftSidebarOpen, setRightSidebarOpen } = useSidebarStore();
+  const { setLeftSidebarOpen } = useSidebarStore();
   
   useEffect(() => {
     console.log('Initializing 2D FloorPlan Store...');
@@ -38,8 +38,7 @@ const FloorPlanPage: React.FC<FloorPlanPageProps> = ({ containerRef, serverRoomI
 
     // B. 사이드바 상태를 초기값으로 리셋
     setLeftSidebarOpen(true);
-    setRightSidebarOpen(false);
-  }, [setLeftSidebarOpen, setRightSidebarOpen]); // 최초 1회 실행
+  }, [setLeftSidebarOpen]); // 최초 1회 실행
 
   // API 데이터가 로드되면 2D 스토어에 반영
   useEffect(() => {
@@ -97,9 +96,46 @@ const FloorPlanPage: React.FC<FloorPlanPageProps> = ({ containerRef, serverRoomI
   const {
     isLeftSidebarOpen,
     toggleLeftSidebar,
-    isRightSidebarOpen,
-    toggleRightSidebar,
   } = useSidebarStore();
+
+  // 3D -> 2D 타입 매핑 함수
+  const map3DTypeTo2DType = (type3D: EquipmentType): AssetType | null => {
+    const typeMap: Record<EquipmentType, AssetType | null> = {
+      server: 'rack',
+      door: 'door_single',
+      climatic_chamber: 'crac',
+      fire_extinguisher: 'fire_suppression',
+      aircon: 'in_row_cooling',
+      thermometer: 'leak_sensor',
+    };
+    return typeMap[type3D] || null;
+  };
+
+  // 3D 장비 팔레트에서 자산 추가
+  const handleAddEquipment = (type3D: EquipmentType) => {
+    const assetType2D = map3DTypeTo2DType(type3D);
+    if (!assetType2D) {
+      console.warn(`Cannot map 3D type ${type3D} to 2D asset type`);
+      return;
+    }
+
+    // 자산 추가 로직 (중앙에 배치)
+    const newAsset = {
+      name: type3D,
+      gridX: Math.floor(gridCols / 2),
+      gridY: Math.floor(gridRows / 2),
+      widthInCells: 1,
+      heightInCells: 1,
+      assetType: assetType2D,
+      layer: 'floor' as AssetLayer,
+      rotation: 0,
+    };
+
+    addAsset(newAsset, serverRoomId);
+  };
+
+  const gridCols = useFloorPlanStore((state) => state.gridCols);
+  const gridRows = useFloorPlanStore((state) => state.gridRows);
 
   // const isDashboardView = mode === 'view' && displayMode === 'status';
 
@@ -127,30 +163,23 @@ const FloorPlanPage: React.FC<FloorPlanPageProps> = ({ containerRef, serverRoomI
   return (
     <DndContext onDragEnd={handleDragEnd}>
       <div className="flex-1 relative overflow-hidden">
-        <Canvas containerRef={containerRef} />
+        <Canvas containerRef={containerRef} serverRoomId={serverRoomId} />
         {mode === 'view' && !isLayoutView && <TopNWidget />}
 
-        {/* 왼쪽 사이드바: 보기 모드에서는 필터, 편집 모드에서는 속성 편집 */}
-        <FloatingSidebarPanel 
-          isOpen={isLeftSidebarOpen} 
-          onToggle={toggleLeftSidebar} 
-          position="left" 
-          title={mode === 'edit' ? '속성 편집' : '보기 옵션 및 필터'}
-        >
-          {mode === 'view' ? <StatusLegendAndFilters /> : <LeftSidebar />}
-        </FloatingSidebarPanel>
-        
-        {/* 오른쪽 사이드바: 편집 모드에서만 자산 라이브러리 표시 */}
-        {mode === 'edit' && (
+        {/* 왼쪽 사이드바: 보기 모드에서만 필터 표시 */}
+        {mode === 'view' && (
           <FloatingSidebarPanel 
-            isOpen={isRightSidebarOpen} 
-            onToggle={toggleRightSidebar} 
-            position="right" 
-            title={'자산 라이브러리'}
+            isOpen={isLeftSidebarOpen} 
+            onToggle={toggleLeftSidebar} 
+            position="left" 
+            title="보기 옵션 및 필터"
           >
-            <AssetLibrary />
+            <StatusLegendAndFilters />
           </FloatingSidebarPanel>
         )}
+
+        {/* 편집 모드에서 3D 장비 팔레트 표시 */}
+        {mode === 'edit' && <EquipmentPalette3D onAddEquipment={handleAddEquipment} />}
         
         <RackModal />
         <FloorPlanConfirmationModal />

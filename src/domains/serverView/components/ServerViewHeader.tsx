@@ -49,7 +49,7 @@ function ServerViewHeader({
   const undo = useStore(useFloorPlanStore.temporal, (state) => state.undo);
   const redo = useStore(useFloorPlanStore.temporal, (state) => state.redo);
 
-  const { setLeftSidebarOpen, setRightSidebarOpen } = useSidebarStore();
+  const { setLeftSidebarOpen } = useSidebarStore();
   const mode3d = useBabylonDatacenterStore((state) => state.mode);
   const toggleMode3d = useBabylonDatacenterStore((state) => state.toggleMode);
 
@@ -60,8 +60,7 @@ function ServerViewHeader({
         if (shouldGroup) {
           groupSelectedAssets();
         }
-        setLeftSidebarOpen(true);
-        setRightSidebarOpen(true);
+        setLeftSidebarOpen(false); // 편집 모드에서는 왼쪽 사이드바 닫기
         toggleMode(); // 2D 모드 전환 실행
       };
 
@@ -86,7 +85,7 @@ function ServerViewHeader({
       }
     } else {
       // "편집" -> "보기" 모드로 전환 시
-      setRightSidebarOpen(false);
+      setLeftSidebarOpen(true); // 보기 모드에서는 왼쪽 사이드바 열기
       toggleMode(); // 2D 모드 전환 실행
     }
   };
