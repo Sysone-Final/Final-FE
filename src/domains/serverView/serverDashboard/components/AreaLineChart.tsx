@@ -1,4 +1,5 @@
 import ReactECharts from "echarts-for-react";
+import { useEffect, useState } from "react";
 
 interface SeriesData {
   name: string;
@@ -32,6 +33,12 @@ function AreaLineChart({
   height = "100%",
   showToolbox = false,
 }: AreaLineChartProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const option = {
     tooltip: {
       trigger: "axis",
@@ -67,12 +74,13 @@ function AreaLineChart({
       textStyle: {
         color: "#fff",
       },
+      bottom: "3%",
     },
     grid: {
-      left: "5%",
-      right: "4%",
+      left: "1%",
+      right: "1%",
       bottom: "20%",
-      top: "10%",
+      top: "5%",
       containLabel: true,
     },
     toolbox: showToolbox
@@ -113,24 +121,24 @@ function AreaLineChart({
     yAxis: {
       type: "value",
       scale: true,
-      name: yAxisUnit,
+      name: "",
       nameLocation: "middle",
-      nameGap: 30,
-      nameRotate: 90,
       nameTextStyle: {
         color: "#fff",
         fontSize: 12,
       },
       axisLine: {
         show: false,
+        color: "rgba(255, 255, 255, 0.05)",
       },
       axisLabel: {
         color: "#fff",
         fontSize: 12,
+        formatter: `{value}${yAxisUnit}`,
       },
       splitLine: {
         lineStyle: {
-          color: "#333",
+          color: "rgba(255, 255, 255, 0.05)",
           type: "dashed",
         },
       },
@@ -144,6 +152,8 @@ function AreaLineChart({
         "#EC4899",
       ];
       const color = s.color || defaultColors[index % defaultColors.length];
+
+      if (!mounted) return null;
 
       return {
         name: s.name,
@@ -237,6 +247,8 @@ function AreaLineChart({
       option={option}
       style={{ height: height, width: "100%" }}
       opts={{ renderer: "canvas" }}
+      notMerge={true}
+      lazyUpdate={true}
     />
   );
 }

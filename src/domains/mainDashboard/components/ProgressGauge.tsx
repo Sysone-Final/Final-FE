@@ -92,7 +92,7 @@ export default function ProgressGauge({ value, title, unit = '%', color }: Progr
   return (
     <div className="flex flex-col items-center">
       <ReactECharts option={option} style={{ height: '200px', width: '100%' }} opts={{ renderer: 'svg' }} />
-      <div className="text-center -mt-10">
+      <div className="text-center -mt-15">
         <p className="text-sm font-medium text-gray-300">{title}</p>
       </div>
     </div>

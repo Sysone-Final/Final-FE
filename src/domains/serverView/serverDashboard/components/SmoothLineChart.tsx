@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import ReactECharts from "echarts-for-react";
 
 interface SeriesData {
@@ -23,12 +24,18 @@ interface TooltipParams {
   value: number | string;
 }
 
-const SmoothLineChart = ({
+function SmoothLineChart({
   xAxisData,
   series,
   yAxisUnit = "",
   height = "100%",
-}: SmoothLineChartProps) => {
+}: SmoothLineChartProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const option = {
     backgroundColor: "transparent",
     textStyle: {
@@ -59,9 +66,9 @@ const SmoothLineChart = ({
       bottom: "3%",
     },
     grid: {
-      left: "3%",
-      right: "4%",
-      bottom: "25%",
+      left: "3.6%",
+      right: "3.6%",
+      bottom: "30%",
       top: "5%",
       containLabel: false,
     },
@@ -74,14 +81,14 @@ const SmoothLineChart = ({
       },
       axisLine: {
         lineStyle: {
-          color: "#fff",
+          color: "rgba(255, 255, 255, 0.05)",
         },
       },
     },
     yAxis: {
       type: "value",
       scale: true,
-      name: yAxisUnit,
+      name: "",
       nameLocation: "middle",
       nameRotate: 90,
       nameTextStyle: {
@@ -90,6 +97,7 @@ const SmoothLineChart = ({
       },
       axisLabel: {
         color: "#fff",
+        formatter: `{value}${yAxisUnit}`,
       },
       axisLine: {
         lineStyle: {
@@ -98,7 +106,7 @@ const SmoothLineChart = ({
       },
       splitLine: {
         lineStyle: {
-          color: "#333",
+          color: "rgba(255, 255, 255, 0.05)",
         },
       },
     },
@@ -140,13 +148,16 @@ const SmoothLineChart = ({
     })),
   };
 
+  if (!mounted) return null;
+
   return (
     <ReactECharts
       option={option}
       style={{ height, width: "100%" }}
       notMerge={true}
+      lazyUpdate={true}
     />
   );
-};
+}
 
 export default SmoothLineChart;

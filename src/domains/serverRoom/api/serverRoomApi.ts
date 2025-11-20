@@ -143,4 +143,5 @@ export interface UpdateServerRoomRequest {
   description?: string;
   rows: number;
   columns: number;
+  status: "ACTIVE" | "INACTIVE" | "MAINTENANCE";
 }
