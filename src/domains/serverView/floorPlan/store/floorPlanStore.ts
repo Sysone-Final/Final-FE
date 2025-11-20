@@ -51,6 +51,7 @@ export const initialState: FloorPlanState = {
   isLoading: true,
   error: null,
   selectedAssetIds: [],
+  isMagnifierEnabled: false,
 };
 
 const storeCreator: StateCreator<FloorPlanState> = () => initialState;
@@ -418,3 +419,8 @@ export const zoomToAsset = (assetId: string) => {
   setStage({ scale: newScale, x: newX, y: newY });
   useFloorPlanStore.setState({ selectedAssetIds: [assetId] });
 };
+
+export const toggleMagnifier = () =>
+  useFloorPlanStore.setState((state) => ({
+    isMagnifierEnabled: !state.isMagnifierEnabled,
+  }));

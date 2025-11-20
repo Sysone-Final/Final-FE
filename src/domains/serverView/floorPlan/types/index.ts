@@ -105,7 +105,7 @@ visibleLayers: Record<AssetLayer, boolean>;
 
   isLoading: boolean;
   error: string | null;
-
+  isMagnifierEnabled: boolean;
 
 }
 

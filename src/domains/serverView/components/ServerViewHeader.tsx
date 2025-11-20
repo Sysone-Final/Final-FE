@@ -7,6 +7,7 @@ import {
   groupSelectedAssets,
   setDashboardMetricView,
   zoom,
+  toggleMagnifier,
 } from "../floorPlan/store/floorPlanStore";
 
 import { useBabylonDatacenterStore } from "../view3d/stores/useBabylonDatacenterStore";
@@ -18,6 +19,7 @@ import {
   ZoomIn,
   ZoomOut,
   ChevronDown,
+  Search,
 } from "lucide-react";
 import { useConfirmationModal } from "../floorPlan/hooks/useConfirmationModal";
 import { useServerRoomEquipment } from "../view3d/hooks/useServerRoomEquipment";
@@ -42,6 +44,7 @@ function ServerViewHeader({
   const mode = useFloorPlanStore((state) => state.mode);
   const selectedAssetIds = useFloorPlanStore((state) => state.selectedAssetIds);
   const dashboardMetricView = useFloorPlanStore((state) => state.dashboardMetricView);
+  const isMagnifierEnabled = useFloorPlanStore((state) => state.isMagnifierEnabled);
 
   // 드롭다운 상태 관리
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -164,7 +167,21 @@ function ServerViewHeader({
           <>
             {/* 보기 모드 컨트롤 */}
             {mode === "view" && (
+              
               <>
+                              {/* 확대경 버튼 */}
+                <button
+                  onClick={toggleMagnifier}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors min-w-[110px] ${
+                    isMagnifierEnabled
+                      ? 'bg-blue-600 border-blue-500 text-white'
+                      : 'bg-gray-700/50 border-gray-600 text-gray-100 hover:bg-gray-600'
+                  }`}
+                  title="확대경 모드"
+                >
+                  <Search className="w-5 h-5"/>
+                  <span>{isMagnifierEnabled ? '확대경 끄기' : '확대경'}</span>
+                </button>
                 {/* 뷰 필터 드롭다운 */}
                 <div className="relative" ref={dropdownRef}>
                   <button
@@ -246,6 +263,8 @@ function ServerViewHeader({
                     <ZoomIn className="w-5 h-5" />
                   </button>
                 </div>
+
+
               </>
             )}
             {/* 편집 모드 컨트롤 */}

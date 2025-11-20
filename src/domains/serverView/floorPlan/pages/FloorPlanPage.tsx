@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DndContext } from '@dnd-kit/core';
 import Canvas from '../components/Canvas'; 
 import { useFloorPlanDragDrop } from '../hooks/useFloorPlanDragDrop';
@@ -12,6 +12,7 @@ import type { EquipmentType } from '@/domains/serverView/view3d/types';
 import type { AssetType, AssetLayer } from '../types';
 import toast from 'react-hot-toast';
 import { checkCollision } from '../utils/collision';
+import MagnifierWidget from '../components/MagnifierWidget';
 
 import TopNWidget from '../components/TopNWidget'; 
 import { FloorPlanConfirmationModal } from '../components/FloorPlanConfirmationModal';
@@ -25,6 +26,10 @@ const FloorPlanPage: React.FC<FloorPlanPageProps> = ({ containerRef, serverRoomI
   // 훅의 반환 값에 맞게 구조분해 할당을 수정합니다.
   // 'data: apiData'가 아니라 'equipment: equipment3D'와 'gridConfig'를 직접 받습니다.
   const { equipment: equipment3D, gridConfig, loading, error } = useServerRoomEquipment(serverRoomId);
+
+  // 확대경 관련 상태
+  const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null);
+  const isMagnifierEnabled = useFloorPlanStore((state) => state.isMagnifierEnabled);
 
   // 스토어 상태 초기화 (최초 마운트 시 1회)
   useEffect(() => {
@@ -155,6 +160,33 @@ const FloorPlanPage: React.FC<FloorPlanPageProps> = ({ containerRef, serverRoomI
   const isLoadingFromStore = useFloorPlanStore((state) => state.isLoading);
   const errorFromStore = useFloorPlanStore((state) => state.error);
 
+  // 확대경 활성화 시 마우스 위치 추적
+  useEffect(() => {
+    if (!isMagnifierEnabled || !containerRef.current) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      setMousePosition({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      });
+    };
+
+    const handleMouseLeave = () => {
+      setMousePosition(null);
+    };
+
+    const container = containerRef.current;
+    container.addEventListener('mousemove', handleMouseMove);
+    container.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      container.removeEventListener('mousemove', handleMouseMove);
+      container.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, [isMagnifierEnabled, containerRef]);
+
   //  로딩 및 에러 UI 반환
   if (isLoadingFromStore) {
     return (
@@ -181,6 +213,15 @@ const FloorPlanPage: React.FC<FloorPlanPageProps> = ({ containerRef, serverRoomI
 
         {/* 편집 모드에서 3D 장비 팔레트 표시 */}
         {mode === 'edit' && <EquipmentPalette3D onAddEquipment={handleAddEquipment} />}
+        
+        {/* 확대경 위젯: 보기 모드에서 활성화 시 표시 */}
+        {mode === 'view' && isMagnifierEnabled && containerRef.current && (
+          <MagnifierWidget
+            mousePosition={mousePosition}
+            containerWidth={containerRef.current.clientWidth}
+            containerHeight={containerRef.current.clientHeight}
+          />
+        )}
         
         <RackModal />
         <FloorPlanConfirmationModal />
