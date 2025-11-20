@@ -3,7 +3,7 @@ import type { Scene } from '@babylonjs/core';
 import { useBabylonDatacenterStore } from '../stores/useBabylonDatacenterStore';
 import { createDevice } from '../api/serverRoomEquipmentApi';
 import { getNextDeviceNumber, generateDeviceName } from '../utils/deviceNameGenerator';
-import type { EquipmentType, GridConfig } from '../types';
+import type { EquipmentType, GridConfig } from '../../types';
 import type { ToastSeverity } from './useToast';
 
 interface UseEquipmentDragAndDropParams {

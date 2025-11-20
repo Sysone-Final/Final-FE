@@ -36,3 +36,15 @@ export const RESOURCE_STATUS_OPTIONS: {
   { value: "POWERED_OFF", label: "비활성/재고" },
   { value: "DECOMMISSIONED", label: "폐기" },
 ];
+
+/**
+ * 자원 상태 한국어 텍스트 매핑
+ */
+export const RESOURCE_STATUS_LABELS: Record<ResourceStatus, string> = {
+  NORMAL: "정상",
+  MAINTENANCE: "점검중",
+  WARNING: "경고",
+  ERROR: "오류",
+  POWERED_OFF: "비활성/재고",
+  DECOMMISSIONED: "폐기",
+};

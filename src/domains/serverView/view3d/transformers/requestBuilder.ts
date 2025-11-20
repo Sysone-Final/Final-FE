@@ -3,7 +3,7 @@ import type {
   CreateDeviceRequest,
   CreateRackRequest,
   UpdateDeviceRequest,
-} from "../types";
+} from "../../types";
 import { getDeviceTypeId } from "../constants/deviceTypes";
 import { radianToDegree } from "../transformers/equipmentTransformer";
 

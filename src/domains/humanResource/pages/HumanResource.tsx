@@ -15,6 +15,9 @@ import { Plus, Trash2 } from 'lucide-react';
 import { DataTable, DataTablePagination } from '@/shared/table';
 import { memberColumns } from '../components/memberTable.config';
 import AddMemberModal from '../components/AddMemberModal';
+import EditMemberModal from '../components/EditMemberModal';
+import DeleteMemberModal from '../components/DeleteMemberModal';
+import BulkDeleteMemberModal from '../components/BulkDeleteMemberModal';
 import {
   useGetMemberList,
   useDeleteMember,
@@ -31,6 +34,11 @@ export default function HumanResource() {
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [sorting, setSorting] = useState<SortingState>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [memberToDelete, setMemberToDelete] = useState<{ id: number; name: string } | null>(null);
+  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
 
   // --- 데이터 페칭 ---
   const { data: memberData = [], isLoading, isError } = useGetMemberList();
@@ -43,13 +51,23 @@ export default function HumanResource() {
   };
 
   const handleEditMember = (member: Member) => {
-    // TODO: 회원 수정 모달 열기
-    alert(`회원 수정: ${member.name} (ID: ${member.id})`);
+    setSelectedMember(member);
+    setIsEditModalOpen(true);
   };
 
   const handleDeleteMember = (id: number) => {
-    if (window.confirm('정말로 이 회원을 삭제하시겠습니까?')) {
-      deleteMemberMutation.mutate(id);
+    const member = memberData.find((m) => m.id === id);
+    if (member) {
+      setMemberToDelete({ id: member.id, name: member.name });
+      setIsDeleteModalOpen(true);
+    }
+  };
+
+  const confirmDeleteMember = () => {
+    if (memberToDelete) {
+      deleteMemberMutation.mutate(memberToDelete.id);
+      setIsDeleteModalOpen(false);
+      setMemberToDelete(null);
     }
   };
 
@@ -63,16 +81,21 @@ export default function HumanResource() {
       return;
     }
 
-    if (
-      window.confirm(`${selectedIds.length}명의 회원을 삭제하시겠습니까?`)
-    ) {
-      deleteMultipleMembersMutation.mutate(selectedIds, {
-        onSuccess: () => {
-          setRowSelection({});
-          table.resetRowSelection();
-        },
-      });
-    }
+    setIsBulkDeleteModalOpen(true);
+  };
+
+  const confirmBulkDelete = () => {
+    const selectedIds = table
+      .getSelectedRowModel()
+      .rows.map((row) => row.original.id);
+
+    deleteMultipleMembersMutation.mutate(selectedIds, {
+      onSuccess: () => {
+        setRowSelection({});
+        table.resetRowSelection();
+        setIsBulkDeleteModalOpen(false);
+      },
+    });
   };
 
   // --- 테이블 인스턴스 ---
@@ -101,7 +124,7 @@ export default function HumanResource() {
       {/* 헤더 */}
       <header className="tab-header">
         <div>
-          <h1 className="text-main-title tab-title">인사 관리</h1>
+          <h1 className="text-main-title tab-title">회원 관리</h1>
           <p className="tab-subtitle text-body-primary text-gray-400">
             시스템 사용자 및 권한을 관리하세요.
           </p>
@@ -159,6 +182,37 @@ export default function HumanResource() {
       <AddMemberModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
+      />
+
+      {/* 회원 수정 모달 */}
+      <EditMemberModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedMember(null);
+        }}
+        member={selectedMember}
+      />
+
+      {/* 단일 회원 삭제 확인 모달 */}
+      <DeleteMemberModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setMemberToDelete(null);
+        }}
+        onConfirm={confirmDeleteMember}
+        memberName={memberToDelete?.name || ''}
+        isLoading={deleteMemberMutation.isPending}
+      />
+
+      {/* 대량 삭제 확인 모달 */}
+      <BulkDeleteMemberModal
+        isOpen={isBulkDeleteModalOpen}
+        onClose={() => setIsBulkDeleteModalOpen(false)}
+        onConfirm={confirmBulkDelete}
+        selectedCount={selectedCount}
+        isLoading={deleteMultipleMembersMutation.isPending}
       />
     </div>
   );

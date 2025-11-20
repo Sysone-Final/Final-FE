@@ -1,7 +1,6 @@
 import { useForm } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
 import { X } from "lucide-react";
-import { createPortal } from "react-dom";
 import { useCreateServerRoom, useDataCenters } from "../hooks/useServerRoomQueries";
 import type { CreateServerRoomRequest } from "../api/serverRoomApi";
 
@@ -79,7 +78,7 @@ function ServerRoomCreateModal({
 
   if (!isOpen) return null;
 
-  return createPortal(
+  return (
     <div className="modal-bg animate-fadeIn" onClick={handleClose}>
       <div className="modal animate-modalFadeIn max-w-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="p-6 md:p-8">
@@ -254,7 +253,7 @@ function ServerRoomCreateModal({
                     {...register("description")}
                     rows={3}
                     className="modal-input"
-                    placeholder="부산 지역 주요 데이터센터"
+                    placeholder="서버실의 주요 정보를 작성하세요."
                   ></textarea>
                 </div>
               </div>
@@ -282,8 +281,7 @@ function ServerRoomCreateModal({
           </form>
         </div>
       </div>
-    </div>,
-    document.body
+    </div>
   );
 }
 

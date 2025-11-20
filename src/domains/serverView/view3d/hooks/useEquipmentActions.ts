@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { useBabylonDatacenterStore } from '../stores/useBabylonDatacenterStore';
 import { createDevice, deleteEquipment, updateEquipment } from '../api/serverRoomEquipmentApi';
 import { getNextDeviceNumber, generateDeviceName } from '../utils/deviceNameGenerator';
-import type { EquipmentType } from '../types';
+import type { EquipmentType } from '../../types';
 import type { ToastSeverity } from './useToast';
 
 interface UseEquipmentActionsParams {

@@ -1,4 +1,4 @@
-import type { Equipment3D, EquipmentType as EquipmentType3D, GridConfig } from '../../view3d/types';
+import type { Equipment3D, EquipmentType as EquipmentType3D, GridConfig } from '../../types';
 import type { Asset, AssetType as AssetType2D, AssetLayer } from '../types';
 
 // 3D 뷰의 장비 타입 -> 2D 뷰의 장비 타입 매핑

@@ -22,11 +22,13 @@ import {
   useDeleteResource,
   useDeleteMultipleResources,
   useUpdateMultipleResourceStatus,
-  useGetServerRooms,
+  useGetServerRoomsByCompany,
   RESOURCE_QUERY_KEY // import 추가 확인
 } from '../hooks/useResourceQueries';
+import { useAuthStore } from '@domains/login/store/useAuthStore';
 import type { ResourceListFilters, Resource, ResourceTableMeta, PaginatedResourceResponse, ResourceStatus } from '../types/resource.types';
 import { useDebounce } from '../hooks/useDebounce';
+import { RESOURCE_STATUS_LABELS } from '../constants/resource.constants';
 import { ConfirmationModal } from '@shared/ConfirmationModal';
 import { useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -34,6 +36,10 @@ import Snackbar from '@shared/Snackbar';
 
 export default function ResourceManagePage() {
   const queryClient = useQueryClient();
+  
+  // 로그인한 사용자의 회사 ID 가져오기
+  const { user } = useAuthStore();
+  const companyId = user?.companyId ?? null;
   
   // --- 상태 관리 ---
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
@@ -49,17 +55,11 @@ export default function ResourceManagePage() {
   const [serverRoomFilter, setServerRoomFilter] = useState("");
   const [errorToastId, setErrorToastId] = useState<string | null>(null);
 
-  // --- [중요 수정] 서버실 데이터 로딩 (한 번만 호출해야 함) ---
+  // --- [중요 수정] 로그인한 사용자의 회사에 해당하는 서버실 데이터 로딩 ---
   const { 
     data: serverRoomGroups, 
     isLoading: isLoadingServerRooms 
-  } = useGetServerRooms();
-
-  // 필터바용 평평한 리스트 생성
-  const flattenedServerRooms = useMemo(() => {
-    if (!serverRoomGroups) return [];
-    return serverRoomGroups.flatMap(group => group.serverRooms);
-  }, [serverRoomGroups]);
+  } = useGetServerRoomsByCompany(companyId);
 
   // API 호출 지연을 위한 Debounce
   const debouncedkeyword = useDebounce(keyword, 300);
@@ -272,11 +272,12 @@ export default function ResourceManagePage() {
       },
     );
 
+    const statusLabel = RESOURCE_STATUS_LABELS[newStatus] || newStatus;
     toast.custom(
       (t) => (
         <Snackbar
           t={t}
-          message={`${selectedCount}개 자산 상태가 변경되었습니다.`}
+          message={`${selectedCount}개 자산의 상태가 [${statusLabel}]로 변경되었습니다.`}
           actionText="실행 취소"
           onAction={() => {
             clearTimeout(statusUpdateTimer);
@@ -349,7 +350,7 @@ export default function ResourceManagePage() {
           onTypeChange={setTypeFilter}
           serverRoomFilter={serverRoomFilter}
           onServerRoomChange={setServerRoomFilter}
-          serverRooms={flattenedServerRooms}
+          serverRoomGroups={serverRoomGroups}
           isLoadingServerRooms={isLoadingServerRooms}
         />
 

@@ -9,9 +9,11 @@ import "../css/serverRoomCard.css";
 interface Props {
   room: ServerRoom;
   dataCenterAddress: string;
+  onEditClick: (serverRoom: ServerRoom) => void;
+  onDeleteClick: (serverRoom: ServerRoom) => void;
 }
 
-function ServerRoomCard({ room, dataCenterAddress }: Props) {
+function ServerRoomCard({ room, dataCenterAddress, onEditClick, onDeleteClick }: Props) {
   const navigate = useNavigate();
 
   const handleViewLayout = (e: React.MouseEvent) => {
@@ -19,15 +21,43 @@ function ServerRoomCard({ room, dataCenterAddress }: Props) {
     navigate(`/server-room/${room.id}/view`);
   };
 
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    onEditClick(room);
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    onDeleteClick(room);
+  };
+
   return (
     <div className="server-room-card">
       <div className="card-header">
-        <h3 className="card-title text-title">{room.name}</h3>
+        <h3 className="card-title text-lg font-bold text-gray-50">
+          <span className="flex items-center gap-2">
+            <span className={`relative flex h-2 w-2 ${room.status === 'ACTIVE' ? '' : 'opacity-100'}`}>
+              {room.status === 'ACTIVE' && (
+                <>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                </>
+              )}
+              {room.status === 'MAINTENANCE' && (
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-yellow-400"></span>
+              )}
+              {room.status === 'INACTIVE' && (
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-gray-500"></span>
+              )}
+            </span>
+            {room.name}
+          </span>
+        </h3>
         <div className="card-actions">
-          <button className="icon-button">
+          <button className="icon-button" onClick={handleEditClick}>
             <FaPencilAlt />
           </button>
-          <button className="icon-button">
+          <button className="icon-button" onClick={handleDeleteClick}>
             <FaTrash />
           </button>
         </div>
@@ -58,7 +88,7 @@ function ServerRoomCard({ room, dataCenterAddress }: Props) {
           className="manage-layout-link text-button"
           onClick={handleViewLayout}
         >
-          레이아웃 관리 →
+          서버실 관리 →
         </a>
       </div>
     </div>

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Color3, StandardMaterial, MeshBuilder, Scene, Mesh, LinesMesh, Vector3 } from '@babylonjs/core';
-import { COLORS } from '../constants/config';
-import type { GridConfig } from '../types';
+import { COLORS } from '../../constants/config';
+import type { GridConfig } from '../../types';
 
 interface GridFloorProps {
   scene: Scene;

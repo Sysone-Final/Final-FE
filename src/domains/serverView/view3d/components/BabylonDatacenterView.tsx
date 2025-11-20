@@ -3,11 +3,11 @@ import type { Scene } from '@babylonjs/core';
 import { Snackbar, Alert } from '@mui/material';
 import GridFloor from './GridFloor';
 import Equipment3DModel from './Equipment3DModel';
-import EquipmentPalette3D from './EquipmentPalette3D';
+import EquipmentPalette3D from '../../components/EquipmentPalette3D';
 import ContextMenu from './ContextMenu';
 import SelectionBox from './SelectionBox';
 import { useBabylonDatacenterStore } from '../stores/useBabylonDatacenterStore';
-import { EQUIPMENT_PALETTE } from '../constants/config';
+import { EQUIPMENT_PALETTE } from '../../constants/config';
 import { useServerRoomEquipment } from '../hooks/useServerRoomEquipment';
 import { useToast } from '../hooks/useToast';
 import { useBabylonScene } from '../hooks/useBabylonScene';
@@ -50,7 +50,14 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
   } = useBabylonDatacenterStore();
 
   // 서버실 데이터 로드
-  const { equipment: fetchedEquipment, gridConfig: fetchedGridConfig, loading: equipmentLoading } = useServerRoomEquipment(serverRoomId);
+  const {
+    equipment: fetchedEquipment,
+    gridConfig: fetchedGridConfig,
+    loading: equipmentLoading,
+    isFetching: equipmentFetching,
+  } = useServerRoomEquipment(serverRoomId);
+
+  const isEquipmentReady = !equipmentLoading && !equipmentFetching;
 
   // 커스텀 훅들
   const { toast, showToast, hideToast } = useToast();
@@ -58,7 +65,7 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
   const { scene, isSceneReady } = useBabylonScene({
     canvasRef,
     gridConfig,
-    isLoading: equipmentLoading,
+    isLoading: equipmentLoading || equipmentFetching,
   });
   
   const {
@@ -111,7 +118,7 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
 
   // 서버실 데이터 로드 및 그리드 설정
   useEffect(() => {
-    if (!serverRoomId || equipmentLoading) return;
+    if (!serverRoomId || !isEquipmentReady) return;
     if (!fetchedEquipment || !fetchedGridConfig) return;
 
     // 그리드 설정 업데이트
@@ -122,7 +129,15 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
 
     // 서버실 초기화 (변경 감지 로직은 initializeServerRoom 내부에서 처리)
     initializeServerRoom(serverRoomId, fetchedEquipment);
-  }, [serverRoomId, currentServerRoomId, initializeServerRoom, fetchedEquipment, fetchedGridConfig, equipmentLoading, setGridConfig]);
+  }, [
+    serverRoomId, 
+    currentServerRoomId, 
+    initializeServerRoom, 
+    fetchedEquipment, 
+    fetchedGridConfig,
+    isEquipmentReady,
+    setGridConfig
+  ]);
 
   // Server 클릭 핸들러 (view 모드에서만)
   const serverClickHandler = useCallback((serverId: string) => {
@@ -167,7 +182,9 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
       />
 
       {/* 로딩 표시  */}
-      {equipmentLoading && <LoadingSpinner message="서버실 데이터를 불러오는 중..." />}
+      {(equipmentLoading || equipmentFetching) && (
+        <LoadingSpinner message="서버실 데이터를 불러오는 중..." />
+      )}
 
       {/* 컨트롤 가이드 */}
       <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-md rounded-lg p-3 text-white text-xs max-w-xs z-10">
