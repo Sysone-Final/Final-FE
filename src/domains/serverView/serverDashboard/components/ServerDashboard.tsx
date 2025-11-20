@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import "../css/serverDashboard.css";
 import ServerDashboardHeader from "./ServerDashboardHeader";
 import GaugeChart from "./GaugeChart";
@@ -50,11 +50,32 @@ function ServerDashboard({
 }: ServerDashboardProps) {
   const { mutate: updateEquipment, isPending } = useUpdateEquipment();
 
-  const [thresholds, setThresholds] = useState<ThresholdValues>({
-    cpu: { warning: 70, critical: 90 },
-    memory: { warning: 75, critical: 90 },
-    disk: { warning: 80, critical: 95 },
-  });
+  const initialThresholds = useMemo<ThresholdValues>(() => {
+    if (!currentEquipment) {
+      return {
+        cpu: { warning: 0, critical: 0 },
+        memory: { warning: 0, critical: 0 },
+        disk: { warning: 0, critical: 0 },
+      };
+    }
+
+    const result = {
+      cpu: {
+        warning: currentEquipment.cpuThresholdWarning || 0,
+        critical: currentEquipment.cpuThresholdCritical || 0,
+      },
+      memory: {
+        warning: currentEquipment.memoryThresholdWarning || 0,
+        critical: currentEquipment.memoryThresholdCritical || 0,
+      },
+      disk: {
+        warning: currentEquipment.diskThresholdWarning || 0,
+        critical: currentEquipment.diskThresholdCritical || 0,
+      },
+    };
+
+    return result;
+  }, [currentEquipment]);
 
   // 임계치 저장 핸들러
   const handleSaveThresholds = (values: ThresholdValues) => {
@@ -85,7 +106,6 @@ function ServerDashboard({
       {
         onSuccess: (response) => {
           console.log("임계치 저장 성공:", response);
-          setThresholds(values);
         },
         onError: (error) => {
           console.error("임계치 저장 실패:", error);
@@ -266,7 +286,8 @@ function ServerDashboard({
     >
       <ServerDashboardHeader deviceName={deviceName} onClose={onClose} />
       <ThresholdHeader
-        initialValues={thresholds}
+        key={deviceId}
+        initialValues={initialThresholds}
         onSave={handleSaveThresholds}
         isOpen={isOpen}
         isLoading={isPending}

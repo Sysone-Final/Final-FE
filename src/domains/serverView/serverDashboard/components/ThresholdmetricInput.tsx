@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface ThresholdMetricProps {
   label: string;
@@ -26,46 +26,106 @@ function ThresholdMetricInput({
     criticalValue
   );
 
+  const [warningChanged, setWarningChanged] = useState(false);
+  const [criticalChanged, setCriticalChanged] = useState(false);
+
+  useEffect(() => {
+    if (!editingWarning) {
+      setTempWarning(warningValue);
+      setWarningChanged(false);
+    }
+  }, [warningValue, editingWarning, label, tempWarning, warningChanged]);
+
+  useEffect(() => {
+    if (!editingCritical) {
+      setTempCritical(criticalValue);
+      setCriticalChanged(false);
+    }
+  }, [criticalValue, editingCritical]);
+
   const handleWarningClick = () => {
     if (!editMode) return;
     setEditingWarning(true);
     setTempWarning(warningValue);
+    setWarningChanged(false); // 클릭 시 리셋
   };
 
   const handleCriticalClick = () => {
     if (!editMode) return;
     setEditingCritical(true);
     setTempCritical(criticalValue);
+    setCriticalChanged(false); // 클릭 시 리셋
   };
 
   const saveWarning = () => {
+    console.log(`🔍 ${label} - saveWarning 시작:`, {
+      warningChanged,
+      tempWarning,
+      warningValue,
+      editingWarning,
+    });
+
+    if (!warningChanged) {
+      setEditingWarning(false);
+      return;
+    }
+
     let value =
       tempWarning === null || tempWarning === undefined || isNaN(tempWarning)
         ? 0
         : Math.max(0, Math.min(100, tempWarning));
 
-    // 경고값이 임계값보다 크면 임계값으로 제한
-    if (value > criticalValue) {
+    if (criticalValue > 0 && value > criticalValue) {
       value = criticalValue;
     }
 
     onWarningChange(value);
     setEditingWarning(false);
+    setWarningChanged(false);
   };
 
   const saveCritical = () => {
+    if (!criticalChanged) {
+      setEditingCritical(false);
+      return;
+    }
+
     let value =
       tempCritical === null || tempCritical === undefined || isNaN(tempCritical)
         ? 0
         : Math.max(0, Math.min(100, tempCritical));
 
-    // 임계값이 경고값보다 작으면 경고값으로 제한
-    if (value < warningValue) {
+    if (warningValue > 0 && value < warningValue) {
       value = warningValue;
     }
 
     onCriticalChange(value);
     setEditingCritical(false);
+    setCriticalChanged(false);
+  };
+
+  const handleWarningChange = (val: string) => {
+    setWarningChanged(true); // 변경됨!
+    if (val === "") {
+      setTempWarning(null);
+    } else {
+      const numVal = parseInt(val);
+      if (!isNaN(numVal) && numVal >= 0 && numVal <= 100) {
+        setTempWarning(numVal);
+      }
+    }
+  };
+
+  const handleCriticalChange = (val: string) => {
+    setCriticalChanged(true); // 변경됨!
+    if (val === "") {
+      setTempCritical(null);
+    } else {
+      const numVal = parseInt(val);
+      if (!isNaN(numVal) && numVal >= 0 && numVal <= 100) {
+        setTempCritical(numVal);
+      }
+    }
   };
 
   const handleWarningKeyDown = (e: React.KeyboardEvent) => {
@@ -114,17 +174,7 @@ function ThresholdMetricInput({
           <input
             type="number"
             value={tempWarning ?? ""}
-            onChange={(e) => {
-              const val = e.target.value;
-              if (val === "") {
-                setTempWarning(null);
-              } else {
-                const numVal = parseInt(val);
-                if (!isNaN(numVal) && numVal >= 0 && numVal <= 100) {
-                  setTempWarning(numVal);
-                }
-              }
-            }}
+            onChange={(e) => handleWarningChange(e.target.value)}
             onBlur={saveWarning}
             onKeyDown={handleWarningKeyDown}
             onWheel={(e) => e.currentTarget.blur()}
@@ -161,17 +211,7 @@ function ThresholdMetricInput({
           <input
             type="number"
             value={tempCritical ?? ""}
-            onChange={(e) => {
-              const val = e.target.value;
-              if (val === "") {
-                setTempCritical(null);
-              } else {
-                const numVal = parseInt(val);
-                if (!isNaN(numVal) && numVal >= 0 && numVal <= 100) {
-                  setTempCritical(numVal);
-                }
-              }
-            }}
+            onChange={(e) => handleCriticalChange(e.target.value)}
             onBlur={saveCritical}
             onKeyDown={handleCriticalKeyDown}
             onWheel={(e) => e.currentTarget.blur()}
