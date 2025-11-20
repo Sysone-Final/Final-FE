@@ -169,7 +169,7 @@ export function useRackManager({
         return null;
       });
     },
-    [frontView, editingDeviceId, installedDevices, postPlaceEquipments]
+    [frontView, editingDeviceId, installedDevices, postPlaceEquipments, rackId]
   );
 
   const handleDeviceNameChange = useCallback(
