@@ -7,7 +7,13 @@ export type EquipmentType =
   | "LOAD_BALANCER"
   | "KVM";
 
-export type EquipmentStatus = "NORMAL" | "WARNING" | "ERROR" | "MAINTENANCE";
+export type EquipmentStatus =
+  | "NORMAL"
+  | "WARNING"
+  | "ERROR"
+  | "MAINTENANCE"
+  | "POWERED_OFF"
+  | "DECOMMISSIONED";
 
 export type EquipmentPosition = "FRONT" | "BACK";
 
@@ -15,8 +21,8 @@ export interface Equipments {
   id: number;
   equipmentName: string;
   equipmentCode: string | null;
-  equipmentType: string;
-  status: string;
+  equipmentType: EquipmentType;
+  status: EquipmentStatus;
   startUnit: number;
   unitSize: number;
   modelName: string | null;
@@ -38,16 +44,37 @@ export interface RackEquipmentsResult {
   totalEquipmentCount: number;
 }
 
-export interface DeviceCard {
+export interface EquipmentCard {
   key: string;
   label: string;
   size: string;
   img: string;
   height: number;
   type: EquipmentType;
+  id?: number;
 }
 
 export interface FloatingDevice {
-  card: DeviceCard;
+  card: EquipmentCard;
   mouseY: number;
+}
+
+export interface UnassignedEquipment extends Equipments {
+  rackId: number | null;
+  rackName: string | null;
+}
+
+export interface UpdateEquipmentRequest
+  extends Pick<
+    Equipments,
+    "equipmentName" | "equipmentType" | "startUnit" | "unitSize" | "status"
+  > {
+  serverRoomId: number;
+  rackId: number;
+  cpuThresholdWarning: number;
+  cpuThresholdCritical: number;
+  memoryThresholdWarning: number;
+  memoryThresholdCritical: number;
+  diskThresholdWarning: number;
+  diskThresholdCritical: number;
 }

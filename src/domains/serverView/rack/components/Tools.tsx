@@ -5,16 +5,17 @@ import routerImg from "../assets/router.svg";
 import kvmImg from "../assets/kvm.svg";
 import firewallImg from "../assets/firewall.svg";
 import loadBalanceImg from "../assets/loadbalance.svg";
-import type { DeviceCard } from "../types";
+import type { EquipmentCard } from "../types";
 import { typeColorMap } from "../utils/colorMap";
 import Tooltip from "./Tooltip";
 
 interface ToolsProps {
-  onCardClick: (card: DeviceCard) => void;
+  onCardClick: (card: EquipmentCard) => void;
+  onContextMenu: (e: React.MouseEvent, card: EquipmentCard) => void;
 }
 
-function Tools({ onCardClick }: ToolsProps) {
-  const deviceCards: DeviceCard[] = [
+function Tools({ onCardClick, onContextMenu }: ToolsProps) {
+  const deviceCards: EquipmentCard[] = [
     {
       key: "server",
       label: "서버",
@@ -80,17 +81,17 @@ function Tools({ onCardClick }: ToolsProps) {
         return (
           <Tooltip key={card.key} content={card.label}>
             <div
-              key={card.key}
               onClick={() => onCardClick(card)}
+              onContextMenu={(e) => onContextMenu(e, card)}
               className="
-              flex items-center justify-center
-              w-10 h-10 m-2 p-2
-              rounded-[4px]
-              transition-transform duration-150
-              cursor-pointer
-              hover:scale-105 active:scale-95
-              shadow-md
-            "
+                flex items-center justify-center
+                w-10 h-10 m-2 p-2
+                rounded-[4px]
+                transition-transform duration-150
+                cursor-pointer
+                hover:scale-105 active:scale-95
+                shadow-md
+              "
               style={{
                 backgroundColor: color,
               }}
