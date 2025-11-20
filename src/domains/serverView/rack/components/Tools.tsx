@@ -5,17 +5,17 @@ import routerImg from "../assets/router.svg";
 import kvmImg from "../assets/kvm.svg";
 import firewallImg from "../assets/firewall.svg";
 import loadBalanceImg from "../assets/loadbalance.svg";
-import type { DeviceCard } from "../types";
+import type { EquipmentCard } from "../types";
 import { typeColorMap } from "../utils/colorMap";
 import Tooltip from "./Tooltip";
 
 interface ToolsProps {
-  onCardClick: (card: DeviceCard) => void;
-  onContextMenu: (e: React.MouseEvent, card: DeviceCard) => void;
+  onCardClick: (card: EquipmentCard) => void;
+  onContextMenu: (e: React.MouseEvent, card: EquipmentCard) => void;
 }
 
 function Tools({ onCardClick, onContextMenu }: ToolsProps) {
-  const deviceCards: DeviceCard[] = [
+  const deviceCards: EquipmentCard[] = [
     {
       key: "server",
       label: "서버",

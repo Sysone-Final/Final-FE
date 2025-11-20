@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
-import type { Equipments, FloatingDevice, DeviceCard } from "../types";
+import type { Equipments, FloatingDevice, EquipmentCard } from "../types";
 import { checkCollision } from "../utils/rackCollisionDetection";
 import { useGetRackEquipments } from "./useGetRackEquipments";
 import { usePostEquipment } from "./usePostRackEquipments";
@@ -52,7 +52,7 @@ export function useRackManager({
   }, [equipments, tempDevices]);
 
   // 카드 클릭 핸들러
-  const handleCardClick = useCallback((card: DeviceCard) => {
+  const handleCardClick = useCallback((card: EquipmentCard) => {
     setFloatingDevice({
       card,
       mouseY: 0,

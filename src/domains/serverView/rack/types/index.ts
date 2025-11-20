@@ -12,7 +12,8 @@ export type EquipmentStatus =
   | "WARNING"
   | "ERROR"
   | "MAINTENANCE"
-  | "POWERED_OFF";
+  | "POWERED_OFF"
+  | "DECOMMISSIONED";
 
 export type EquipmentPosition = "FRONT" | "BACK";
 
@@ -43,7 +44,7 @@ export interface RackEquipmentsResult {
   totalEquipmentCount: number;
 }
 
-export interface DeviceCard {
+export interface EquipmentCard {
   key: string;
   label: string;
   size: string;
@@ -54,7 +55,7 @@ export interface DeviceCard {
 }
 
 export interface FloatingDevice {
-  card: DeviceCard;
+  card: EquipmentCard;
   mouseY: number;
 }
 

@@ -1,26 +1,26 @@
 import { useState } from "react";
 import Tools from "./Tools";
 import Dropdown from "./Dropdown";
-import type { DeviceCard, UnassignedEquipment } from "../types";
+import type { EquipmentCard, UnassignedEquipment } from "../types";
 import { useUnassignedEquipments } from "../hooks/useGetUnassignedEquipments";
 import { deviceImageMap } from "../utils/deviceImageMap";
 
 interface SidebarProps {
-  onCardClick: (card: DeviceCard) => void;
+  onCardClick: (card: EquipmentCard) => void;
   isOpen: boolean;
 }
 
 function Sidebar({ onCardClick, isOpen }: SidebarProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({ x: 0, y: 0 });
-  const [selectedCard, setSelectedCard] = useState<DeviceCard | null>(null);
+  const [selectedCard, setSelectedCard] = useState<EquipmentCard | null>(null);
 
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
     useUnassignedEquipments({
       enabled: dropdownOpen,
     });
 
-  const handleContextMenu = (e: React.MouseEvent, card: DeviceCard) => {
+  const handleContextMenu = (e: React.MouseEvent, card: EquipmentCard) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -40,7 +40,7 @@ function Sidebar({ onCardClick, isOpen }: SidebarProps) {
     setDropdownOpen(true);
   };
 
-  const handleDropdownSelect = (item: DeviceCard) => {
+  const handleDropdownSelect = (item: EquipmentCard) => {
     onCardClick(item);
     setDropdownOpen(false);
   };
@@ -49,7 +49,7 @@ function Sidebar({ onCardClick, isOpen }: SidebarProps) {
     setDropdownOpen(false);
   };
 
-  const getFilteredEquipments = (): DeviceCard[] => {
+  const getFilteredEquipments = (): EquipmentCard[] => {
     if (!selectedCard || !data?.allEquipments) {
       return [];
     }
