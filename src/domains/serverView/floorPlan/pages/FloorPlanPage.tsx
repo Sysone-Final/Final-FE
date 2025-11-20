@@ -11,8 +11,7 @@ import { useServerRoomEquipment } from '@/domains/serverView/view3d/hooks/useSer
 import { transform3DTo2DAssets } from '../utils/dataTransformer';
 
 
-// import LeftSidebar from '../components/LeftSidebar'; 
-import RightSidebar from '../components/RightSidebar'; 
+import LeftSidebar from '../components/LeftSidebar'; 
 import StatusLegendAndFilters from '../components/LeftSidebar/StatusLegendAndFilters'; 
 import TopNWidget from '../components/TopNWidget'; 
 import AssetLibrary from '../components/LeftSidebar/AssetLibrary';
@@ -89,7 +88,7 @@ const FloorPlanPage: React.FC<FloorPlanPageProps> = ({ containerRef, serverRoomI
   // 페이지 이탈 방지
   useFloorPlanNavigationGuard();
   
-  const { handleDragEnd } = useFloorPlanDragDrop(containerRef);
+  const { handleDragEnd } = useFloorPlanDragDrop(containerRef, serverRoomId);
   const mode = useFloorPlanStore((state) => state.mode);
   // const displayMode = useFloorPlanStore((state) => state.displayMode);
   const dashboardMetricView = useFloorPlanStore((state) => state.dashboardMetricView);
@@ -131,33 +130,28 @@ const FloorPlanPage: React.FC<FloorPlanPageProps> = ({ containerRef, serverRoomI
         <Canvas containerRef={containerRef} />
         {mode === 'view' && !isLayoutView && <TopNWidget />}
 
+        {/* 왼쪽 사이드바: 보기 모드에서는 필터, 편집 모드에서는 속성 편집 */}
         <FloatingSidebarPanel 
           isOpen={isLeftSidebarOpen} 
           onToggle={toggleLeftSidebar} 
           position="left" 
-          // 🌟 '보기' 모드의 타이틀을 하나로 통일
-          title={mode === 'edit' ? '자산 라이브러리' : '보기 옵션 및 필터'}
+          title={mode === 'edit' ? '속성 편집' : '보기 옵션 및 필터'}
         >
-          {
-            // 🌟 '보기' 모드에서는 항상 StatusLegendAndFilters
-            // '편집' 모드에서는 항상 AssetLibrary
-            mode === 'view' ? <StatusLegendAndFilters /> : <AssetLibrary />
-          }
+          {mode === 'view' ? <StatusLegendAndFilters /> : <LeftSidebar />}
         </FloatingSidebarPanel>
         
-        {
-          // 🌟 오른쪽 사이드바는 '편집' 모드일 때만 렌더링
-          mode === 'edit' && (
+        {/* 오른쪽 사이드바: 편집 모드에서만 자산 라이브러리 표시 */}
+        {mode === 'edit' && (
           <FloatingSidebarPanel 
             isOpen={isRightSidebarOpen} 
             onToggle={toggleRightSidebar} 
             position="right" 
-            title={'속성 편집'}
+            title={'자산 라이브러리'}
           >
-            <RightSidebar />
+            <AssetLibrary />
           </FloatingSidebarPanel>
-          
         )}
+        
         <RackModal />
         <FloorPlanConfirmationModal />
       </div>

@@ -72,6 +72,7 @@ export interface Resource {
 
   // API 9.2 Read-only/Additional fields
   rackName?: string | null;
+  serverRoomName?: string | null; // 전산실명 (백엔드에서 제공)
   createdAt?: string | null;
   updatedAt?: string | null;
   position?: number | null; // (API 9.2, startUnit과 유사)

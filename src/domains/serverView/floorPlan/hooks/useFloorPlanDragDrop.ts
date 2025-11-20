@@ -8,9 +8,10 @@ import React from 'react';
 
 export const useFloorPlanDragDrop = (
   containerRef: React.RefObject<HTMLDivElement>,
+  serverRoomId?: string,
 ) => {
   const handleDragEnd = (event: DragEndEvent) => {
-    const { over, active } = event;
+    const { over, active, delta } = event;
     const { stage, assets } = useFloorPlanStore.getState();
 
     // 캔버스 ref가 없거나, 드롭 영역이 아니면 중단
@@ -33,9 +34,9 @@ export const useFloorPlanDragDrop = (
     const { top: containerTop, left: containerLeft } =
       containerRef.current.getBoundingClientRect();
 
-    // dnd-kit이 반환한 *화면(Viewport) 기준* 좌표
-    const dropX_viewport = active.rect.current.translated?.left ?? 0;
-    const dropY_viewport = active.rect.current.translated?.top ?? 0;
+    // 드래그 시작 위치에서 delta를 더해 최종 드롭 위치 계산
+    const dropX_viewport = (active.rect.current.initial?.left ?? 0) + delta.x;
+    const dropY_viewport = (active.rect.current.initial?.top ?? 0) + delta.y;
 
     // 화면 기준 좌표에서 캔버스 offset을 빼서 *캔버스 기준* 좌표로 변환
     const dropX_relative = dropX_viewport - containerLeft;
@@ -45,9 +46,9 @@ export const useFloorPlanDragDrop = (
     const stageX = (dropX_relative - stage.x) / stage.scale;
     const stageY = (dropY_relative - stage.y) / stage.scale;
 
-    // Stage 좌표를 그리드 좌표로 변환 (Math.round 유지)
-    const gridX = Math.round((stageX - HEADER_PADDING) / CELL_SIZE);
-    const gridY = Math.round((stageY - HEADER_PADDING) / CELL_SIZE);
+    // Stage 좌표를 그리드 좌표로 변환 (정확한 위치 계산)
+    const gridX = Math.floor((stageX - HEADER_PADDING) / CELL_SIZE);
+    const gridY = Math.floor((stageY - HEADER_PADDING) / CELL_SIZE);
 
     const newAsset: Omit<Asset, 'id'> = { ...template, gridX, gridY };
 
@@ -61,9 +62,7 @@ export const useFloorPlanDragDrop = (
       return;
     }
 
-    addAsset(newAsset);
-
-    toast.success(`"${newAsset.name}" 자산이 추가되었습니다.`);
+    addAsset(newAsset, serverRoomId);
   };
 
   return { handleDragEnd };

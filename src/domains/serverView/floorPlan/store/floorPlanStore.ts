@@ -11,9 +11,10 @@ import type {
   AssetLayer,
   AssetStatus,
 } from '../types';
-import { updateEquipment, deleteEquipment } from '@/domains/serverView/view3d/api/serverRoomEquipmentApi';
-// import { getDeviceTypeId } from '@/domains/serverView/view3d/constants/deviceTypes';
+import { createDevice, updateEquipment, deleteEquipment } from '@/domains/serverView/view3d/api/serverRoomEquipmentApi';
+import { getNextDeviceNumber, generateDeviceName } from '@/domains/serverView/view3d/utils/deviceNameGenerator';
 import type { Equipment3D } from '@/domains/serverView/view3d/types';
+import { transform2DToEquipment, transform3DTo2DAssets } from '../utils/dataTransformer';
 import toast from 'react-hot-toast';
 
 export const initialState: FloorPlanState = {
@@ -71,22 +72,73 @@ export const useFloorPlanStore = create<FloorPlanState>()(
 );
 
 
-export const addAsset = async (newAsset: Omit<Asset, 'id'>) => {
-  try {
-    const response = await fetch('/api/floorplan/assets', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newAsset),
-    });
-    if (!response.ok) throw new Error('Failed to add asset');
+export const addAsset = async (newAsset: Omit<Asset, 'id'>, serverRoomId?: string) => {
+  if (!serverRoomId) {
+    toast.error('서버실 ID가 없습니다.');
+    return;
+  }
 
-    const savedAsset = await response.json();
-    useFloorPlanStore.setState((state) => ({
-      assets: [...state.assets, savedAsset],
-    }));
+  try {
+    const { gridCols, gridRows, assets } = useFloorPlanStore.getState();
+    
+    // 2D Asset을 3D Equipment로 변환
+    const gridConfig = {
+      columns: gridCols - 2, // padding 제거
+      rows: gridRows - 2,
+      cellSize: 2,
+    };
+    
+    const equipment3D = transform2DToEquipment(newAsset, gridConfig);
+    
+    if (!equipment3D || !equipment3D.type) {
+      toast.error('지원하지 않는 자산 타입입니다.');
+      return;
+    }
+
+    // 장비 이름 생성
+    const nextNumber = getNextDeviceNumber(
+      assets.map(a => ({
+        id: a.id,
+        type: equipment3D.type!,
+        gridX: 0, gridY: 0, gridZ: 0, rotation: 0,
+        metadata: { name: a.name }
+      })),
+      equipment3D.type,
+      serverRoomId
+    );
+    const deviceName = generateDeviceName(equipment3D.type, serverRoomId, nextNumber);
+
+    // 3D API를 통해 장비 생성
+    const createdEquipment = await createDevice(
+      {
+        ...equipment3D,
+        metadata: {
+          ...equipment3D.metadata,
+          name: deviceName,
+          status: 'NORMAL',
+        },
+      } as Omit<Equipment3D, 'id' | 'equipmentId'>,
+      Number(serverRoomId),
+      assets.map(a => ({
+        id: a.id,
+        type: equipment3D.type!,
+        gridX: 0, gridY: 0, gridZ: 0, rotation: 0,
+        metadata: { name: a.name }
+      }))
+    );
+
+    // 3D Equipment를 2D Asset으로 변환하여 스토어에 추가
+    const newAssets2D = transform3DTo2DAssets([createdEquipment], gridConfig);
+    
+    if (newAssets2D.length > 0) {
+      useFloorPlanStore.setState((state) => ({
+        assets: [...state.assets, newAssets2D[0]],
+      }));
+      toast.success(`"${deviceName}" 자산이 추가되었습니다.`);
+    }
   } catch (err) {
     console.error('Error adding asset:', err);
-    // TODO: 사용자에게 에러 알림
+    toast.error('자산 추가에 실패했습니다.');
   }
 };
 
@@ -95,39 +147,34 @@ export const updateAsset = async (
   newProps: Partial<Omit<Asset, 'id'>>,
 ) => {
   const originalAssets = useFloorPlanStore.getState().assets;
+  const assetToUpdate = originalAssets.find(a => a.id === id);
+  
+  if (!assetToUpdate) return;
+
+  // Optimistic Update
+  const updatedAsset = { ...assetToUpdate, ...newProps, updatedAt: new Date().toISOString() };
   useFloorPlanStore.setState((state) => ({
     assets: state.assets.map((asset) =>
-      asset.id === id
-        ? { ...asset, ...newProps, updatedAt: new Date().toISOString() }
-        : asset,
+      asset.id === id ? updatedAsset : asset
     ),
   }));
 
   try {
-    const updatedAsset = useFloorPlanStore.getState().assets.find(a => a.id === id);
-    if (!updatedAsset) return;
-
-    // 2D Asset -> 3D Equipment 포맷으로 변환 (API 호환용)
-    // 실제로는 API가 id와 변경할 필드만 요구하므로 필요한 정보만 매핑합니다.
-    const equipmentPayload: Equipment3D = {
-      id: updatedAsset.id,
-      equipmentId: updatedAsset.id, // ID 매핑 주의
-      type: 'server', // 기본값, 실제로는 assetType 매핑 필요하지만 update API는 주로 ID사용
-      gridX: updatedAsset.gridX - 1, // 2D(padded) -> 3D(raw) 좌표 변환
-      gridY: updatedAsset.gridY - 1,
-      gridZ: 0,
-      // degree -> radian 변환 (API는 내부적으로 degree를 기대할 수 있으나, 
-      // 제공해주신 3D 코드는 radian을 받아서 degree로 변환해 보냄.
-      // 여기서는 2D가 degree를 쓰므로 API 스펙에 맞춰 조정 필요.
-      // serverRoomEquipmentApi.ts의 buildUpdateDeviceRequest가 radianToDegree를 수행하므로
-      // 여기서는 Radian으로 변환해서 줘야 함)
-      rotation: (updatedAsset.rotation || 0) * (Math.PI / 180), 
-      metadata: {
-        name: updatedAsset.name,
-        status: updatedAsset.status,
-      }
+    const { gridCols, gridRows } = useFloorPlanStore.getState();
+    const gridConfig = {
+      columns: gridCols - 2,
+      rows: gridRows - 2,
+      cellSize: 2,
     };
-    await updateEquipment(equipmentPayload);
+
+    // 2D Asset -> 3D Equipment 변환
+    const equipment3D = transform2DToEquipment(updatedAsset, gridConfig);
+    
+    if (!equipment3D) {
+      throw new Error('Failed to transform asset to equipment');
+    }
+
+    await updateEquipment(equipment3D as Equipment3D);
 
   } catch (err) {
     console.error('Error updating asset:', err);
@@ -137,11 +184,13 @@ export const updateAsset = async (
 };
 
 export const deleteAsset = async (id: string) => {
-  const { assets: originalAssets, selectedAssetIds: originalSelectedIds } =
+  const { assets: originalAssets, selectedAssetIds: originalSelectedIds, gridCols, gridRows } =
     useFloorPlanStore.getState();
 
   const assetToDelete = originalAssets.find((asset) => asset.id === id);
   const assetName = assetToDelete?.name ?? '자산';
+
+  if (!assetToDelete) return;
 
   // Optimistic Update
   useFloorPlanStore.setState((state) => ({
@@ -152,17 +201,20 @@ export const deleteAsset = async (id: string) => {
   toast.success(`"${assetName}"이(가) 삭제되었습니다.`);
 
   try {
-    // 공통 API 호출
-    // deleteEquipment는 타입과 rackId 등을 확인하므로 최소한의 정보 구성
-    const equipmentPayload: Equipment3D = {
-      id: id,
-      equipmentId: id,
-      type: assetToDelete?.assetType === 'rack' ? 'server' : 'door', // 단순 매핑
-      gridX: 0, gridY: 0, gridZ: 0, rotation: 0,
-      rackId: assetToDelete?.data?.rackServerId?.toString() // rackId가 있다면 전달
+    const gridConfig = {
+      columns: gridCols - 2,
+      rows: gridRows - 2,
+      cellSize: 2,
     };
 
-    await deleteEquipment(equipmentPayload);
+    // 2D Asset -> 3D Equipment 변환
+    const equipment3D = transform2DToEquipment(assetToDelete, gridConfig);
+    
+    if (!equipment3D) {
+      throw new Error('Failed to transform asset to equipment');
+    }
+
+    await deleteEquipment(equipment3D as Equipment3D);
 
   } catch (err) {
     console.error('Error deleting asset:', err);

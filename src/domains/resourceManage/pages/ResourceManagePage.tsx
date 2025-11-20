@@ -48,6 +48,17 @@ export default function ResourceManagePage() {
   const [selectedResourceId, setSelectedResourceId] = useState<number | null>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
 
+  // 페이지네이션 변경 핸들러 (디버깅용)
+  const handlePaginationChange = (updater: PaginationState | ((old: PaginationState) => PaginationState)) => {
+    console.log('🔧 setPagination 호출됨:', updater);
+    
+    const newPagination = typeof updater === 'function' ? updater(pagination) : updater;
+    console.log('📍 이전 pagination:', pagination);
+    console.log('📍 새로운 pagination:', newPagination);
+    
+    setPagination(newPagination);
+  };
+
   // 검색/필터 상태
   const [keyword, setkeyword] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -84,6 +95,14 @@ export default function ResourceManagePage() {
     pagination.pageSize,
     filters
   );
+
+  // 페이지 변경 시 로그
+  useEffect(() => {
+    console.log('🔄 페이지 변경 감지:', {
+      pageIndex: pagination.pageIndex,
+      pageSize: pagination.pageSize,
+    });
+  }, [pagination.pageIndex, pagination.pageSize]);
 
   useEffect(() => {
     if (isError && !isFetching && !errorToastId) {
@@ -123,6 +142,19 @@ export default function ResourceManagePage() {
 
   const resourceData = paginatedData?.content ?? [];
   const totalPageCount = paginatedData?.totalPages ?? 0;
+
+  // 디버깅: 페이지네이션 정보 로그
+  useEffect(() => {
+    if (paginatedData) {
+      console.log('📊 페이지네이션 정보:', {
+        현재페이지: pagination.pageIndex + 1,
+        전체페이지: paginatedData.totalPages,
+        페이지크기: pagination.pageSize,
+        전체항목수: paginatedData.totalElements,
+        현재페이지항목수: paginatedData.content.length,
+      });
+    }
+  }, [paginatedData, pagination.pageIndex, pagination.pageSize]);
 
   // --- 이벤트 핸들러 ---
   const addResourceHandler = () => {
@@ -246,7 +278,12 @@ export default function ResourceManagePage() {
     const selectedIds = table.getSelectedRowModel().rows.map((row) => row.original.id);
     const selectedCount = selectedIds.length;
 
-    if (selectedCount === 0) return;
+    console.log('🔵 상태 변경 시작:', { selectedIds, newStatus, selectedCount });
+
+    if (selectedCount === 0) {
+      console.warn('⚠️ 선택된 항목이 없습니다.');
+      return;
+    }
 
     const queryKey = [
       RESOURCE_QUERY_KEY,
@@ -255,22 +292,49 @@ export default function ResourceManagePage() {
       filters,
     ];
 
-    const statusUpdateTimer = setTimeout(() => {
-      updateStatusMutation.mutate({ ids: selectedIds, status: newStatus });
-    }, 5000);
+    console.log('🔑 Query Key:', queryKey);
 
-    queryClient.setQueryData(
-      queryKey,
-      (oldData: PaginatedResourceResponse | undefined) => {
-        if (!oldData) return undefined;
-        return {
-          ...oldData,
-          content: oldData.content.map((r) =>
-            selectedIds.includes(r.id) ? { ...r, status: newStatus } : r,
-          ),
-        };
-      },
-    );
+    // 즉시 상태 변경하고 리렌더링 트리거
+    const previousData = queryClient.getQueryData<PaginatedResourceResponse>(queryKey);
+    console.log('📦 이전 데이터:', previousData);
+
+    if (previousData) {
+      const updatedContent = previousData.content.map((r) =>
+        selectedIds.includes(r.id) ? { ...r, status: newStatus } : r,
+      );
+      
+      const newData: PaginatedResourceResponse = {
+        ...previousData,
+        content: updatedContent,
+      };
+
+      console.log('✅ 새로운 데이터 설정:', newData);
+      
+      // 강제로 데이터 업데이트
+      queryClient.setQueryData(queryKey, newData);
+      
+      // 즉시 refetch하여 리렌더링 보장
+      queryClient.invalidateQueries({ 
+        queryKey, 
+        refetchType: 'none' // refetch하지 않고 단순히 stale 마킹
+      });
+    }
+
+    const statusUpdateTimer = setTimeout(() => {
+      console.log('⏰ 5초 경과, API 호출 시작');
+      updateStatusMutation.mutate({ ids: selectedIds, status: newStatus }, {
+        onSuccess: () => {
+          console.log('✅ API 성공');
+          // API 성공 후 모든 자원 쿼리 무효화하여 최신 데이터 가져오기
+          queryClient.invalidateQueries({ queryKey: [RESOURCE_QUERY_KEY] });
+        },
+        onError: (error) => {
+          console.error('❌ API 실패:', error);
+          // API 실패 시 이전 데이터로 롤백
+          queryClient.invalidateQueries({ queryKey: [RESOURCE_QUERY_KEY] });
+        },
+      });
+    }, 5000);
 
     const statusLabel = RESOURCE_STATUS_LABELS[newStatus] || newStatus;
     toast.custom(
@@ -281,7 +345,7 @@ export default function ResourceManagePage() {
           actionText="실행 취소"
           onAction={() => {
             clearTimeout(statusUpdateTimer);
-            queryClient.invalidateQueries({ queryKey });
+            queryClient.invalidateQueries({ queryKey: [RESOURCE_QUERY_KEY] });
             toast.dismiss(t.id);
             toast.success('상태 변경이 취소되었습니다.');
           }}
@@ -289,6 +353,12 @@ export default function ResourceManagePage() {
       ),
       { duration: 5000 },
     );
+
+    // 낙관적 업데이트 직후 선택 초기화
+    setTimeout(() => {
+      setRowSelection({});
+      table.resetRowSelection();
+    }, 100);
   };
 
   const closeModalHandler = () => {
@@ -300,7 +370,7 @@ export default function ResourceManagePage() {
     data: resourceData,
     columns,
     state: { pagination, rowSelection, sorting },
-    onPaginationChange: setPagination,
+    onPaginationChange: handlePaginationChange,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
@@ -309,6 +379,7 @@ export default function ResourceManagePage() {
     pageCount: totalPageCount,
     manualPagination: true,
     enableRowSelection: true,
+    getRowId: (row) => String(row.id),
     meta: {
       editResourceHandler,
       deleteResourceHandler,
