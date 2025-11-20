@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState } from 'react';
 import { Engine, Scene, ArcRotateCamera, HemisphericLight, Vector3, Color4 } from '@babylonjs/core';
-import { CAMERA_CONFIG } from '../constants/config';
-import type { GridConfig } from '../types';
+import { CAMERA_CONFIG } from '../../constants/config';
+import type { GridConfig } from '../../types';
 
 interface UseBabylonSceneParams {
   canvasRef: React.RefObject<HTMLCanvasElement>;

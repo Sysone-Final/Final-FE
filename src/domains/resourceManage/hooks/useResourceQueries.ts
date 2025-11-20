@@ -8,6 +8,7 @@ import {
   deleteMultipleResources,
   getResourceById,
   getServerRooms,
+  getServerRoomsByCompany,
   getRacksByServerRoom,
   updateMultipleResourceStatus,
 } from "../api/resourceManageApi";
@@ -109,6 +110,20 @@ export const useGetServerRooms = () => {
       
       return getServerRooms();
     },
+  });
+};
+
+//  특정 회사의 전산실 목록 조회 훅
+export const useGetServerRoomsByCompany = (companyId: number | null) => {
+  return useQuery<ServerRoomGroup[], Error>({ 
+    queryKey: [SERVERROOM_QUERY_KEY, "company", companyId],
+    queryFn: () => {
+      if (!companyId) {
+        return Promise.resolve([]);
+      }
+      return getServerRoomsByCompany(companyId);
+    },
+    enabled: !!companyId,
   });
 };
 

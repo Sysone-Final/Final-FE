@@ -1,4 +1,4 @@
-import type { Equipment3D, EquipmentType } from '../types';
+import type { Equipment3D, EquipmentType } from '../../types';
 
 /**
  * 장비 이름/코드 생성을 위한 다음 사용 가능한 번호 계산

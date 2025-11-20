@@ -3,7 +3,7 @@ import {
   EQUIPMENT_TYPE_OPTIONS,
   RESOURCE_STATUS_OPTIONS,
 } from "../constants/resource.constants";
-import type { ServerRoom } from "../types/resource.types";
+import type { ServerRoomGroup } from "../types/resource.types";
 
 interface ResourceFiltersProps {
   searchTerm: string;
@@ -14,7 +14,7 @@ interface ResourceFiltersProps {
   onTypeChange: (value: string) => void; 
   serverRoomFilter: string;
   onServerRoomChange: (value: string) => void;
-  serverRooms: ServerRoom[];
+  serverRoomGroups: ServerRoomGroup[] | undefined;
   isLoadingServerRooms: boolean;
 }
 
@@ -27,7 +27,7 @@ export default function ResourceFilters({
   onTypeChange,
   serverRoomFilter,
   onServerRoomChange,
-  serverRooms,
+  serverRoomGroups,
   isLoadingServerRooms,
 }: ResourceFiltersProps) {
   return (
@@ -86,10 +86,23 @@ export default function ResourceFilters({
           {isLoadingServerRooms ? (
             <option disabled>불러오는 중...</option>
           ) : (
-            serverRooms.map((dc) => (
-              <option key={dc.id} value={dc.id}>
-                {dc.name}
-              </option>
+            Array.isArray(serverRoomGroups) &&
+            serverRoomGroups.map((group) => (
+              <optgroup
+                key={group.dataCenterId}
+                label={group.dataCenterName}
+                className="text-gray-300 font-bold bg-gray-800"
+              >
+                {group.serverRooms.map((room) => (
+                  <option
+                    key={room.id}
+                    value={room.id}
+                    className="text-white bg-gray-700 font-normal"
+                  >
+                    {room.name} {room.floor ? `(${room.floor}층)` : ''}
+                  </option>
+                ))}
+              </optgroup>
             ))
           )}
         </select>

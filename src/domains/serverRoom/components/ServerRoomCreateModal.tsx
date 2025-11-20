@@ -253,7 +253,7 @@ function ServerRoomCreateModal({
                     {...register("description")}
                     rows={3}
                     className="modal-input"
-                    placeholder="부산 지역 주요 데이터센터"
+                    placeholder="서버실의 주요 정보를 작성하세요."
                   ></textarea>
                 </div>
               </div>

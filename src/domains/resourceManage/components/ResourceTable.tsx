@@ -11,12 +11,14 @@ import { columns } from './resourceTable.config';
 
 const SkeletonRow = () => {
   // 컬럼  개수만큼 스켈레톤 셀을 생성
-  const cells = Array.from({ length: columns.length }, (_, i) => (
-    <td key={i} className="px-6 py-4 whitespace-nowrap">
-
-      <div className="h-4 bg-slate-700/50 rounded animate-pulse"></div>
-    </td>
-  ));
+  const cells = Array.from({ length: columns.length }, (_, i) => {
+    const columnSize = columns[i]?.size || 120;
+    return (
+      <td key={i} className="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis" style={{ width: columnSize }}>
+        <div className="h-4 bg-slate-700/50 rounded animate-pulse"></div>
+      </td>
+    );
+  });
 
   return <tr className="hover:bg-white/10">{cells}</tr>;
 };
@@ -32,14 +34,15 @@ export default function ResourceTable({ table, isLoading }: ResourceTableProps) 
   return (
 
     <div className="overflow-x-auto bg-gray-700/50 rounded-lg shadow-md border border-slate-300/40"> 
-      <table className="min-w-full"> 
+      <table className="w-full border-collapse" style={{ tableLayout: 'fixed' }}>
         <thead className="bg-gray-600"> 
           {table.getHeaderGroups().map((headerGroup: HeaderGroup<Resource>) => (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
                 <th
                   key={header.id}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider border-b border-slate-300/40" 
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider border-b border-slate-300/40 overflow-hidden text-ellipsis"
+                  style={{ width: header.getSize() }}
                 >
                   {flexRender(
                     header.column.columnDef.header,
@@ -71,7 +74,8 @@ export default function ResourceTable({ table, isLoading }: ResourceTableProps) 
                   <td
                     key={cell.id}
                     // 셀 텍스트 색상
-                    className="px-6 py-4 whitespace-nowrap text-sm text-gray-300" 
+                    className="px-6 py-4 whitespace-nowrap text-sm text-gray-300 overflow-hidden text-ellipsis"
+                    style={{ width: cell.column.columnDef.size }}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
