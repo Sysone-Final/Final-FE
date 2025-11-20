@@ -109,11 +109,15 @@ const LayoutAssetView: React.FC<AssetRendererProps> = ({
   ? STATUS_COLORS[asset.status]
   : '#4b5563';
 
+ // 선택된 자산 강조 스타일
  const strokeColor = isSelected
-  ? STATUS_COLORS.selected
+  ? '#3b82f6' // 밝은 파란색 (blue-500)
   : isDashboardView
   ? '#4a5568'
   : '#bdc3c7';
+
+ const strokeWidth = isSelected ? 5 : 1.5; // 선택 시 두꺼운 테두리
+ const selectedGlow = isSelected ? '#60a5fa' : undefined; // 선택 시 발광 효과 (blue-400)
 
  const offsetX = pixelWidth / 2;
  const offsetY = pixelHeight / 2;
@@ -321,10 +325,29 @@ const handleClick = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
     height={pixelHeight}
     fill={rackFillColor}
     stroke={strokeColor}
-    strokeWidth={isSelected ? 3 : 1.5}
+    strokeWidth={strokeWidth}
     cornerRadius={4}
-    opacity={isDashboardView ? 0.8 : asset.opacity ?? 1} // 대시보드 뷰에서 살짝 투명하게
+    opacity={isDashboardView ? 0.8 : asset.opacity ?? 1}
+    shadowEnabled={isSelected}
+    shadowColor={selectedGlow}
+    shadowBlur={isSelected ? 20 : 0}
+    shadowOpacity={isSelected ? 0.8 : 0}
    />
+
+   {/* 선택된 자산 추가 강조 - 내부 테두리 */}
+   {isSelected && (
+    <Rect
+     x={3}
+     y={3}
+     width={pixelWidth - 6}
+     height={pixelHeight - 6}
+     stroke="#60a5fa"
+     strokeWidth={2}
+     cornerRadius={3}
+     listening={false}
+     opacity={0.6}
+    />
+   )}
 
    {/* 랙의 문 표시 - 모든 모드에서 표시 */}
    {asset.assetType === 'rack' && rackDoorPos && (
