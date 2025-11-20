@@ -10,10 +10,41 @@ import {
 
 import { useBabylonDatacenterStore } from '@/domains/serverView/view3d/stores/useBabylonDatacenterStore';
 import type { AssetRendererProps } from './AssetRenderer';
-import type { Asset } from '../types';
+import type { Asset, AssetType } from '../types';
 
 const STATUS_COLORS = { normal: '#27ae60', warning: '#f39c12', danger: '#c0392b', selected: '#3498db' };
 const DOOR_COLOR = '#7f8c8d';
+
+// 자산 타입별 대표 이름 매핑
+const getAssetDisplayName = (assetType: AssetType): string => {
+  const displayNames: Record<AssetType, string> = {
+    // Floor Layer
+    'wall': '벽',
+    'pillar': '기둥',
+    'ramp': '경사로',
+    'rack': 'rack', // 랙은 실제 이름 사용
+    'storage': '스토리지',
+    'mainframe': '메인프레임',
+    'crash_cart': '크래시 카트',
+    'crac': '항온항습기',
+    'in_row_cooling': '에어컨',
+    'ups_battery': 'UPS',
+    'power_panel': '전력 패널',
+    'speed_gate': '스피드 게이트',
+    'fire_suppression': '소화기',
+    // Wall-Mounted Layer
+    'door_single': '문',
+    'door_double': '문',
+    'door_sliding': '문',
+    'access_control': '출입 통제',
+    'epo': 'EPO',
+    // Overhead Layer
+    'aisle_containment': '통로',
+    'cctv': 'CCTV',
+    'leak_sensor': '온도계',
+  };
+  return displayNames[assetType] || assetType;
+};
 
 const checkCollision = (targetAsset: Asset, allAssets: Asset[]): boolean => {
  for (const otherAsset of allAssets) {
@@ -263,11 +294,20 @@ const handleClick = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
  const baseFontSize = 16;
  const smallFontSize = 14;
 
+ // 모든 텍스트는 회전 상쇄 (항상 수평 유지)
+ const assetRotation = asset.rotation || 0;
+
+ // 편집 모드에서는 텍스트 크기와 정렬 개선
+ const isEditMode = mode === 'edit';
+ const editModeFontSize = 22; // 편집 모드에서 더 큰 글자
+ const textFontSize = isEditMode ? editModeFontSize : baseFontSize;
+ const textY = isEditMode ? (pixelHeight - editModeFontSize) / 2 : 5;
+
  return (
   <Group
    x={pixelX + offsetX}
   y={groupY}
-   rotation={asset.rotation || 0}
+   rotation={assetRotation}
    offsetX={offsetX}
    offsetY={offsetY}
    onClick={handleClick}
@@ -302,20 +342,45 @@ const handleClick = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
     !isDashboardView && ( // 대시보드 뷰에서는 문 표시 X
      <Rect {...doorPos} fill={DOOR_COLOR} listening={false} />
     )}
-   <Group listening={false}>
-    {/* 대시보드 뷰 텍스트 */}
-    {isDashboardView ? (
+   
+   {/* 텍스트 및 정보 Group - 항상 회전 상쇄하여 수평 유지 */}
+   <Group 
+    listening={false}
+    rotation={-assetRotation}
+    offsetX={offsetX}
+    offsetY={offsetY}
+    x={offsetX}
+    y={offsetY}
+   >
+    {/* 편집 모드: 모든 자산 이름을 크고 중앙에 표시 */}
+    {mode === 'edit' ? (
+     <>
+      {asset.assetType !== 'wall' && (
+       <Text
+        text={asset.assetType === 'rack' ? asset.name : getAssetDisplayName(asset.assetType)}
+        x={0}
+        y={textY}
+        fontSize={textFontSize}
+        fill="#FFFFFF"
+        width={pixelWidth}
+        wrap="char"
+        align="center"
+       />
+      )}
+     </>
+    ) : isDashboardView ? (
      <>
       {/* 대시보드 뷰에서는 벽(wall) 이름은 숨기고, 그 외 자산 이름만 표시 */}
       {asset.assetType !== 'wall' && (
        <Text
-        text={asset.name}
-        x={5}
+        text={asset.assetType === 'rack' ? asset.name : getAssetDisplayName(asset.assetType)}
+        x={0}
         y={5}
         fontSize={baseFontSize}
-        fill="#9ca3af" // 어두운 텍스트 색상
-        width={pixelWidth - 10}
+        fill="#9ca3af"
+        width={pixelWidth}
         wrap="char"
+        align="center"
        />
       )}
      </>
@@ -323,13 +388,14 @@ const handleClick = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
      <>
       {displayOptions.showName && (
        <Text
-        text={asset.name}
-        x={5}
+        text={asset.assetType === 'rack' ? asset.name : getAssetDisplayName(asset.assetType)}
+        x={0}
         y={5}
         fontSize={baseFontSize}
         fill="#FFFFFF"
-        width={pixelWidth - 10}
+        width={pixelWidth}
         wrap="char"
+        align="center"
        />
       )}
       {displayOptions.showStatusIndicator && asset.status && (

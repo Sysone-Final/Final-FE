@@ -11,6 +11,7 @@ import EquipmentPalette3D from '@/domains/serverView/view3d/components/Equipment
 import type { EquipmentType } from '@/domains/serverView/view3d/types';
 import type { AssetType, AssetLayer } from '../types';
 import toast from 'react-hot-toast';
+import { checkCollision } from '../utils/collision';
 
 import TopNWidget from '../components/TopNWidget'; 
 import { FloorPlanConfirmationModal } from '../components/FloorPlanConfirmationModal';
@@ -134,11 +135,21 @@ const FloorPlanPage: React.FC<FloorPlanPageProps> = ({ containerRef, serverRoomI
       return;
     }
 
+    // 충돌 검사
+    if (checkCollision(newAsset, assets)) {
+      toast.error(
+        `"${newAsset.name}"을(를) 배치할 수 없습니다. 다른 자산과 겹칩니다.`,
+        { id: 'asset-collision-error' },
+      );
+      return;
+    }
+
     addAsset(newAsset, serverRoomId);
   };
 
   const gridCols = useFloorPlanStore((state) => state.gridCols);
   const gridRows = useFloorPlanStore((state) => state.gridRows);
+  const assets = useFloorPlanStore((state) => state.assets);
 
   // 훅에서 가져온 로딩/에러 상태를 렌더링에 반영
   const isLoadingFromStore = useFloorPlanStore((state) => state.isLoading);
