@@ -50,7 +50,7 @@
 
 /* 차트 행 (1개 열 - large) */
 .chart-row-large {
-  @apply flex gap-3 h-80;
+  @apply flex gap-3 h-96;
 }
 
 /* 게이지 차트 컨테이너 */

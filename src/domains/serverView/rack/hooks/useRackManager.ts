@@ -1,8 +1,9 @@
 import { useState, useCallback, useMemo } from "react";
-import type { Equipments, FloatingDevice, DeviceCard } from "../types";
+import type { Equipments, FloatingDevice, EquipmentCard } from "../types";
 import { checkCollision } from "../utils/rackCollisionDetection";
 import { useGetRackEquipments } from "./useGetRackEquipments";
 import { usePostEquipment } from "./usePostRackEquipments";
+import { usePostPlaceEquipments } from "./usePostPlaceEquipments";
 import { useDeleteEquipments } from "./useDeleteRackEquipments";
 import { useUpdateRackEquipments } from "./useUpdateRackEquipments";
 import type { GetRackEquipmentsParams } from "../api/getRackEquipments";
@@ -37,6 +38,7 @@ export function useRackManager({
 
   //POST
   const { mutate: postEquipment } = usePostEquipment();
+  const { mutate: postPlaceEquipments } = usePostPlaceEquipments();
 
   //DELETE
   const { mutate: deleteEquipment } = useDeleteEquipments();
@@ -50,7 +52,7 @@ export function useRackManager({
   }, [equipments, tempDevices]);
 
   // 카드 클릭 핸들러
-  const handleCardClick = useCallback((card: DeviceCard) => {
+  const handleCardClick = useCallback((card: EquipmentCard) => {
     setFloatingDevice({
       card,
       mouseY: 0,
@@ -117,6 +119,19 @@ export function useRackManager({
           return prevFloating;
         }
 
+        //드롭다운에서 선택한 기존 장비인 경우
+        if (prevFloating.card.id) {
+          postPlaceEquipments({
+            rackId,
+            id: prevFloating.card.id,
+            data: {
+              startUnit: position,
+              unitSize: prevFloating.card.height,
+            },
+          });
+          return null;
+        }
+
         const tempId = Date.now();
         const newDevice: Equipments = {
           id: tempId,
@@ -154,7 +169,7 @@ export function useRackManager({
         return null;
       });
     },
-    [frontView, editingDeviceId, installedDevices]
+    [frontView, editingDeviceId, installedDevices, postPlaceEquipments, rackId]
   );
 
   const handleDeviceNameChange = useCallback(
@@ -170,9 +185,9 @@ export function useRackManager({
 
   // Enter 누름 → 이름 확정 & 배치 → 그 다음 서버 요청
   const handleDeviceNameConfirm = useCallback(
-    (device: Equipments) => {
-      const inputName = tempDeviceName.get(device.id) || "";
-      const finalName = inputName.trim() || device.equipmentType;
+    (device: Equipments, inputName?: string) => {
+      const name = inputName ?? tempDeviceName.get(device.id) ?? "";
+      const finalName = name.trim() || device.equipmentType;
 
       if (!device.equipmentCode?.startsWith("TEMP-")) {
         console.log("임시 장비가 아닙니다");
@@ -255,6 +270,7 @@ export function useRackManager({
     isLoading,
     error,
     rack,
+    equipments,
     handleCardClick,
     handleMouseMove,
     handleDeviceDragEnd,

@@ -1,4 +1,5 @@
 import ReactECharts from "echarts-for-react";
+import { useEffect, useState } from "react";
 
 interface SeriesData {
   name: string;
@@ -28,6 +29,12 @@ function BarChart({
   height = "100%",
   stacked = true,
 }: BarChartProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const option = {
     backgroundColor: "transparent",
     textStyle: {
@@ -58,11 +65,11 @@ function BarChart({
       textStyle: {
         color: "#fff",
       },
-      bottom: 10,
+      bottom: 15,
     },
     grid: {
-      left: "5%",
-      right: "4%",
+      left: "0.5%",
+      right: "0.5%",
       bottom: "15%",
       top: "5%",
       containLabel: true,
@@ -83,7 +90,7 @@ function BarChart({
     },
     yAxis: {
       type: "value",
-      name: yAxisUnit,
+      name: "",
       scale: true,
       nameLocation: "middle",
       nameRotate: 90,
@@ -95,7 +102,7 @@ function BarChart({
       axisLabel: {
         color: "#fff",
         fontSize: 12,
-        formatter: "{value}",
+        formatter: `{value}${yAxisUnit}`,
       },
       axisLine: {
         lineStyle: {
@@ -104,7 +111,7 @@ function BarChart({
       },
       splitLine: {
         lineStyle: {
-          color: "#333",
+          color: "rgba(255, 255, 255, 0.05)",
         },
       },
     },
@@ -122,11 +129,15 @@ function BarChart({
     })),
   };
 
+  if (!mounted) return null;
+
   return (
     <ReactECharts
       option={option}
       style={{ height, width: "100%" }}
       notMerge={true}
+      lazyUpdate={true}
+      opts={{ renderer: "canvas" }}
     />
   );
 }

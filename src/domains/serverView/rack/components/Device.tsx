@@ -1,5 +1,5 @@
 import { Group, Rect, Text, Line, Image } from "react-konva";
-import { useState, memo, useRef } from "react";
+import { useState, memo, useRef, useEffect } from "react";
 import { Html } from "react-konva-utils";
 import type { Equipments } from "../types";
 import { deviceImageMap } from "../utils/deviceImageMap";
@@ -26,7 +26,7 @@ interface DeviceProps {
   isEditing?: boolean;
   tempDeviceName?: string;
   onDeviceNameChange?: (deviceId: number, name: string) => void;
-  onDeviceNameConfirm?: (device: Equipments) => void;
+  onDeviceNameConfirm?: (device: Equipments, inputName?: string) => void;
   onDeviceNameCancel?: (deviceId: number) => void;
 }
 
@@ -50,7 +50,9 @@ function Device({
   onDeviceNameConfirm,
 }: DeviceProps) {
   const [dragging, setIsDragging] = useState(false);
+  const [isComposing, setIsComposing] = useState(false);
   const hasConfirmedRef = useRef(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const { unitHeight, frameThickness: baseY } = RACK_CONFIG;
   const rackHeight = UNIT_COUNT * unitHeight;
@@ -64,6 +66,12 @@ function Device({
   const deleteImage = useImageLoad(deleteIcon);
   const checkImage = useImageLoad(checkIcon);
 
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.value = tempDeviceName;
+    }
+  }, [isEditing, tempDeviceName]);
+
   const handleDragBound = (pos: { x: number; y: number }) => {
     return dragBound(pos, {
       baseY,
@@ -76,7 +84,8 @@ function Device({
   const handleConfirm = () => {
     if (hasConfirmedRef.current) return;
     hasConfirmedRef.current = true;
-    onDeviceNameConfirm?.(device);
+    const inputValue = inputRef.current?.value || "";
+    onDeviceNameConfirm?.(device, inputValue);
   };
 
   const handleClick = () => {
@@ -138,12 +147,17 @@ function Device({
             }}
           >
             <input
+              ref={inputRef}
               type="text"
-              value={tempDeviceName}
-              onChange={(e) => onDeviceNameChange?.(device.id, e.target.value)}
+              defaultValue={tempDeviceName} // value 대신 defaultValue
+              onCompositionStart={() => setIsComposing(true)}
+              onCompositionEnd={() => setIsComposing(false)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
+                if (e.key === "Enter" && !isComposing) {
                   e.preventDefault();
+                  if (inputRef.current) {
+                    onDeviceNameChange?.(device.id, inputRef.current.value);
+                  }
                   handleConfirm();
                 } else if (e.key === "Escape") {
                   e.preventDefault();
