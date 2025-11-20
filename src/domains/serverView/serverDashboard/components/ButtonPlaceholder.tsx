@@ -7,6 +7,7 @@ interface ButtonPlaceholderProps {
   onReset: () => void;
   onSave: () => void;
   onToggleEdit: () => void;
+  isLoading?: boolean;
 }
 
 function ButtonPlaceholder({
@@ -14,6 +15,7 @@ function ButtonPlaceholder({
   onReset,
   onSave,
   onToggleEdit,
+  isLoading = false,
 }: ButtonPlaceholderProps) {
   return (
     <div className="flex items-center gap-3 flex-shrink-0">
@@ -22,13 +24,15 @@ function ButtonPlaceholder({
         icon={ResetIcon}
         title="초기화"
         editMode={editMode}
+        disabled={isLoading}
       />
 
       <Button
         onClick={onSave}
         icon={CheckIcon}
-        title="저장"
+        title={isLoading ? "저장중..." : "저장"}
         editMode={editMode}
+        disabled={isLoading}
       />
 
       <div
@@ -37,7 +41,7 @@ function ButtonPlaceholder({
           editMode
             ? "bg-white/5 border border-slate-300/40"
             : "bg-[#2A2D34]/50 border border-slate-300/40"
-        }`}
+        } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
       >
         <span className="text-xs text-slate-200 font-medium">
           {editMode ? "편집중" : "편집"}

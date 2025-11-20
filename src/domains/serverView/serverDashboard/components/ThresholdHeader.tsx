@@ -63,6 +63,13 @@ function ThresholdHeader({
     setEditMode(false);
   };
 
+  const handleToggleEdit = () => {
+    if (editMode) {
+      setValues(initialValues);
+    }
+    setEditMode(!editMode);
+  };
+
   return (
     <div className="bg-white/5 border border-slate-300/40 rounded-xl p-4">
       <div className="flex items-center gap-7">
@@ -125,7 +132,8 @@ function ThresholdHeader({
             editMode={editMode}
             onReset={handleReset}
             onSave={handleSave}
-            onToggleEdit={() => setEditMode(!editMode)}
+            onToggleEdit={handleToggleEdit}
+            isLoading={isLoading}
           />
         </div>
       </div>
