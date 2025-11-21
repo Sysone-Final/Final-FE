@@ -9,13 +9,12 @@ export type AssetLayer = 'floor' | 'wall' | 'overhead';
 
 //  대시보드 지표 뷰 타입
 export type DashboardMetricView =
- | 'default'
- | 'network'
- | 'usage'
+ | 'default' // 임계값 (기본)
+ | 'cpuDetail' // CPU 상세
+ | 'network' // 전력/네트워크
+ | 'usage' // 자산 점유율
  | 'heatmapTemp' // 온도 히트맵
- | 'heatmapPower' // 전력 히트맵
- | 'layout'
- | 'cpuDetail';
+ | 'heatmapPower'; // 전력 히트맵
 export type AssetType =
   // Floor Layer
   | 'wall'
@@ -72,7 +71,8 @@ export interface Asset {
   isLocked?: boolean;
   rotation?: number;
   opacity?: number;
-  doorDirection?: DoorDirection;
+  doorDirection?: DoorDirection; // door 타입 자산용
+  rackDoorDirection?: 'FRONT' | 'BACK'; // rack 타입 자산용 (3D API와 동일)
   description?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -105,7 +105,7 @@ visibleLayers: Record<AssetLayer, boolean>;
 
   isLoading: boolean;
   error: string | null;
-
+  isMagnifierEnabled: boolean;
 
 }
 

@@ -192,10 +192,29 @@ const DashboardAssetView: React.FC<AssetRendererProps> = ({
         width={pixelWidth}
         height={pixelHeight}
         fill={statusColors.fill}
-        stroke={isSelected ? "#3498db" : statusColors.stroke}
-        strokeWidth={isSelected ? 3 : 2}
+        stroke={isSelected ? "#3b82f6" : statusColors.stroke}
+        strokeWidth={isSelected ? 5 : 2}
         cornerRadius={8}
+        shadowEnabled={isSelected}
+        shadowColor="#60a5fa"
+        shadowBlur={isSelected ? 20 : 0}
+        shadowOpacity={isSelected ? 0.8 : 0}
       />
+
+      {/* 선택된 자산 추가 강조 - 내부 테두리 */}
+      {isSelected && (
+        <Rect
+          x={3}
+          y={3}
+          width={pixelWidth - 6}
+          height={pixelHeight - 6}
+          stroke="#60a5fa"
+          strokeWidth={2}
+          cornerRadius={6}
+          listening={false}
+          opacity={0.6}
+        />
+      )}
 
       {/* 2. 랙 상단 (항상 표시) */}
       <Text

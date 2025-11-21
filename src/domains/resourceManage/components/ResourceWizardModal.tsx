@@ -162,7 +162,7 @@ const Step2Location = ({
       <div className={gridContainerStyle}>
         <div>
           <label className={labelStyle}>
-            서버실 {isUnallocated ? "" : <span className="text-red-500">*</span>}
+            서버실
           </label>
           <select
             {...register("serverRoomId", {
@@ -201,7 +201,7 @@ const Step2Location = ({
         </div>
         <div>
           <label className={labelStyle}>
-            랙 (Rack) {isUnallocated ? "" : <span className="text-red-500">*</span>}
+            랙 (Rack)
           </label>
           <select
             {...register("rackId", {

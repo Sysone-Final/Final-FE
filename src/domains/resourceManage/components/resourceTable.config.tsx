@@ -26,7 +26,8 @@ export const columns: ColumnDef<Resource>[] = [
     cell: ({ row }) => (
       <input
         type="checkbox"
-        className="rounded border-gray-600 bg-gray-700 focus:ring-slate-300/40" // 다크 모드 스타일    checked={row.getIsSelected()}
+        className="w-5 h-5 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500 focus:ring-offset-gray-800"
+        checked={row.getIsSelected()}
         disabled={!row.getCanSelect()}
         onChange={row.getToggleSelectedHandler()}
       />
@@ -52,7 +53,17 @@ export const columns: ColumnDef<Resource>[] = [
   },
   {
     accessorKey: "status",
-    header: "상태",
+    header: ({ column }) => {
+      return (
+        <button
+          className="flex items-center hover:text-gray-300 text-gray-400"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          상태
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </button>
+      );
+    },
     cell: ({ row }) => {
       const resource = row.original;
       const status = resource.status;
@@ -64,27 +75,31 @@ export const columns: ColumnDef<Resource>[] = [
       // 위 조건에 해당하면, "정보 필요" 배지를 노출
       if (needsDetails) {
         return (
-          <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
-              statusColorMap["WARNING"] // '경고' 색상(노란색) 사용
-            }`}
-            title="상세 정보가 필요합니다."
-          >
-            <AlertTriangle size={12} />
-            <span>정보 필요</span>
-          </span>
+          <div className="flex justify-start -ml-10">
+            <span
+              className={`inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap min-w-[100px] ${
+                statusColorMap["WARNING"] // '경고' 색상(노란색) 사용
+              }`}
+              title="상세 정보가 필요합니다."
+            >
+              <AlertTriangle size={12} />
+              <span>정보 필요</span>
+            </span>
+          </div>
         );
       }
 
       // 일반적인 상태 배지
       return (
-        <span
-          className={`inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap min-w-20 text-center ${
-            statusColorMap[status] ?? statusColorMap["POWERED_OFF"]
-          }`}
-        >
-          {RESOURCE_STATUS_LABELS[status] || status}
-        </span>
+        <div className="flex justify-start -ml-10">
+          <span
+            className={`inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap min-w-[100px] text-center ${
+              statusColorMap[status] ?? statusColorMap["POWERED_OFF"]
+            }`}
+          >
+            {RESOURCE_STATUS_LABELS[status] || status}
+          </span>
+        </div>
       );
     },
     size: 130,
@@ -106,14 +121,57 @@ export const columns: ColumnDef<Resource>[] = [
   },
   {
     accessorKey: "location",
-    header: "위치", // TODO(user): rackId, startUnit 등으로 조합해서 표시
-    size: 120,
+    header: ({ column }) => {
+      return (
+        <button
+          className="flex items-center hover:text-gray-300 text-gray-400"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          위치
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </button>
+      );
+    },
+    cell: ({ row }) => {
+      const resource = row.original;
+      
+      // 백엔드에서 이미 조합된 location 문자열이 있다면 사용
+      if (resource.location) {
+        return resource.location;
+      }
+      
+      // 없다면 프론트엔드에서 조합: "전산실명 > 랙명 (U:시작-끝)"
+      const parts = [];
+      
+      // 전산실명 추가
+      if (resource.serverRoomName) {
+        parts.push(resource.serverRoomName);
+      }
+      
+      // 랙명 추가
+      if (resource.rackName) {
+        if (parts.length > 0) {
+          parts.push('>');
+        }
+        parts.push(resource.rackName);
+      }
+      
+      // 유닛 정보 추가
+      if (resource.startUnit) {
+        const endUnit = resource.startUnit + (resource.unitSize || 1) - 1;
+        const unitInfo = `(U:${resource.startUnit}-${endUnit})`;
+        parts.push(unitInfo);
+      }
+      
+      return parts.length > 0 ? parts.join(' ') : '-';
+    },
+    size: 200,
   },
   {
     id: "manage",
     header: "관리",
     cell: ({ row, table }) => (
-      <div className="flex gap-2">
+      <div className="flex gap-2 justify-start">
         <button
           className="text-gray-400 hover:text-blue-400"
           onClick={() =>

@@ -6,23 +6,28 @@ import {
  useFloorPlanStore,
  setStage,
  deselectAll,
+ addAsset,
 } from '../store/floorPlanStore';
 import AssetRenderer from './AssetRenderer';
 import CanvasGrid from './CanvasGrid';
 import HeatmapLayer from './HeatmapLayer';
-import type { AssetLayer, DisplayMode } from '../types';
+import type { AssetLayer, DisplayMode, AssetType } from '../types';
 import AssetActionToolbar from './AssetActionToolbar';
 import CanvasContextMenu from './CanvasContextMenu';
 import { deleteAsset } from '../store/floorPlanStore';
+import { checkCollision } from '../utils/collision';
+import toast from 'react-hot-toast';
+import type { EquipmentType } from '../../types';
 
 interface CanvasProps {
  containerRef: React.RefObject<HTMLDivElement>;
+ serverRoomId?: string;
 }
 const CANVAS_VIEW_CONFIG = { CELL_SIZE: 160, HEADER_PADDING: 80 };
 const layerOrder: Record<AssetLayer, number> = { floor: 1, wall: 2, overhead: 3 };
 
 
-const Canvas: React.FC<CanvasProps> = ({ containerRef }) => {
+const Canvas: React.FC<CanvasProps> = ({ containerRef, serverRoomId }) => {
  const isLoading = useFloorPlanStore((state) => state.isLoading);
  const error = useFloorPlanStore((state) => state.error);
  const assets = useFloorPlanStore((state) => state.assets);
@@ -38,12 +43,12 @@ const Canvas: React.FC<CanvasProps> = ({ containerRef }) => {
  const dashboardMetricView = useFloorPlanStore(
   (state) => state.dashboardMetricView,
  );
-const synthesizedDisplayMode: DisplayMode =
-  dashboardMetricView === 'layout' ? 'customColor' : 'status';
 
- const isDashboardView = synthesizedDisplayMode === 'status';
- const isHeatmapView =
-  isDashboardView && dashboardMetricView.startsWith('heatmap');
+ // layout 모드가 제거되었으므로 항상 'status' 모드 사용
+ const synthesizedDisplayMode: DisplayMode = 'status';
+
+ const isDashboardView = true; // 항상 대시보드 뷰
+ const isHeatmapView = dashboardMetricView.startsWith('heatmap');
 
  const [stageSize, setStageSize] = useState({ width: 0, height: 0 });
  const { setNodeRef } = useDroppable({ id: 'canvas-drop-area' });
@@ -52,6 +57,92 @@ const mode = useFloorPlanStore((state) => state.mode); // mode 가져오기
 
   // 2. 컨텍스트 메뉴 상태 추가
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; assetId: string } | null>(null);
+
+  // 3D -> 2D 타입 매핑 함수
+  const map3DTypeTo2DType = (type3D: EquipmentType): AssetType | null => {
+    const typeMap: Record<EquipmentType, AssetType | null> = {
+      server: 'rack',
+      door: 'door_single',
+      climatic_chamber: 'crac',
+      fire_extinguisher: 'fire_suppression',
+      aircon: 'in_row_cooling',
+      thermometer: 'leak_sensor',
+    };
+    return typeMap[type3D] || null;
+  };
+
+  // 네이티브 드래그 앤 드롭 핸들러
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    
+    const equipmentType = e.dataTransfer.getData('equipmentType') as EquipmentType;
+    if (!equipmentType) return;
+
+    const assetType2D = map3DTypeTo2DType(equipmentType);
+    if (!assetType2D) {
+      console.warn(`Cannot map 3D type ${equipmentType} to 2D asset type`);
+      return;
+    }
+
+    if (!containerRef.current) return;
+
+    // 캔버스 기준 좌표 계산
+    const { top: containerTop, left: containerLeft } =
+      containerRef.current.getBoundingClientRect();
+    
+    const dropX_relative = e.clientX - containerLeft;
+    const dropY_relative = e.clientY - containerTop;
+
+    // Stage 좌표로 변환
+    const stageX = (dropX_relative - stage.x) / stage.scale;
+    const stageY = (dropY_relative - stage.y) / stage.scale;
+
+    // 그리드 좌표로 변환
+    const { CELL_SIZE, HEADER_PADDING } = CANVAS_VIEW_CONFIG;
+    const gridX = Math.floor((stageX - HEADER_PADDING) / CELL_SIZE);
+    const gridY = Math.floor((stageY - HEADER_PADDING) / CELL_SIZE);
+
+    const newAsset = {
+      name: equipmentType,
+      gridX,
+      gridY,
+      widthInCells: 1,
+      heightInCells: 1,
+      assetType: assetType2D,
+      layer: 'floor' as AssetLayer,
+      rotation: 0,
+    };
+
+    // 경계 검사
+    if (
+      gridX < 0 ||
+      gridY < 0 ||
+      gridX + newAsset.widthInCells > gridCols ||
+      gridY + newAsset.heightInCells > gridRows
+    ) {
+      toast.error(
+        `"${newAsset.name}"을(를) 평면도 밖으로 배치할 수 없습니다.`,
+        { id: 'asset-out-of-bounds-error' },
+      );
+      return;
+    }
+
+    // 충돌 체크
+    if (checkCollision(newAsset, assets)) {
+      toast.error(
+        `"${newAsset.name}"을(를) 배치할 수 없습니다. 다른 자산과 겹칩니다.`,
+        { id: 'asset-collision-error' },
+      );
+      return;
+    }
+
+    addAsset(newAsset, serverRoomId);
+  };
 
   // 3. 우클릭 핸들러 (자산에서 호출됨)
   const handleAssetContextMenu = (e: KonvaEventObject<PointerEvent>, assetId: string) => {
@@ -199,7 +290,12 @@ const mode = useFloorPlanStore((state) => state.mode); // mode 가져오기
 
  return (
   <main className="canvas-container w-full h-full" ref={containerRef}>
-   <div ref={setNodeRef} style={{ width: '100%', height: '100%' }}>
+   <div 
+     ref={setNodeRef} 
+     style={{ width: '100%', height: '100%' }}
+     onDragOver={handleDragOver}
+     onDrop={handleDrop}
+   >
     {stageSize.width > 0 && stageSize.height > 0 && (
      <Stage
       width={stageSize.width}
