@@ -13,8 +13,9 @@ import type {
 } from '../types';
 import { createDevice, updateEquipment, deleteEquipment } from '@/domains/serverView/view3d/api/serverRoomEquipmentApi';
 import { getNextDeviceNumber, generateDeviceName } from '@/domains/serverView/view3d/utils/deviceNameGenerator';
-import type { Equipment3D } from '@/domains/serverView/view3d/types';
 import { transform2DToEquipment, transform3DTo2DAssets } from '../utils/dataTransformer';
+// import { getDeviceTypeId } from '@/domains/serverView/view3d/constants/deviceTypes';
+import type { Equipment3D } from '@/domains/serverView/types';
 import toast from 'react-hot-toast';
 
 export const initialState: FloorPlanState = {

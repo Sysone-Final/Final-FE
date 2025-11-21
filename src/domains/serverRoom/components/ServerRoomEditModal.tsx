@@ -21,6 +21,7 @@ type FormValues = {
   code: string;
   rows: number;
   columns: number;
+  status: "ACTIVE" | "INACTIVE" | "MAINTENANCE";
   description?: string;
 };
 
@@ -36,11 +37,12 @@ function ServerRoomEditModal({
     reset,
   } = useForm<FormValues>({
     defaultValues: {
-      name: "",
-      code: "",
-      rows: 10,
-      columns: 10,
-      description: "",
+      name: serverRoom?.name || "",
+      code: serverRoom?.code || "",
+      rows: serverRoom?.rows || 10,
+      columns: serverRoom?.columns || 10,
+      status: serverRoom?.status || "ACTIVE",
+      description: serverRoom?.description || "",
     },
   });
 
@@ -53,8 +55,9 @@ function ServerRoomEditModal({
       reset({
         name: serverRoom.name,
         code: serverRoom.code,
-        rows: 10, // API에 rows가 없으므로 기본값 사용
-        columns: 10, // API에 columns가 없으므로 기본값 사용
+        rows: serverRoom.rows ,
+        columns: serverRoom.columns,
+        status: serverRoom.status,
         description: serverRoom.description || "",
       });
     }
@@ -75,6 +78,7 @@ function ServerRoomEditModal({
       description: data.description || "",
       rows: data.rows,
       columns: data.columns,
+      status: data.status,
     };
 
     updateServerRoomMutation.mutate(
@@ -186,6 +190,27 @@ function ServerRoomEditModal({
                   />
                   {errors.columns && (
                     <p className={errorTextStyle}>{errors.columns.message}</p>
+                  )}
+                </div>
+
+                {/* 상태 */}
+                <div className="md:col-span-2">
+                  <label className={labelStyle}>
+                    상태 <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    {...register("status", {
+                      required: "상태는 필수 입력 항목입니다.",
+                    })}
+                    className={`modal-input ${errors.status ? "border-red-500" : ""}`}
+                    disabled={isLoading}
+                  >
+                    <option value="ACTIVE">활성</option>
+                    <option value="INACTIVE">비활성</option>
+                    <option value="MAINTENANCE">점검중</option>
+                  </select>
+                  {errors.status && (
+                    <p className={errorTextStyle}>{errors.status.message}</p>
                   )}
                 </div>
 

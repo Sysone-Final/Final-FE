@@ -8,7 +8,7 @@ import RackModal from '@/domains/serverView/components/RackModal';
 import { useServerRoomEquipment } from '@/domains/serverView/view3d/hooks/useServerRoomEquipment';
 import { transform3DTo2DAssets } from '../utils/dataTransformer';
 import EquipmentPalette3D from '@/domains/serverView/view3d/components/EquipmentPalette3D';
-import type { EquipmentType } from '@/domains/serverView/view3d/types';
+import type { EquipmentType } from '../../types';
 import type { AssetType, AssetLayer } from '../types';
 import toast from 'react-hot-toast';
 import { checkCollision } from '../utils/collision';

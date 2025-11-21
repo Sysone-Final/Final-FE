@@ -3,11 +3,11 @@ import type { Scene } from '@babylonjs/core';
 import { Snackbar, Alert } from '@mui/material';
 import GridFloor from './GridFloor';
 import Equipment3DModel from './Equipment3DModel';
-import EquipmentPalette3D from './EquipmentPalette3D';
+import EquipmentPalette3D from '../../components/EquipmentPalette3D';
 import ContextMenu from './ContextMenu';
 import SelectionBox from './SelectionBox';
 import { useBabylonDatacenterStore } from '../stores/useBabylonDatacenterStore';
-import { EQUIPMENT_PALETTE } from '../constants/config';
+import { EQUIPMENT_PALETTE } from '../../constants/config';
 import { useServerRoomEquipment } from '../hooks/useServerRoomEquipment';
 import { useToast } from '../hooks/useToast';
 import { useBabylonScene } from '../hooks/useBabylonScene';
@@ -134,8 +134,7 @@ function BabylonDatacenterView({ mode: initialMode = 'view', serverRoomId }: Bab
     currentServerRoomId, 
     initializeServerRoom, 
     fetchedEquipment, 
-    fetchedGridConfig?.rows,  // 깊은 비교를 위해 개별 속성 사용
-    fetchedGridConfig?.columns,  // 깊은 비교를 위해 개별 속성 사용
+    fetchedGridConfig,
     isEquipmentReady,
     setGridConfig
   ]);

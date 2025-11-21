@@ -1,4 +1,4 @@
-import type { EquipmentType } from "../types";
+import type { EquipmentType } from "../../types";
 
 export const DEVICE_TYPE_ID_MAP: Record<EquipmentType, number> = {
   server: 1,
