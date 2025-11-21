@@ -3,42 +3,12 @@ import React from 'react';
 import { useFloorPlanStore,
    setDashboardMetricView, 
    toggleLayerVisibility, 
-   toggleSeverityVisibility ,
-   setDisplayOptions
+   toggleSeverityVisibility
   } from '../../store/floorPlanStore';
 import type { DashboardMetricView, 
-    DisplayOptionsType,
     AssetLayer,
  } from '../../types';
 
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const OptionCheckbox = ({
- label,
- optionKey,
-}: {
- label: string;
- optionKey: keyof DisplayOptionsType;
-}) => {
- const { displayOptions } = useFloorPlanStore(); 
- const isChecked = displayOptions[optionKey];
- 
- const handleChange = () => {
-  setDisplayOptions({ [optionKey]: !isChecked });
- };
- 
- return (
-  <label className="option-checkbox-label">
-   <input
-    type="checkbox"
-    checked={isChecked}
-    onChange={handleChange}
-    className="option-checkbox-input"
-   />
-   <span className="option-checkbox-text text-body-primary">{label}</span>
-  </label>
- );
-};
 
 const LayerCheckbox = ({
 label,
