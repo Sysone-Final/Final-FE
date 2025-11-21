@@ -39,6 +39,18 @@ export const getResourceList = async (
    },
   },
  );
+  
+  // 디버깅: API 응답 로그
+  console.log('🔍 API 응답 (getResourceList):', {
+    요청페이지: page,
+    요청크기: size,
+    필터: filters,
+    응답: response.data.result,
+    전체항목수: response.data.result.totalElements,
+    전체페이지수: response.data.result.totalPages,
+    현재페이지항목수: response.data.result.content.length,
+  });
+  
   // '포장지'에서 '내용물'을 꺼내 반환
  return response.data.result; 
 };
@@ -94,11 +106,13 @@ export const updateMultipleResourceStatus = async (
   ids: number[],
   status: ResourceStatus,
 ): Promise<void> => {
+  console.log('🔄 상태 변경 API 호출:', { ids, status });
   // 백엔드 API 엔드포인트를 가정 (예: /equipments/status)
-  await client.put(`${RESOURCE_API_URL}/status`, {
+  const response = await client.put(`${RESOURCE_API_URL}/status`, {
     ids,
     status,
   });
+  console.log('✅ 상태 변경 API 응답:', response.data);
 };
 /**
 * 9.2 자원 상세 정보 조회 (GET /resourceManage/{id})

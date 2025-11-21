@@ -98,7 +98,8 @@ export const useGetResourceList = (
       // 실제 API 호출
       return getResourceList(page, size, filters);
     },
-    placeholderData: (previousData) => previousData,
+    staleTime: 0, // 즉시 stale 상태로 만들어 refetch가 잘 동작하도록
+    gcTime: 5 * 60 * 1000, // 5분간 캐시 유지
   });
 };
 
@@ -269,6 +270,7 @@ export const useUpdateMultipleResourceStatus = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [RESOURCE_QUERY_KEY] });
+      // 실제 API 호출 성공 시 토스트는 표시하지 않음 (낙관적 업데이트 UI에서 처리)
     },
     onError: (error) => {
       console.error("자원 상태 변경 실패:", error);

@@ -10,10 +10,41 @@ import {
 
 import { useBabylonDatacenterStore } from '@/domains/serverView/view3d/stores/useBabylonDatacenterStore';
 import type { AssetRendererProps } from './AssetRenderer';
-import type { Asset } from '../types';
+import type { Asset, AssetType } from '../types';
 
 const STATUS_COLORS = { normal: '#27ae60', warning: '#f39c12', danger: '#c0392b', selected: '#3498db' };
 const DOOR_COLOR = '#7f8c8d';
+
+// 자산 타입별 대표 이름 매핑
+const getAssetDisplayName = (assetType: AssetType): string => {
+  const displayNames: Record<AssetType, string> = {
+    // Floor Layer
+    'wall': '벽',
+    'pillar': '기둥',
+    'ramp': '경사로',
+    'rack': 'rack', // 랙은 실제 이름 사용
+    'storage': '스토리지',
+    'mainframe': '메인프레임',
+    'crash_cart': '크래시 카트',
+    'crac': '항온항습기',
+    'in_row_cooling': '에어컨',
+    'ups_battery': 'UPS',
+    'power_panel': '전력 패널',
+    'speed_gate': '스피드 게이트',
+    'fire_suppression': '소화기',
+    // Wall-Mounted Layer
+    'door_single': '문',
+    'door_double': '문',
+    'door_sliding': '문',
+    'access_control': '출입 통제',
+    'epo': 'EPO',
+    // Overhead Layer
+    'aisle_containment': '통로',
+    'cctv': 'CCTV',
+    'leak_sensor': '온도계',
+  };
+  return displayNames[assetType] || assetType;
+};
 
 const checkCollision = (targetAsset: Asset, allAssets: Asset[]): boolean => {
  for (const otherAsset of allAssets) {
@@ -31,6 +62,22 @@ const checkCollision = (targetAsset: Asset, allAssets: Asset[]): boolean => {
  return false;
 };
 
+// 평면도 경계 밖으로 나가는지 검사하는 함수
+const checkOutOfBounds = (targetAsset: Asset, gridCols: number, gridRows: number): boolean => {
+ // 왼쪽 또는 위쪽 경계를 벗어나는지 검사
+ if (targetAsset.gridX < 0 || targetAsset.gridY < 0) {
+  return true;
+ }
+ // 오른쪽 또는 아래쪽 경계를 벗어나는지 검사
+ if (
+  targetAsset.gridX + targetAsset.widthInCells > gridCols ||
+  targetAsset.gridY + targetAsset.heightInCells > gridRows
+ ) {
+  return true;
+ }
+ return false;
+};
+
 const LayoutAssetView: React.FC<AssetRendererProps> = ({
  asset,
  gridSize,
@@ -42,6 +89,8 @@ const LayoutAssetView: React.FC<AssetRendererProps> = ({
 }) => {
  const mode = useFloorPlanStore((state) => state.mode);
  const assets = useFloorPlanStore((state) => state.assets);
+ const gridCols = useFloorPlanStore((state) => state.gridCols);
+ const gridRows = useFloorPlanStore((state) => state.gridRows);
 
  const openRackModal = useBabylonDatacenterStore((state) => state.openRackModal);
 
@@ -60,11 +109,15 @@ const LayoutAssetView: React.FC<AssetRendererProps> = ({
   ? STATUS_COLORS[asset.status]
   : '#4b5563';
 
+ // 선택된 자산 강조 스타일
  const strokeColor = isSelected
-  ? STATUS_COLORS.selected
+  ? '#3b82f6' // 밝은 파란색 (blue-500)
   : isDashboardView
   ? '#4a5568'
   : '#bdc3c7';
+
+ const strokeWidth = isSelected ? 5 : 1.5; // 선택 시 두꺼운 테두리
+ const selectedGlow = isSelected ? '#60a5fa' : undefined; // 선택 시 발광 효과 (blue-400)
 
  const offsetX = pixelWidth / 2;
  const offsetY = pixelHeight / 2;
@@ -94,6 +147,35 @@ const LayoutAssetView: React.FC<AssetRendererProps> = ({
    (a) => !assetsToMove.some((m) => m.id === a.id),
   );
 
+  // 경계 검사
+  let outOfBoundsFound = false;
+  for (const memberToMove of assetsToMove) {
+   const movedMemberPreview: Asset = {
+    ...memberToMove,
+    gridX: memberToMove.gridX + deltaGridX,
+    gridY: memberToMove.gridY + deltaGridY,
+   };
+   if (checkOutOfBounds(movedMemberPreview, gridCols, gridRows)) {
+    outOfBoundsFound = true;
+    break;
+   }
+  }
+
+  if (outOfBoundsFound) {
+   const message = asset.groupId
+    ? '그룹을 평면도 밖으로 이동할 수 없습니다.'
+    : `"${asset.name}"을(를) 평면도 밖으로 배치할 수 없습니다.`;
+
+   toast.error(message, {
+    id: 'asset-move-out-of-bounds', // 중복 알림 방지
+   });
+
+   group.x(pixelX + offsetX);
+   group.y(groupY);
+   return;
+  }
+
+  // 충돌 검사
   let collisionFound = false;
   for (const memberToMove of assetsToMove) {
    const movedMemberPreview: Asset = {
@@ -167,15 +249,69 @@ const handleClick = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
     return null;
   }
  };
+
+ // 랙의 문 표시 위치 계산 (rotation 고려)
+ const getRackDoorPosition = () => {
+  // 랙이 아니면 null
+  if (asset.assetType !== 'rack') return null;
+  
+  // doorDirection이 없으면 기본값 'FRONT' 사용 (임시로 모든 랙에 표시)
+  const doorDirection = asset.rackDoorDirection || 'FRONT';
+  
+  const barThickness = 8; // 적당한 두께
+  const rotation = asset.rotation || 0;
+  
+  // 회전 각도에 따라 FRONT가 어느 방향인지 결정
+  // 0도: 위쪽, 90도: 오른쪽, 180도: 아래쪽, 270도: 왼쪽
+  let side: 'top' | 'right' | 'bottom' | 'left' = 'top';
+  
+  if (rotation >= -45 && rotation < 45) {
+    side = 'top';
+  } else if (rotation >= 45 && rotation < 135) {
+    side = 'right';
+  } else if (rotation >= 135 || rotation < -135) {
+    side = 'bottom';
+  } else {
+    side = 'left';
+  }
+  
+  // BACK인 경우 반대편
+  if (doorDirection === 'BACK') {
+    side = side === 'top' ? 'bottom' : side === 'bottom' ? 'top' : side === 'left' ? 'right' : 'left';
+  }
+  
+  const padding = 2;
+  switch (side) {
+    case 'top':
+      return { x: padding, y: 0, width: pixelWidth - padding * 2, height: barThickness };
+    case 'bottom':
+      return { x: padding, y: pixelHeight - barThickness, width: pixelWidth - padding * 2, height: barThickness };
+    case 'left':
+      return { x: 0, y: padding, width: barThickness, height: pixelHeight - padding * 2 };
+    case 'right':
+      return { x: pixelWidth - barThickness, y: padding, width: barThickness, height: pixelHeight - padding * 2 };
+  }
+ };
+ 
  const doorPos = getDoorPosition();
+ const rackDoorPos = getRackDoorPosition();
  const baseFontSize = 16;
  const smallFontSize = 14;
+
+ // 모든 텍스트는 회전 상쇄 (항상 수평 유지)
+ const assetRotation = asset.rotation || 0;
+
+ // 편집 모드에서는 텍스트 크기와 정렬 개선
+ const isEditMode = mode === 'edit';
+ const editModeFontSize = 22; // 편집 모드에서 더 큰 글자
+ const textFontSize = isEditMode ? editModeFontSize : baseFontSize;
+ const textY = isEditMode ? (pixelHeight - editModeFontSize) / 2 : 5;
 
  return (
   <Group
    x={pixelX + offsetX}
   y={groupY}
-   rotation={asset.rotation || 0}
+   rotation={assetRotation}
    offsetX={offsetX}
    offsetY={offsetY}
    onClick={handleClick}
@@ -189,31 +325,85 @@ const handleClick = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
     height={pixelHeight}
     fill={rackFillColor}
     stroke={strokeColor}
-    strokeWidth={isSelected ? 3 : 1.5}
+    strokeWidth={strokeWidth}
     cornerRadius={4}
-    opacity={isDashboardView ? 0.8 : asset.opacity ?? 1} // 대시보드 뷰에서 살짝 투명하게
+    opacity={isDashboardView ? 0.8 : asset.opacity ?? 1}
+    shadowEnabled={isSelected}
+    shadowColor={selectedGlow}
+    shadowBlur={isSelected ? 20 : 0}
+    shadowOpacity={isSelected ? 0.8 : 0}
    />
 
-   {/* 문은 대시보드 뷰에서도 보이도록 유지 */}
-   {(asset.assetType === 'rack' || asset.assetType.startsWith('door')) &&
+   {/* 선택된 자산 추가 강조 - 내부 테두리 */}
+   {isSelected && (
+    <Rect
+     x={3}
+     y={3}
+     width={pixelWidth - 6}
+     height={pixelHeight - 6}
+     stroke="#60a5fa"
+     strokeWidth={2}
+     cornerRadius={3}
+     listening={false}
+     opacity={0.6}
+    />
+   )}
+
+   {/* 랙의 문 표시 - 모든 모드에서 표시 */}
+   {asset.assetType === 'rack' && rackDoorPos && (
+     <Rect 
+       {...rackDoorPos} 
+       fill="#06b6d4" // 청록색 (cyan-500)
+       opacity={0.75} // 살짝 투명도
+       listening={false} 
+     />
+   )}
+
+   {/* door 타입 자산의 문 표시 */}
+   {asset.assetType.startsWith('door') &&
     doorPos &&
     !isDashboardView && ( // 대시보드 뷰에서는 문 표시 X
      <Rect {...doorPos} fill={DOOR_COLOR} listening={false} />
     )}
-   <Group listening={false}>
-    {/* 대시보드 뷰 텍스트 */}
-    {isDashboardView ? (
+   
+   {/* 텍스트 및 정보 Group - 항상 회전 상쇄하여 수평 유지 */}
+   <Group 
+    listening={false}
+    rotation={-assetRotation}
+    offsetX={offsetX}
+    offsetY={offsetY}
+    x={offsetX}
+    y={offsetY}
+   >
+    {/* 편집 모드: 모든 자산 이름을 크고 중앙에 표시 */}
+    {mode === 'edit' ? (
+     <>
+      {asset.assetType !== 'wall' && (
+       <Text
+        text={asset.assetType === 'rack' ? asset.name : getAssetDisplayName(asset.assetType)}
+        x={0}
+        y={textY}
+        fontSize={textFontSize}
+        fill="#FFFFFF"
+        width={pixelWidth}
+        wrap="char"
+        align="center"
+       />
+      )}
+     </>
+    ) : isDashboardView ? (
      <>
       {/* 대시보드 뷰에서는 벽(wall) 이름은 숨기고, 그 외 자산 이름만 표시 */}
       {asset.assetType !== 'wall' && (
        <Text
-        text={asset.name}
-        x={5}
+        text={asset.assetType === 'rack' ? asset.name : getAssetDisplayName(asset.assetType)}
+        x={0}
         y={5}
         fontSize={baseFontSize}
-        fill="#9ca3af" // 어두운 텍스트 색상
-        width={pixelWidth - 10}
+        fill="#9ca3af"
+        width={pixelWidth}
         wrap="char"
+        align="center"
        />
       )}
      </>
@@ -221,13 +411,14 @@ const handleClick = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
      <>
       {displayOptions.showName && (
        <Text
-        text={asset.name}
-        x={5}
+        text={asset.assetType === 'rack' ? asset.name : getAssetDisplayName(asset.assetType)}
+        x={0}
         y={5}
         fontSize={baseFontSize}
         fill="#FFFFFF"
-        width={pixelWidth - 10}
+        width={pixelWidth}
         wrap="char"
+        align="center"
        />
       )}
       {displayOptions.showStatusIndicator && asset.status && (

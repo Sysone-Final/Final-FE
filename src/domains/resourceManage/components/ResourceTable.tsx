@@ -38,18 +38,27 @@ export default function ResourceTable({ table, isLoading }: ResourceTableProps) 
         <thead className="bg-gray-600"> 
           {table.getHeaderGroups().map((headerGroup: HeaderGroup<Resource>) => (
             <tr key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <th
-                  key={header.id}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider border-b border-slate-300/40 overflow-hidden text-ellipsis"
-                  style={{ width: header.getSize() }}
-                >
-                  {flexRender(
-                    header.column.columnDef.header,
-                    header.getContext(),
-                  )}
-                </th>
-              ))}
+              {headerGroup.headers.map((header) => {
+                // 체크박스와 상태 컬럼은 overflow-hidden을 제거
+                const isSelectColumn = header.column.id === 'select';
+                const isStatusColumn = header.column.id === 'status';
+                const shouldRemoveOverflow = isSelectColumn || isStatusColumn;
+                
+                return (
+                  <th
+                    key={header.id}
+                    className={`px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider border-b border-slate-300/40 ${
+                      shouldRemoveOverflow ? '' : 'overflow-hidden text-ellipsis'
+                    }`}
+                    style={{ width: header.getSize() }}
+                  >
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext(),
+                    )}
+                  </th>
+                );
+              })}
             </tr>
           ))}
         </thead>
@@ -70,16 +79,24 @@ export default function ResourceTable({ table, isLoading }: ResourceTableProps) 
             table.getRowModel().rows.map((row: Row<Resource>) => (
 
               <tr key={row.id} className="hover:bg-white/10"> 
-                {row.getVisibleCells().map((cell: Cell<Resource, unknown>) => (
-                  <td
-                    key={cell.id}
-                    // 셀 텍스트 색상
-                    className="px-6 py-4 whitespace-nowrap text-sm text-gray-300 overflow-hidden text-ellipsis"
-                    style={{ width: cell.column.columnDef.size }}
-                  >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
+                {row.getVisibleCells().map((cell: Cell<Resource, unknown>) => {
+                  // 체크박스와 상태 컬럼은 overflow-hidden을 제거하여 잘리지 않도록
+                  const isSelectColumn = cell.column.id === 'select';
+                  const isStatusColumn = cell.column.id === 'status';
+                  const shouldRemoveOverflow = isSelectColumn || isStatusColumn;
+                  
+                  return (
+                    <td
+                      key={cell.id}
+                      className={`px-6 py-4 whitespace-nowrap text-sm text-gray-300 ${
+                        shouldRemoveOverflow ? '' : 'overflow-hidden text-ellipsis'
+                      }`}
+                      style={{ width: cell.column.columnDef.size }}
+                    >
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  );
+                })}
               </tr>
             ))
           ) : (
