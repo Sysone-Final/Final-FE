@@ -17,7 +17,7 @@ import CanvasContextMenu from './CanvasContextMenu';
 import { deleteAsset } from '../store/floorPlanStore';
 import { checkCollision } from '../utils/collision';
 import toast from 'react-hot-toast';
-import type { EquipmentType } from '@/domains/serverView/view3d/types';
+import type { EquipmentType } from '../../types';
 
 interface CanvasProps {
  containerRef: React.RefObject<HTMLDivElement>;

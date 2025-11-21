@@ -7,7 +7,7 @@ import { useFloorPlanStore, initialState, addAsset } from '../store/floorPlanSto
 import RackModal from '@/domains/serverView/components/RackModal';
 import { useServerRoomEquipment } from '@/domains/serverView/view3d/hooks/useServerRoomEquipment';
 import { transform3DTo2DAssets } from '../utils/dataTransformer';
-import EquipmentPalette3D from '@/domains/serverView/view3d/components/EquipmentPalette3D';
+import EquipmentPalette3D from '@/domains/serverView/components/EquipmentPalette3D';
 import type { EquipmentType } from '../../types';
 import type { AssetType, AssetLayer } from '../types';
 import toast from 'react-hot-toast';
