@@ -15,6 +15,7 @@ export interface Equipment3D {
   rotation: number; // Y축 회전 (라디안)
   equipmentId?: string; // 백엔드 DB의 실제 장비 ID (UUID)
   rackId?: string; // 랙 ID (서버 타입인 경우)
+  doorDirection?: "FRONT" | "BACK"; // 랙의 문 방향 (server 타입인 경우)
   metadata?: EquipmentMetadata; // 추가 정보
 }
 
@@ -63,6 +64,7 @@ export interface BackendDevice {
   status: string;
   rackName: string | null;
   rackId: number | null;
+  doorDirection?: "FRONT" | "BACK"; // 랙의 문 방향 (server 타입인 경우)
 }
 
 // 새 장비 생성 요청 데이터 구조

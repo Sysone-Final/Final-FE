@@ -52,7 +52,9 @@ export default function ResourcePaginationActions({
     <div className="mt-4 flex flex-col md:flex-row justify-between items-center gap-4">
       {/* --- Bulk Actions --- */}
       <div className="flex items-center gap-2">
-        <span className="text-body-primary">{selectedCount} 개 항목 선택됨:</span>
+        <span className="text-body-primary">
+          <span className="inline-block min-w-[2ch] text-right">{selectedCount}</span> 개 항목 선택됨:
+        </span>
         <button
           disabled={selectedCount === 0 || disabled}
           className="flex items-center px-3 py-1 border border-gray-700 rounded-lg text-sm disabled:opacity-50 bg-gray-800 hover:bg-gray-700 text-button"
@@ -81,11 +83,56 @@ export default function ResourcePaginationActions({
 
       {/* --- Pagination Control  --- */}
       <div className="flex items-center gap-1">
-        <button onClick={() => table.setPageIndex(0)} disabled={!table.getCanPreviousPage() || disabled} className="p-1 rounded hover:bg-gray-700 disabled:opacity-50 text-gray-300" aria-label="첫 페이지로 이동"> <ChevronsLeft size={18} /> </button>
-        <button onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage() || disabled} className="p-1 rounded hover:bg-gray-700 disabled:opacity-50 text-gray-300" aria-label="이전 페이지로 이동"> <ChevronLeft size={18} /> </button>
+        <button 
+          onClick={() => {
+            console.log('⏮️ 첫 페이지로 이동');
+            table.setPageIndex(0);
+          }} 
+          disabled={!table.getCanPreviousPage() || disabled} 
+          className="p-1 rounded hover:bg-gray-700 disabled:opacity-50 text-gray-300" 
+          aria-label="첫 페이지로 이동"
+        > 
+          <ChevronsLeft size={18} /> 
+        </button>
+        <button 
+          onClick={() => {
+            console.log('◀️ 이전 페이지로 이동');
+            table.previousPage();
+          }} 
+          disabled={!table.getCanPreviousPage() || disabled} 
+          className="p-1 rounded hover:bg-gray-700 disabled:opacity-50 text-gray-300" 
+          aria-label="이전 페이지로 이동"
+        > 
+          <ChevronLeft size={18} /> 
+        </button>
         <span className="text-body-primary"> 페이지{' '} <span className="font-medium">{table.getState().pagination.pageIndex + 1}</span> {' / '} {table.getPageCount() || 1} </span>
-        <button onClick={() => table.nextPage()} disabled={!table.getCanNextPage() || disabled} className="p-1 rounded hover:bg-gray-700 disabled:opacity-50 text-gray-300" aria-label="다음 페이지로 이동"> <ChevronRight size={18} /> </button>
-        <button onClick={() => table.setPageIndex(table.getPageCount() - 1)} disabled={!table.getCanNextPage() || disabled} className="p-1 rounded hover:bg-gray-700 disabled:opacity-50 text-gray-300" aria-label="마지막 페이지로 이동"> <ChevronsRight size={18} /> </button>
+        <button 
+          onClick={() => {
+            console.log('▶️ 다음 페이지로 이동:', {
+              현재: table.getState().pagination.pageIndex,
+              다음: table.getState().pagination.pageIndex + 1,
+              전체: table.getPageCount(),
+              canNext: table.getCanNextPage(),
+            });
+            table.nextPage();
+          }} 
+          disabled={!table.getCanNextPage() || disabled} 
+          className="p-1 rounded hover:bg-gray-700 disabled:opacity-50 text-gray-300" 
+          aria-label="다음 페이지로 이동"
+        > 
+          <ChevronRight size={18} /> 
+        </button>
+        <button 
+          onClick={() => {
+            console.log('⏭️ 마지막 페이지로 이동');
+            table.setPageIndex(table.getPageCount() - 1);
+          }} 
+          disabled={!table.getCanNextPage() || disabled} 
+          className="p-1 rounded hover:bg-gray-700 disabled:opacity-50 text-gray-300" 
+          aria-label="마지막 페이지로 이동"
+        > 
+          <ChevronsRight size={18} /> 
+        </button>
       </div>
     </div>
   );
