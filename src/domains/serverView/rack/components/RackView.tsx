@@ -3,7 +3,7 @@ import { useRackManager } from "../hooks/useRackManager";
 import Sidebar from "./Sidebar";
 import RackHeader from "./RackHeader";
 import Button from "./Button";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import ServerDashboard from "@domains/serverView/serverDashboard/components/ServerDashboard";
 
 interface RackViewProps {
@@ -22,9 +22,12 @@ function RackView({ rackName, serverRoomId, onClose }: RackViewProps) {
     name: string;
   } | null>(null);
 
-  const rackId = rackName
-    ? parseInt(rackName.split("-").pop() || "0", 10)
-    : undefined;
+  const rackId = useMemo(() => {
+    if (!rackName) return undefined;
+    const parts = rackName.split("-");
+    const id = parseInt(parts[parts.length - 1], 10);
+    return isNaN(id) ? undefined : id;
+  }, [rackName]);
 
   const rackManager = useRackManager({
     rackId: rackId || 0,
@@ -32,8 +35,9 @@ function RackView({ rackName, serverRoomId, onClose }: RackViewProps) {
     frontView,
   });
 
-  const selectedEquipment = rackManager.equipments?.find(
-    (eq) => eq.id === selectedDevice?.id
+  const selectedEquipment = useMemo(
+    () => rackManager.equipments?.find((eq) => eq.id === selectedDevice?.id),
+    [rackManager.equipments, selectedDevice?.id]
   );
 
   useEffect(() => {
@@ -52,6 +56,15 @@ function RackView({ rackName, serverRoomId, onClose }: RackViewProps) {
   //대시보드 닫기 핸들러
   const handleDashboardClose = () => {
     setDashboardOpen(false);
+  };
+
+  // 사이드바(대시보드 영역) 클릭 핸들러
+  const handleSidebarClick = () => {
+    if (dashboardOpen) {
+      handleDashboardClose();
+    } else {
+      onClose?.();
+    }
   };
 
   if (rackManager.isLoading) {
@@ -75,14 +88,10 @@ function RackView({ rackName, serverRoomId, onClose }: RackViewProps) {
 
   return (
     <div className="h-full flex text-white gap-2 p-2">
-      {/* 왼쪽: 대시보드 영역 - 항상 2 비율 유지 */}
+      {/* 왼쪽: 대시보드 영역 - 항상 2 비율 유지 */}v{" "}
       <div
         className="flex-[2] overflow-hidden relative"
-        onClick={() => {
-          if (!dashboardOpen && onClose) {
-            onClose();
-          }
-        }}
+        onClick={handleSidebarClick}
       >
         <ServerDashboard
           deviceId={selectedDevice?.id || 0}
@@ -94,7 +103,6 @@ function RackView({ rackName, serverRoomId, onClose }: RackViewProps) {
           currentEquipment={selectedEquipment}
         />
       </div>
-
       <div className="flex-1 overflow-visible relative">
         <div className="h-full flex flex-col bg-[#404452]/70 backdrop-blur-md border border-slate-300/40 rounded-xl">
           <header className="flex justify-between items-center px-6 py-4 border-b border-slate-300/40 flex-shrink-0">
