@@ -1,14 +1,30 @@
-import { CpuGauge, MemoryGauge, DiskGauge, SystemLoadGauge } from './index';
-import NetworkTrafficChart from './NetworkTrafficChart';
-import { mockNetworkTrafficData } from '../data/mockData';
-import type { AggregatedMetrics } from '../types/dashboard.types';
-import { Activity } from 'lucide-react';
+import { CpuGauge, MemoryGauge, DiskGauge, NetworkGauge } from "./index";
+import {
+  NetworkTrafficChart,
+  LoadAverageChart,
+  DiskIOChart,
+  ContextSwitchesSparkline,
+  NetworkErrorChart,
+  CpuUsageDetailChart,
+} from "./index";
+import {
+  mockNetworkTrafficData,
+  mockLoadAverageData,
+  mockDiskIOData,
+  mockContextSwitchesData,
+  mockNetworkErrorData,
+  mockCpuUsageDetailData,
+} from "../data/mockData";
+import type { AggregatedMetrics } from "../types/dashboard.types";
+import { Activity } from "lucide-react";
 
 interface DatacenterDashboardProps {
   metrics: AggregatedMetrics;
 }
 
-export default function DatacenterDashboard({ metrics }: DatacenterDashboardProps) {
+export default function DatacenterDashboard({
+  metrics,
+}: DatacenterDashboardProps) {
   return (
     <div className="space-y-6">
       {/* 장비 현황 카드 */}
@@ -17,7 +33,9 @@ export default function DatacenterDashboard({ metrics }: DatacenterDashboardProp
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-400 text-sm">총 장비 수</p>
-              <p className="text-3xl font-bold text-gray-100 mt-1">{metrics.totalEquipments}</p>
+              <p className="text-3xl font-bold text-gray-100 mt-1">
+                {metrics.totalEquipments}
+              </p>
             </div>
             <Activity className="text-blue-400" size={32} />
           </div>
@@ -27,7 +45,9 @@ export default function DatacenterDashboard({ metrics }: DatacenterDashboardProp
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-400 text-sm">정상</p>
-              <p className="text-3xl font-bold text-green-400 mt-1">{metrics.onlineEquipments}</p>
+              <p className="text-3xl font-bold text-green-400 mt-1">
+                {metrics.onlineEquipments}
+              </p>
             </div>
             <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
           </div>
@@ -37,7 +57,9 @@ export default function DatacenterDashboard({ metrics }: DatacenterDashboardProp
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-400 text-sm">경고</p>
-              <p className="text-3xl font-bold text-yellow-400 mt-1">{metrics.warningEquipments}</p>
+              <p className="text-3xl font-bold text-yellow-400 mt-1">
+                {metrics.warningEquipments}
+              </p>
             </div>
             <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
           </div>
@@ -47,7 +69,9 @@ export default function DatacenterDashboard({ metrics }: DatacenterDashboardProp
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-400 text-sm">위험</p>
-              <p className="text-3xl font-bold text-red-400 mt-1">{metrics.criticalEquipments}</p>
+              <p className="text-3xl font-bold text-red-400 mt-1">
+                {metrics.criticalEquipments}
+              </p>
             </div>
             <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
           </div>
@@ -57,7 +81,9 @@ export default function DatacenterDashboard({ metrics }: DatacenterDashboardProp
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-400 text-sm">오프라인</p>
-              <p className="text-3xl font-bold text-gray-400 mt-1">{metrics.offlineEquipments}</p>
+              <p className="text-3xl font-bold text-gray-400 mt-1">
+                {metrics.offlineEquipments}
+              </p>
             </div>
             <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
           </div>
@@ -69,14 +95,30 @@ export default function DatacenterDashboard({ metrics }: DatacenterDashboardProp
         <CpuGauge value={metrics.avgCpuUsage} />
         <MemoryGauge value={metrics.avgMemoryUsage} />
         <DiskGauge value={metrics.avgDiskUsage} />
-        <SystemLoadGauge value={metrics.avgLoadAvg1} />
+        <NetworkGauge value={15} />
       </div>
 
-      {/* 네트워크 현황 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <NetworkTrafficChart data={mockNetworkTrafficData} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* CPU 상세 사용률 */}
+        <CpuUsageDetailChart data={mockCpuUsageDetailData} />
 
-        {/* <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+        {/* 시스템 부하 추세 */}
+        <LoadAverageChart data={mockLoadAverageData} />
+      </div>
+
+      {/* 네트워크 및 디스크 I/O */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <NetworkTrafficChart data={mockNetworkTrafficData} />
+        <DiskIOChart data={mockDiskIOData} />
+      </div>
+
+      {/* Context Switches 및 네트워크 에러/드롭 */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <ContextSwitchesSparkline data={mockContextSwitchesData} />
+        <NetworkErrorChart data={mockNetworkErrorData} />
+      </div>
+
+      {/* <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
           <div className="flex items-center gap-2 mb-4">
             <Activity size={20} className="text-yellow-400" />
             <h3 className="text-lg font-semibold text-gray-100">알람/경고</h3>
@@ -101,7 +143,6 @@ export default function DatacenterDashboard({ metrics }: DatacenterDashboardProp
             )}
           </div>
         </div> */}
-      </div>
     </div>
   );
 }

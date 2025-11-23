@@ -86,30 +86,40 @@ export interface Equipment {
   storageMetric?: StorageMetric;
 }
 
-// 랙 타입
+// 랙 타입 (API 응답 기반)
 export interface Rack {
   id: number;
   name: string;
-  server_room_id: number;
-  total_u: number;
+  deviceId: number;
+  deviceCode: string;
+  gridY: number;
+  gridX: number;
+  gridZ: number;
+  rotation: number;
+  status: string;
   equipments: Equipment[];
 }
 
-// 서버실 타입
+// 서버실 타입 (API 응답 기반)
 export interface ServerRoom {
   id: number;
   name: string;
-  datacenter_id: number;
-  location: string;
-  area: number; // 면적 (m²)
+  code: string;
+  location: string | null;
+  floor: number;
+  rows: number;
+  columns: number;
+  description?: string;
+  status: "ACTIVE" | "INACTIVE" | "MAINTENANCE";
   racks: Rack[];
 }
 
-// 데이터센터 타입
+// 데이터센터 타입 (API 응답 기반)
 export interface Datacenter {
   id: number;
   name: string;
-  location: string;
+  code: string;
+  address: string;
   serverRooms: ServerRoom[];
 }
 
