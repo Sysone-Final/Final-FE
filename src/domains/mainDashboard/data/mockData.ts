@@ -126,14 +126,19 @@ export const mockDatacenters: Datacenter[] = [
   {
     id: 1,
     name: '서울 데이터센터',
-    location: '서울특별시 강남구',
+    code: 'DC-SEOUL-01',
+    address: '서울특별시 강남구',
     serverRooms: [
       {
         id: 1,
         name: '서버실 A',
-        datacenter_id: 1,
+        code: 'SR-A-01',
         location: '1층 동관',
-        area: 500,
+        floor: 1,
+        rows: 5,
+        columns: 10,
+        description: '주요 서버 라크',
+        status: 'ACTIVE',
         racks: Array.from({ length: 5 }, (_, rackIdx) => {
           let currentU = 0;
           const equipments: Equipment[] = [];
@@ -166,9 +171,13 @@ export const mockDatacenters: Datacenter[] = [
       {
         id: 2,
         name: '서버실 B',
-        datacenter_id: 1,
+        code: 'SR-B-01',
         location: '1층 서관',
-        area: 400,
+        floor: 1,
+        rows: 5,
+        columns: 10,
+        description: '보조 서버 라크',
+        status: 'ACTIVE',
         racks: Array.from({ length: 5 }, (_, rackIdx) => {
           let currentU = 0;
           const equipments: Equipment[] = [];
@@ -201,9 +210,13 @@ export const mockDatacenters: Datacenter[] = [
       {
         id: 3,
         name: '서버실 C',
-        datacenter_id: 1,
+        code: 'SR-C-01',
         location: '2층 동관',
-        area: 450,
+        floor: 2,
+        rows: 5,
+        columns: 10,
+        description: '스토리지 전용',
+        status: 'ACTIVE',
         racks: Array.from({ length: 5 }, (_, rackIdx) => {
           let currentU = 0;
           const equipments: Equipment[] = [];
@@ -238,14 +251,19 @@ export const mockDatacenters: Datacenter[] = [
   {
     id: 2,
     name: '부산 데이터센터',
-    location: '부산광역시 해운대구',
+    code: 'DC-BUSAN-01',
+    address: '부산광역시 해운대구',
     serverRooms: [
       {
         id: 4,
         name: '서버실 A',
-        datacenter_id: 2,
+        code: 'SR-BSN-A-01',
         location: '1층',
-        area: 600,
+        floor: 1,
+        rows: 7,
+        columns: 12,
+        description: '메인 서버룸',
+        status: 'ACTIVE',
         racks: Array.from({ length: 7 }, (_, rackIdx) => {
           let currentU = 0;
           const equipments: Equipment[] = [];
@@ -278,9 +296,13 @@ export const mockDatacenters: Datacenter[] = [
       {
         id: 5,
         name: '서버실 B',
-        datacenter_id: 2,
+        code: 'SR-BSN-B-01',
         location: '2층',
-        area: 550,
+        floor: 2,
+        rows: 6,
+        columns: 11,
+        description: '백업 서버룸',
+        status: 'ACTIVE',
         racks: Array.from({ length: 6 }, (_, rackIdx) => {
           let currentU = 0;
           const equipments: Equipment[] = [];
