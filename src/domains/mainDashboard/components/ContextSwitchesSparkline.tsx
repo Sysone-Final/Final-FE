@@ -37,7 +37,7 @@ export default function ContextSwitchesSparkline({
       textStyle: {
         color: '#fff',
       },
-      formatter: (params: any) => {
+      formatter: (params: Array<{ axisValue: string; value: number; color: string }>) => {
         const param = params[0];
         return `
           <div style="font-weight: bold; margin-bottom: 5px;">${param.axisValue}</div>

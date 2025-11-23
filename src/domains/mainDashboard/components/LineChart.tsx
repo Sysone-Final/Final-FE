@@ -29,7 +29,7 @@ interface LineChartProps {
   height?: string;
   unit?: string; // Y축 단위 (예: Mbps, %, 개)
   yAxisFormatter?: (value: number) => string; // Y축 포맷터
-  tooltipFormatter?: (params: any) => string; // 툴팁 커스텀 포맷터
+  tooltipFormatter?: (params: Array<{ axisValue: string; seriesName: string; value: string | number; color: string }>) => string; // 툴팁 커스텀 포맷터
   showLegend?: boolean;
   smooth?: boolean; // 부드러운 곡선 여부
 }
