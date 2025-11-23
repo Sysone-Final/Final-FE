@@ -170,7 +170,7 @@ export default function ServerRoomDashboard({ serverRoom, metrics }: ServerRoomD
         <CpuGauge value={metrics.avgCpuUsage} />
         <MemoryGauge value={metrics.avgMemoryUsage} />
         <DiskGauge value={metrics.avgDiskUsage} />
-        <NetworkGauge value={(serverRoom.racks[0]?.equipments[0]?.networkMetrics?.[0]?.rx_usage || 0 + serverRoom.racks[0]?.equipments[0]?.networkMetrics?.[0]?.tx_usage || 0) / 2} />
+        <NetworkGauge value={serverRoom.racks[0]?.equipments[0]?.networkMetrics?.[0] ? ((serverRoom.racks[0].equipments[0].networkMetrics[0].rx_usage + serverRoom.racks[0].equipments[0].networkMetrics[0].tx_usage) / 2) : 0} />
       </div>
 
       {/* CPU 상세 사용률 */}
