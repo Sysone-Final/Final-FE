@@ -1,6 +1,23 @@
-import { CpuGauge, MemoryGauge, DiskGauge, SystemLoadGauge } from './index';
-import NetworkTrafficChart from './NetworkTrafficChart';
-import { mockNetworkTrafficData } from '../data/mockData';
+import {
+  CpuGauge,
+  MemoryGauge,
+  DiskGauge,
+  NetworkGauge,
+  LoadAverageChart,
+  DiskIOChart,
+  ContextSwitchesSparkline,
+  NetworkErrorChart,
+  CpuUsageDetailChart,
+  NetworkTrafficChart,
+} from './index';
+import {
+  mockNetworkTrafficData,
+  mockLoadAverageData,
+  mockDiskIOData,
+  mockContextSwitchesData,
+  mockNetworkErrorData,
+  mockCpuUsageDetailData,
+} from '../data/mockData';
 import type { AggregatedMetrics, ServerRoom } from '../types/dashboard.types';
 import { Activity, TrendingUp } from 'lucide-react';
 import ReactECharts from 'echarts-for-react';
@@ -153,7 +170,25 @@ export default function ServerRoomDashboard({ serverRoom, metrics }: ServerRoomD
         <CpuGauge value={metrics.avgCpuUsage} />
         <MemoryGauge value={metrics.avgMemoryUsage} />
         <DiskGauge value={metrics.avgDiskUsage} />
-        <SystemLoadGauge value={metrics.avgLoadAvg1} />
+        <NetworkGauge value={(serverRoom.racks[0]?.equipments[0]?.networkMetrics?.[0]?.rx_usage || 0 + serverRoom.racks[0]?.equipments[0]?.networkMetrics?.[0]?.tx_usage || 0) / 2} />
+      </div>
+
+      {/* CPU 상세 사용률 */}
+      <CpuUsageDetailChart data={mockCpuUsageDetailData} />
+
+      {/* Load Average */}
+      <LoadAverageChart data={mockLoadAverageData} />
+
+      {/* 네트워크 & 디스크 I/O */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <NetworkTrafficChart data={mockNetworkTrafficData} />
+        <DiskIOChart data={mockDiskIOData} />
+      </div>
+
+      {/* Context Switches & 네트워크 에러 */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <ContextSwitchesSparkline data={mockContextSwitchesData} />
+        <NetworkErrorChart data={mockNetworkErrorData} />
       </div>
 
       {/* 랙별 비교 차트 */}
@@ -164,9 +199,6 @@ export default function ServerRoomDashboard({ serverRoom, metrics }: ServerRoomD
         </div>
         <ReactECharts option={barChartOption} style={{ height: '400px' }} opts={{ renderer: 'svg' }} />
       </div>
-
-      {/* 네트워크 트래픽 */}
-      <NetworkTrafficChart data={mockNetworkTrafficData} />
     </div>
   );
 }

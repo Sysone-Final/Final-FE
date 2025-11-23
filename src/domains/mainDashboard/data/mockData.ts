@@ -323,4 +323,126 @@ const generateNetworkTrafficData = (): NetworkTrafficData => {
   };
 };
 
+// Load Average 시계열 목 데이터
+const generateLoadAverageData = () => {
+  const now = new Date();
+  const data = [];
+  
+  // 최근 10분간 데이터 (30초 간격, 20개 포인트)
+  for (let i = 19; i >= 0; i--) {
+    const timestamp = new Date(now.getTime() - i * 30 * 1000);
+    const variation = Math.sin(i * 0.3) * 0.3 + (Math.random() - 0.5) * 0.2;
+    
+    data.push({
+      time: timestamp.toISOString(),
+      loadAvg1: Math.max(0.1, 1.5 + variation),
+      loadAvg5: Math.max(0.1, 1.4 + variation * 0.8),
+      loadAvg15: Math.max(0.1, 1.3 + variation * 0.6),
+    });
+  }
+  
+  return data;
+};
+
+// Disk I/O 시계열 목 데이터
+const generateDiskIOData = () => {
+  const now = new Date();
+  const data = [];
+  
+  // 최근 5분간 데이터 (15초 간격, 20개 포인트)
+  for (let i = 19; i >= 0; i--) {
+    const timestamp = new Date(now.getTime() - i * 15 * 1000);
+    const variation = Math.sin(i * 0.4) * 0.3 + (Math.random() - 0.5) * 0.2;
+    
+    const baseRead = 5 * 1024 * 1024; // 5 MB/s
+    const baseWrite = 3 * 1024 * 1024; // 3 MB/s
+    
+    data.push({
+      time: timestamp.toISOString(),
+      ioReadBps: Math.max(0, baseRead * (1 + variation)),
+      ioWriteBps: Math.max(0, baseWrite * (1 + variation * 0.8)),
+      ioTimePercentage: Math.max(5, Math.min(50, 20 + variation * 15)),
+    });
+  }
+  
+  return data;
+};
+
+// Context Switches 시계열 목 데이터
+const generateContextSwitchesData = () => {
+  const now = new Date();
+  const data = [];
+  
+  // 최근 10분간 데이터 (30초 간격, 20개 포인트)
+  for (let i = 19; i >= 0; i--) {
+    const timestamp = new Date(now.getTime() - i * 30 * 1000);
+    const variation = Math.sin(i * 0.3) * 0.2 + (Math.random() - 0.5) * 0.1;
+    
+    const base = 8500; // 평균 8500 context switches
+    
+    data.push({
+      time: timestamp.toISOString(),
+      contextSwitches: Math.max(5000, Math.floor(base * (1 + variation))),
+    });
+  }
+  
+  return data;
+};
+
+// 네트워크 에러/드롭 통계 목 데이터
+const generateNetworkErrorData = () => {
+  return [
+    {
+      nicName: 'eth0',
+      errorRate: 0.0052, // 0.0052%
+      dropRate: 0.0148,  // 0.0148%
+    },
+    {
+      nicName: 'eth1',
+      errorRate: 0.0054,
+      dropRate: 0.0152,
+    },
+  ];
+};
+
+// CPU 상세 사용률 시계열 목 데이터
+const generateCpuUsageDetailData = () => {
+  const now = new Date();
+  const data = [];
+  
+  // 최근 5분간 데이터 (15초 간격, 20개 포인트)
+  for (let i = 19; i >= 0; i--) {
+    const timestamp = new Date(now.getTime() - i * 15 * 1000);
+    const variation = Math.sin(i * 0.5) * 0.1 + (Math.random() - 0.5) * 0.05;
+    
+    const cpuIdle = Math.max(60, Math.min(80, 70 + variation * 10));
+    const cpuUser = Math.max(10, Math.min(25, 18 + variation * 5));
+    const cpuSystem = Math.max(5, Math.min(12, 7.5 + variation * 3));
+    const cpuWait = Math.max(1, Math.min(5, 2.4 + variation * 2));
+    const cpuNice = Math.random() * 1;
+    const cpuIrq = Math.random() * 0.7;
+    const cpuSoftirq = Math.random() * 0.5;
+    const cpuSteal = Math.random() * 0.2;
+    
+    data.push({
+      time: timestamp.toISOString(),
+      cpuUser,
+      cpuSystem,
+      cpuWait,
+      cpuNice,
+      cpuIrq,
+      cpuSoftirq,
+      cpuSteal,
+      cpuIdle,
+    });
+  }
+  
+  return data;
+};
+
 export const mockNetworkTrafficData = generateNetworkTrafficData();
+export const mockLoadAverageData = generateLoadAverageData();
+export const mockDiskIOData = generateDiskIOData();
+export const mockContextSwitchesData = generateContextSwitchesData();
+export const mockNetworkErrorData = generateNetworkErrorData();
+export const mockCpuUsageDetailData = generateCpuUsageDetailData();

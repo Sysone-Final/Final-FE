@@ -10,9 +10,23 @@ import { DataTable, DataTablePagination } from "@/shared/table";
 import type { Rack } from "../types/dashboard.types";
 import { equipmentColumns } from "./equipmentTable.config";
 import { Layers, AlertTriangle } from "lucide-react";
-import { CpuGauge, MemoryGauge, DiskGauge } from "./index";
-import NetworkTrafficChart from "./NetworkTrafficChart";
-import { mockNetworkTrafficData } from "../data/mockData";
+import { CpuGauge, MemoryGauge, DiskGauge, NetworkGauge } from "./index";
+import { 
+  NetworkTrafficChart, 
+  LoadAverageChart, 
+  DiskIOChart,
+  ContextSwitchesSparkline,
+  NetworkErrorChart,
+  CpuUsageDetailChart
+} from "./index";
+import { 
+  mockNetworkTrafficData, 
+  mockLoadAverageData, 
+  mockDiskIOData,
+  mockContextSwitchesData,
+  mockNetworkErrorData,
+  mockCpuUsageDetailData
+} from "../data/mockData";
 
 interface RackDashboardProps {
   rack: Rack;
@@ -25,7 +39,8 @@ export default function RackDashboard({ rack }: RackDashboardProps) {
   // 랙 메트릭 계산
   const totalEquipments = rack.equipments.length;
   const usedU = rack.equipments.reduce((sum, eq) => sum + eq.height_u, 0);
-  const rackUsagePercent = Math.round((usedU / rack.total_u) * 1000) / 10;
+  const totalU = 42; // 기본 랙 높이
+  const rackUsagePercent = Math.round((usedU / totalU) * 1000) / 10;
 
   const avgCpuUsage =
     rack.equipments.reduce(
@@ -80,7 +95,7 @@ export default function RackDashboard({ rack }: RackDashboardProps) {
               {rackUsagePercent}%
             </span>
             <span className="text-sm text-gray-400 mb-1">
-              ({usedU}U / {rack.total_u}U)
+              ({usedU}U / {totalU}U)
             </span>
           </div>
           <div className="w-full bg-gray-700 rounded-full h-2 mt-3">
@@ -133,7 +148,25 @@ export default function RackDashboard({ rack }: RackDashboardProps) {
         <CpuGauge value={avgCpuUsage} />
         <MemoryGauge value={avgMemoryUsage} />
         <DiskGauge value={avgDiskUsage} />
-        <NetworkTrafficChart data={mockNetworkTrafficData} height="180px" />
+        <NetworkGauge value={rack.equipments[0]?.networkMetrics?.[0] ? ((rack.equipments[0].networkMetrics[0].rx_usage + rack.equipments[0].networkMetrics[0].tx_usage) / 2) : 0} />
+      </div>
+
+      {/* CPU 상세 사용률 */}
+      <CpuUsageDetailChart data={mockCpuUsageDetailData} />
+
+      {/* 시스템 부하 추세 */}
+      <LoadAverageChart data={mockLoadAverageData} />
+
+      {/* 네트워크 및 디스크 I/O */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <NetworkTrafficChart data={mockNetworkTrafficData} />
+        <DiskIOChart data={mockDiskIOData} />
+      </div>
+
+      {/* Context Switches 및 네트워크 에러/드롭 */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <ContextSwitchesSparkline data={mockContextSwitchesData} />
+        <NetworkErrorChart data={mockNetworkErrorData} />
       </div>
 
 
