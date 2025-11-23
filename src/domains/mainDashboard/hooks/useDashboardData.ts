@@ -5,7 +5,7 @@ import {
   getServerRoomRacks,
   type DataCenterGroup,
 } from "../api/mainDashboardApi";
-import type { Datacenter } from "../types/dashboard.types";
+import type { Datacenter, Rack } from "../types/dashboard.types";
 
 /**
  * 메인 대시보드 데이터 관리 훅
@@ -15,7 +15,7 @@ import type { Datacenter } from "../types/dashboard.types";
 export const useDashboardData = (companyId: number) => {
   // 서버실별 랙 정보 캐시
   const [racksByServerRoom, setRacksByServerRoom] = useState<
-    Record<number, any[]>
+    Record<number, Rack[]>
   >({});
 
   // 1. 회사의 데이터센터 및 서버실 목록 조회

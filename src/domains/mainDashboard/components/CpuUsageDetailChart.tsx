@@ -44,11 +44,11 @@ export default function CpuUsageDetailChart({
       axisPointer: {
         type: 'shadow',
       },
-      formatter: (params: any) => {
+      formatter: (params: Array<{ axisValue: string; seriesName: string; value: number; color: string }>) => {
         const time = params[0].axisValue;
         let result = `<div style="font-weight: bold; margin-bottom: 5px;">${time}</div>`;
         let total = 0;
-        params.forEach((param: any) => {
+        params.forEach((param) => {
           total += param.value;
           result += `
             <div style="display: flex; align-items: center; margin-top: 5px;">
