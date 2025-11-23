@@ -32,6 +32,8 @@ export const RESOURCE_STATUS_OPTIONS: {
   label: string;
 }[] = [
   { value: "NORMAL", label: "정상" },
+  { value: "WARNING", label: "경고" },
+  { value: "ERROR", label: "오류" },
   { value: "MAINTENANCE", label: "점검중" },
   { value: "POWERED_OFF", label: "비활성/재고" },
   { value: "DECOMMISSIONED", label: "폐기" },

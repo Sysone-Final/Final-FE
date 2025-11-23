@@ -22,7 +22,7 @@ export default function HeaderCheckbox({ table }: HeaderCheckboxProps) {
     <input
       type="checkbox"
       ref={ref}
-      className="rounded border-gray-300"
+      className="w-5 h-5 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500 focus:ring-offset-gray-800"
       checked={table.getIsAllRowsSelected()}
       onChange={table.getToggleAllRowsSelectedHandler()}
     />

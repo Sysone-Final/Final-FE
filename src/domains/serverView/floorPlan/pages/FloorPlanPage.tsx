@@ -1,22 +1,21 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DndContext } from '@dnd-kit/core';
 import Canvas from '../components/Canvas'; 
-import FloatingSidebarPanel from '../components/FloatingSidebarPanel'; 
 import { useFloorPlanDragDrop } from '../hooks/useFloorPlanDragDrop';
 import { useFloorPlanNavigationGuard } from '../hooks/useFloorPlanNavigationGuard';
-import { useFloorPlanStore, initialState } from '../store/floorPlanStore';
-import { useSidebarStore } from '../store/useSidebarStore';
+import { useFloorPlanStore, initialState, addAsset } from '../store/floorPlanStore';
 import RackModal from '@/domains/serverView/components/RackModal';
 import { useServerRoomEquipment } from '@/domains/serverView/view3d/hooks/useServerRoomEquipment';
 import { transform3DTo2DAssets } from '../utils/dataTransformer';
+import EquipmentPalette3D from '@/domains/serverView/components/EquipmentPalette3D';
+import type { EquipmentType } from '../../types';
+import type { AssetType, AssetLayer } from '../types';
+import toast from 'react-hot-toast';
+import { checkCollision } from '../utils/collision';
+import MagnifierWidget from '../components/MagnifierWidget';
 
-
-// import LeftSidebar from '../components/LeftSidebar'; 
-import StatusLegendAndFilters from '../components/LeftSidebar/StatusLegendAndFilters'; 
 import TopNWidget from '../components/TopNWidget'; 
 import { FloorPlanConfirmationModal } from '../components/FloorPlanConfirmationModal';
-import EquipmentPalette3D from '@/domains/serverView/components/EquipmentPalette3D';
-import type { EquipmentType } from '@/domains/serverView/types';
 
 interface FloorPlanPageProps {
   containerRef: React.RefObject<HTMLDivElement>;
@@ -28,19 +27,17 @@ const FloorPlanPage: React.FC<FloorPlanPageProps> = ({ containerRef, serverRoomI
   // 'data: apiData'가 아니라 'equipment: equipment3D'와 'gridConfig'를 직접 받습니다.
   const { equipment: equipment3D, gridConfig, loading, error } = useServerRoomEquipment(serverRoomId);
 
-  // 스토어 상태 및 사이드바 초기화 (최초 마운트 시 1회)
-  const { setLeftSidebarOpen, setRightSidebarOpen } = useSidebarStore();
-  
+  // 확대경 관련 상태
+  const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null);
+  const isMagnifierEnabled = useFloorPlanStore((state) => state.isMagnifierEnabled);
+
+  // 스토어 상태 초기화 (최초 마운트 시 1회)
   useEffect(() => {
     console.log('Initializing 2D FloorPlan Store...');
     // A. 2D 스토어 상태를 초기값으로 리셋
     useFloorPlanStore.setState(initialState, true);
     useFloorPlanStore.temporal.getState().clear();
-
-    // B. 사이드바 상태를 초기값으로 리셋
-    setLeftSidebarOpen(true);
-    setRightSidebarOpen(false);
-  }, [setLeftSidebarOpen, setRightSidebarOpen]); // 최초 1회 실행
+  }, []); // 최초 1회 실행
 
   // API 데이터가 로드되면 2D 스토어에 반영
   useEffect(() => {
@@ -69,8 +66,8 @@ const FloorPlanPage: React.FC<FloorPlanPageProps> = ({ containerRef, serverRoomI
 
       useFloorPlanStore.setState({
         assets: assets2D,
-        gridCols: sourceGridConfig.columns + 2, 
-        gridRows: sourceGridConfig.rows + 2,    
+        gridCols: sourceGridConfig.columns, 
+        gridRows: sourceGridConfig.rows,    
         isLoading: false, 
         error: null,
       });
@@ -89,28 +86,106 @@ const FloorPlanPage: React.FC<FloorPlanPageProps> = ({ containerRef, serverRoomI
   // 페이지 이탈 방지
   useFloorPlanNavigationGuard();
   
-  const { handleDragEnd } = useFloorPlanDragDrop(containerRef);
-
-  // 장비 추가 핸들러
-  const handleAddEquipment = (type: EquipmentType) => {
-    console.log('Adding equipment:', type);
-    // TODO: 2D 평면도에 장비 추가 로직 구현
-  };
+  const { handleDragEnd } = useFloorPlanDragDrop(containerRef, serverRoomId);
   const mode = useFloorPlanStore((state) => state.mode);
-  // const displayMode = useFloorPlanStore((state) => state.displayMode);
   const dashboardMetricView = useFloorPlanStore((state) => state.dashboardMetricView);
-  const isLayoutView = dashboardMetricView === 'layout';
-  
-  const {
-    isLeftSidebarOpen,
-    toggleLeftSidebar,
-  } = useSidebarStore();
 
-  // const isDashboardView = mode === 'view' && displayMode === 'status';
+  // 3D -> 2D 타입 매핑 함수
+  const map3DTypeTo2DType = (type3D: EquipmentType): AssetType | null => {
+    const typeMap: Record<EquipmentType, AssetType | null> = {
+      server: 'rack',
+      door: 'door_single',
+      climatic_chamber: 'crac',
+      fire_extinguisher: 'fire_suppression',
+      aircon: 'in_row_cooling',
+      thermometer: 'leak_sensor',
+    };
+    return typeMap[type3D] || null;
+  };
+
+  // 3D 장비 팔레트에서 자산 추가
+  const handleAddEquipment = (type3D: EquipmentType) => {
+    const assetType2D = map3DTypeTo2DType(type3D);
+    if (!assetType2D) {
+      console.warn(`Cannot map 3D type ${type3D} to 2D asset type`);
+      return;
+    }
+
+    // 자산 추가 로직 (중앙에 배치)
+    const centerX = Math.floor(gridCols / 2);
+    const centerY = Math.floor(gridRows / 2);
+    
+    const newAsset = {
+      name: type3D,
+      gridX: centerX,
+      gridY: centerY,
+      widthInCells: 1,
+      heightInCells: 1,
+      assetType: assetType2D,
+      layer: 'floor' as AssetLayer,
+      rotation: 0,
+    };
+
+    // 경계 검사 (중앙이라도 그리드가 너무 작을 경우를 대비)
+    if (
+      centerX < 0 ||
+      centerY < 0 ||
+      centerX + newAsset.widthInCells > gridCols ||
+      centerY + newAsset.heightInCells > gridRows
+    ) {
+      toast.error(
+        `"${newAsset.name}"을(를) 배치할 수 없습니다. 평면도 공간이 부족합니다.`,
+        { id: 'asset-space-error' },
+      );
+      return;
+    }
+
+    // 충돌 검사
+    if (checkCollision(newAsset, assets)) {
+      toast.error(
+        `"${newAsset.name}"을(를) 배치할 수 없습니다. 다른 자산과 겹칩니다.`,
+        { id: 'asset-collision-error' },
+      );
+      return;
+    }
+
+    addAsset(newAsset, serverRoomId);
+  };
+
+  const gridCols = useFloorPlanStore((state) => state.gridCols);
+  const gridRows = useFloorPlanStore((state) => state.gridRows);
+  const assets = useFloorPlanStore((state) => state.assets);
 
   // 훅에서 가져온 로딩/에러 상태를 렌더링에 반영
   const isLoadingFromStore = useFloorPlanStore((state) => state.isLoading);
   const errorFromStore = useFloorPlanStore((state) => state.error);
+
+  // 확대경 활성화 시 마우스 위치 추적
+  useEffect(() => {
+    if (!isMagnifierEnabled || !containerRef.current) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      setMousePosition({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      });
+    };
+
+    const handleMouseLeave = () => {
+      setMousePosition(null);
+    };
+
+    const container = containerRef.current;
+    container.addEventListener('mousemove', handleMouseMove);
+    container.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      container.removeEventListener('mousemove', handleMouseMove);
+      container.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, [isMagnifierEnabled, containerRef]);
 
   //  로딩 및 에러 UI 반환
   if (isLoadingFromStore) {
@@ -132,21 +207,21 @@ const FloorPlanPage: React.FC<FloorPlanPageProps> = ({ containerRef, serverRoomI
   return (
     <DndContext onDragEnd={handleDragEnd}>
       <div className="flex-1 relative overflow-hidden">
-        <Canvas containerRef={containerRef} />
-        {mode === 'view' && !isLayoutView && <TopNWidget />}
+        <Canvas containerRef={containerRef} serverRoomId={serverRoomId} />
+        {/* TopNWidget: 보기 모드에서만 표시 */}
+        {mode === 'view' && dashboardMetricView !== 'default' && <TopNWidget />}
 
-        {mode === 'view' && (
-          <FloatingSidebarPanel 
-            isOpen={isLeftSidebarOpen} 
-            onToggle={toggleLeftSidebar} 
-            position="left" 
-            title={'보기 옵션 및 필터'}
-          >
-            <StatusLegendAndFilters />
-          </FloatingSidebarPanel>
-        )}
-        
+        {/* 편집 모드에서 3D 장비 팔레트 표시 */}
         {mode === 'edit' && <EquipmentPalette3D onAddEquipment={handleAddEquipment} />}
+        
+        {/* 확대경 위젯: 보기 모드에서 활성화 시 표시 */}
+        {mode === 'view' && isMagnifierEnabled && containerRef.current && (
+          <MagnifierWidget
+            mousePosition={mousePosition}
+            containerWidth={containerRef.current.clientWidth}
+            containerHeight={containerRef.current.clientHeight}
+          />
+        )}
         
         <RackModal />
         <FloorPlanConfirmationModal />
